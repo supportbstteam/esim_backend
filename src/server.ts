@@ -1,11 +1,20 @@
+import dotenv from "dotenv";
+dotenv.config(); // load .env locally
+
 import app from "./app";
-import connectDB from "./config/db";
+import { connectDB } from "./lib/db";
 
-// Ensure MongoDB connection is ready for serverless
-(async () => {
-  await connectDB();
-})();
+const PORT = process.env.PORT || 5000;
 
-// ❌ Do NOT call app.listen()
-// Instead, just export the app (Vercel will handle requests)
+// For local dev
+if (process.env.NODE_ENV !== "production") {
+  (async () => {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  })();
+}
+
+// For Vercel serverless
 export default app;

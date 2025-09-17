@@ -13,20 +13,13 @@ app.use(express.json());
 // Protect all routes after this
 app.use(protect);
 
-// ✅ Register routes without versioning
+// Routes
 const basePath = "/api";
-
 app.use(`${basePath}/user`, userRoute);
 app.use(`${basePath}/admin`, adminRoute);
 
-// Root endpoint for health check/info
-app.get(basePath, (req, res) => {
-  res.send("eSIM API is running 🚀");
-});
-
-// Root
-app.get("/", (req, res) => {
-  res.send("eSIM Management API Root 🌐");
-});
+// Root endpoints
+app.get(basePath, (req, res) => res.send("eSIM API is running 🚀"));
+app.get("/", (req, res) => res.send("eSIM Management API Root 🌐"));
 
 export default app;
