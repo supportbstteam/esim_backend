@@ -1,20 +1,17 @@
 import dotenv from "dotenv";
-dotenv.config(); // load .env locally
+dotenv.config();
 
+// import { connectDB } from "./config/db";
 import app from "./app";
 import { connectDB } from "./lib/db";
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
+const MONGO_URI:string = process.env.MONGO_URI || "";
 
-// For local dev
-if (process.env.NODE_ENV !== "production") {
-  (async () => {
-    await connectDB();
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
-  })();
-}
+(async () => {
+  await connectDB(MONGO_URI);
 
-// For Vercel serverless
-export default app;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  });
+})();

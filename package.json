@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/server.ts",
-    "dev:tsnode": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev": "nodemon -r tsconfig-paths/register src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node -r tsconfig-paths/register dist/server.js",
+    "build-all": "npm install && npm run build"
   },
   "author": "",
   "license": "ISC",
@@ -29,6 +29,7 @@
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.2"
   }
 }
