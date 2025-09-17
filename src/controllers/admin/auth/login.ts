@@ -20,13 +20,13 @@ export const registerAdmin = async (req: Request, res: Response) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const admin:any = await adminModel.create({ name, username, password: hashedPassword });
+    const admin: any = await adminModel.create({ name, username, password: hashedPassword });
 
     res.status(201).json({
       _id: admin._id,
       name: admin.name,
       username: admin.username,
-      status:200,
+      status: 200,
       token: generateToken(admin._id.toString()),
     });
   } catch (error) {
@@ -40,7 +40,7 @@ export const loginAdmin = async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   try {
-    const admin:any = await adminModel.findOne({ username });
+    const admin: any = await adminModel.findOne({ username });
     if (!admin) return res.status(400).json({ message: "Invalid credentials" });
 
     const isMatch = await bcrypt.compare(password, admin.password);
@@ -50,12 +50,12 @@ export const loginAdmin = async (req: Request, res: Response) => {
       _id: admin._id,
       name: admin.name,
       username: admin.username,
-      status:200,
+      status: 200,
       token: generateToken(admin._id.toString()),
     });
   } catch (error) {
     console.log("---error in the login ----", error)
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ message: "Server error", error: error });
   }
 };
 
