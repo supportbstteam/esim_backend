@@ -2,6 +2,7 @@ import express from 'express'
 import { adminDetails, loginAdmin, registerAdmin } from '../../controllers/admin/auth/login';
 import eSimRoute from './eSimRoute'
 import eSimPlanRoute from './eSimPlans.routes'
+import adminCRoute from './countries.route'
 const router = express.Router();
 
 router.post("/login", loginAdmin);
@@ -13,5 +14,8 @@ router.use("/e-sim", eSimRoute);
 
 // plans
 router.use("/plans", eSimPlanRoute);
+
+// countries
+router.use("/countries", adminCRoute);
 
 export default router;

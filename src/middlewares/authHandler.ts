@@ -11,7 +11,8 @@ const publicPaths = [
   "/api/users/register",
   "/api/admin/login",
   "/api/admin/register",
-  ""
+  "/",
+  "/api/",
 ];
 
 export const protect = (req: AuthRequest, res: Response, next: NextFunction) => {
