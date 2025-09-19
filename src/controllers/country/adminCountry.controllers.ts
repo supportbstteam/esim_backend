@@ -68,15 +68,26 @@ export const updateCountry = async (req: Request, res: Response) => {
   }
 };
 
-// DELETE (Admin only)
+// SOFT DELETE (Admin only)
 export const deleteCountry = async (req: Request, res: Response) => {
   if (!(await checkAdmin(req, res))) return;
   try {
     const { id } = req.params;
-    const country = await Country.findByIdAndDelete(id);
-    if (!country) return res.status(404).json({ message: "Country not found" });
-    res.json({ message: "Country deleted successfully" });
+
+    // Update `isDeleted` to true instead of removing
+    const country = await Country.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true }
+    );
+
+    if (!country) {
+      return res.status(404).json({ message: "Country not found" });
+    }
+
+    res.json({ message: "Country deleted successfully", country });
   } catch (error) {
     res.status(500).json({ message: "Error deleting country", error });
   }
 };
+

@@ -9,6 +9,7 @@ export interface IPlan extends Document {
   nationalCalls?: string;       
   internationalCalls?: string;   
   operators: mongoose.Types.ObjectId[]; 
+  country: mongoose.Types.ObjectId; // reference to Country
 }
 
 const planSchema = new Schema<IPlan>(
@@ -23,6 +24,9 @@ const planSchema = new Schema<IPlan>(
 
     // ✅ link to multiple operators
     operators: [{ type: Schema.Types.ObjectId, ref: "Operator" }],
+
+    // ✅ link to a single country
+    country: { type: Schema.Types.ObjectId, ref: "Country", required: true },
   },
   { timestamps: true }
 );

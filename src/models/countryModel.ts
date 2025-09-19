@@ -7,6 +7,7 @@ export interface ICountry extends Document {
   phoneCode: string;         // Country phone code e.g. "+91"
   currency: string;          // Currency code e.g. "INR"
   isActive: boolean;         // Whether country is active in system
+  isDelete: boolean;         // Whether country is active in system
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +20,7 @@ const CountrySchema = new Schema<ICountry>(
     phoneCode: { type: String, required: true },
     currency: { type: String, required: true },
     isActive: { type: Boolean, default: true },
+    isDelete: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
