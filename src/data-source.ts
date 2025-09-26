@@ -23,7 +23,7 @@ export const AppDataSource = new DataSource({
     username: "bstadmin",
     password: "bst1234@",
     database: "esimdb",
-    synchronize: false,
+    synchronize: false, // keep this false only turn this true once require for update the DB
     logging: false,
     entities: [User, Admin, Country, Plan, Esim, Transaction, Charges, Order, Token, TopUpPlan],
     migrations: [],
