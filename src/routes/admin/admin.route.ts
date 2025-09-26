@@ -1,0 +1,29 @@
+import express from 'express'
+import { adminDetails, loginAdmin, registerAdmin } from '../../controllers/admin/adminAuth.controllers';
+import eSimPlanRoute from "./adminEPlan.route"
+import adminCountryRoute from "./adminCountry.route"
+import eSimOperatorRoute from "./adminOperator.route"
+import thirdPartyRouter from "./thirdPartyUrl.route"
+import eSimRoute from "./adminESim.route"
+const router = express.Router();
+
+router.post("/login", loginAdmin);
+router.post("/register", registerAdmin);
+router.get("/details", adminDetails);
+
+// countries
+router.use("/countries", adminCountryRoute);
+
+// operator
+router.use("/operator", eSimOperatorRoute);
+router.use("/third-party-api", thirdPartyRouter); // third party library api
+
+// plans
+router.use("/plans", eSimPlanRoute);
+
+//e-sim
+router.use("/e-sim", eSimRoute);
+
+
+
+export default router;

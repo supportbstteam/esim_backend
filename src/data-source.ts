@@ -1,0 +1,31 @@
+import "reflect-metadata";
+import { DataSource } from "typeorm";
+import { User } from "./entity/User";
+import { Admin } from "./entity/Admin";
+import { Country } from "./entity/Country";
+import { Plan } from "./entity/Plans";
+import { Esim } from "./entity/Esim";
+import { Transaction } from "./entity/Transactions";
+import { Charges } from "./entity/Charges";
+import { Order } from "./entity/order.entity";
+import { Token } from "./entity/Token";
+import { TopUpPlan } from "./entity/Topup.entity";
+
+/**
+ * ⚠️ WARNING: This is the main TypeORM DataSource.
+ * - Do not set `synchronize: true` in production!
+ * - Always backup database before making changes.
+ */
+export const AppDataSource = new DataSource({
+    type: "mysql",
+    host: "localhost",
+    port: 3306,
+    username: "bstadmin",
+    password: "bst1234@",
+    database: "esimdb",
+    synchronize: false,
+    logging: false,
+    entities: [User, Admin, Country, Plan, Esim, Transaction, Charges, Order, Token, TopUpPlan],
+    migrations: [],
+    subscribers: [],
+});
