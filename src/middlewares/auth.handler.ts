@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-// Paths inside admin that should bypass auth
+// Paths inside admin that should bypass auth for admin
 const allowedPaths = [
   "/login",
   "/register"
