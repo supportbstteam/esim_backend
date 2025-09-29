@@ -1,14 +1,11 @@
-// src/entity/Admin.ts
-
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from "typeorm";
-
-/**
- * Admin entity for MySQL using TypeORM
- * - Auto-generated primary key `id`
- * - Unique username
- * - Automatic `createdAt` and `updatedAt` timestamps
- * - Indexes for faster queries
- */
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    UpdateDateColumn,
+    Index,
+} from "typeorm";
 
 @Entity({ name: "admins" })
 export class Admin {
@@ -16,7 +13,7 @@ export class Admin {
     id!: string;
 
     @Column({ type: "varchar", length: 255 })
-    @Index() // creates an index on name column
+    @Index()
     name!: string;
 
     @Column({ type: "varchar", length: 255, unique: true })
