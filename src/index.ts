@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import "dotenv/config"; // optional for env
 import app from "./app";
 import { connectDB } from "./lib/db";
