@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 const basePath = "/api";
 
 // ======= Custom middleware =======
-app.use(auth);
+// app.use(auth);
 
 // ======= Routes =======
 app.get("/", (req, res) => {
@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
 });
 
 // ====== Admin =======
-app.use(`${basePath}/admin`, adminRouter);
+app.use(`${basePath}/admin`, auth, adminRouter);
 
 
 // ====== User =======

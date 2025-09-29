@@ -9,7 +9,7 @@ export const AppDataSource = new DataSource({
     password: process.env.DB_PASS || "D0bqF@n9",
     database: process.env.DB_NAME || "u353451574_esim",
     synchronize: false, // ⚠️ never true in production
-    logging: true,
+    logging: false,
     entities:
         process.env.NODE_ENV === "production"
             ? [__dirname + "/entity/*.js"]  // compiled JS in dist/
