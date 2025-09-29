@@ -11,20 +11,21 @@ import { Order } from "./entity/order.entity";
 import { Token } from "./entity/Token";
 import { Transaction } from "./entity/Transactions";
 
+// Detect if running compiled JS (dist/) or dev TS (src/)
 const isCompiled = __dirname.includes("dist");
 
 export const AppDataSource = new DataSource({
     type: "mysql",
-    host: process.env.DB_HOST || "82.25.113.249",
+    host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT) || 3306,
-    username: process.env.DB_USER || "u353451574_esim",
-    password: process.env.DB_PASS || "D0bqF@n9",
-    database: process.env.DB_NAME || "u353451574_esim",
-    synchronize: false, // ⚠️ only true in dev if needed
+    username: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    synchronize: false,
     logging: true,
     entities: isCompiled
-        ? ["dist/entity/*.js"] // compiled JS entities
-        : [Admin, Country, User, Charges, Esim, Plan, TopUpPlan, Order, Token, Transaction], // TS entities
+        ? [__dirname + "/entity/*.js"] // Vercel / production path
+        : [Admin, Country, User, Charges, Esim, Plan, TopUpPlan, Order, Token, Transaction], // dev
     migrations: [],
     subscribers: [],
 });
