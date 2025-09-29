@@ -195,7 +195,7 @@ export const deletePlan = async (req: Request, res: Response) => {
         const planRepo = AppDataSource.getRepository(Plan);
         const { planId } = req.params;
 
-        const plan = await planRepo.findOneBy({ planId: Number(planId) });
+        const plan = await planRepo.findOneBy({ id: (planId) });
         if (!plan) {
             return res.status(404).json({ message: "Plan not found" });
         }
@@ -206,7 +206,7 @@ export const deletePlan = async (req: Request, res: Response) => {
 
         return res.status(200).json({ message: "Plan soft-deleted successfully" });
     } catch (err: any) {
-        console.error("--- Error in deletePlan ---", err.message);
+        console.error("--- Error in deletePlan ---", err);
         return res.status(500).json({ message: "Failed to soft delete plan", error: err.message });
     }
 };

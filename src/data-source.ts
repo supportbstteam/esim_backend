@@ -18,13 +18,13 @@ import { TopUpPlan } from "./entity/Topup.entity";
  */
 export const AppDataSource = new DataSource({
     type: "mysql",
-    host: "localhost",
+    host: "82.25.113.249",
     port: 3306,
-    username: "bstadmin",
-    password: "bst1234@",
-    database: "esimdb",
+    username: "u353451574_esim",
+    password: "D0bqF@n9",
+    database: "u353451574_esim",
     synchronize: false, // keep this false only turn this true once require for update the DB
-    logging: false,
+    logging: true,
     entities: [User, Admin, Country, Plan, Esim, Transaction, Charges, Order, Token, TopUpPlan],
     migrations: [],
     subscribers: [],
