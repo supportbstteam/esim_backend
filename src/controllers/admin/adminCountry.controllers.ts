@@ -4,6 +4,8 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../../data-source"; // your TypeORM datasource
 import { Country } from "../../entity/Country";
 import { checkAdmin } from "../../utils/checkAdmin";
+import { getDataSource } from "../../lib/serverless"; // singleton DataSource
+
 
 // CREATE OR REACTIVATE COUNTRY (Admin only)
 export const createCountry = async (req: any, res: Response) => {
@@ -17,10 +19,13 @@ export const createCountry = async (req: any, res: Response) => {
     }
 
     try {
-        const countryRepo = AppDataSource.getRepository(Country);
+        // const countryRepo = AppDataSource.getRepository(Country);
+        const dataSource = await getDataSource();
+        const adminRecountryRepopo = dataSource.getRepository(Country);
+
 
         // Check if a country with the same name or isoCode already exists
-        const existingCountry = await countryRepo.findOne({
+        const existingCountry = await adminRecountryRepopo.findOne({
             where: [{ name }, { isoCode }],
         });
 
@@ -33,7 +38,7 @@ export const createCountry = async (req: any, res: Response) => {
                 existingCountry.phoneCode = phoneCode;
                 existingCountry.currency = currency;
 
-                const updatedCountry = await countryRepo.save(existingCountry);
+                const updatedCountry = await adminRecountryRepopo.save(existingCountry);
                 return res.status(200).json({ message: "Country reactivated", country: updatedCountry });
             } else {
                 return res.status(400).json({ message: "Country with same name or ISO code already exists" });
@@ -41,7 +46,7 @@ export const createCountry = async (req: any, res: Response) => {
         }
 
         // Create new country
-        const newCountry = countryRepo.create({
+        const newCountry = adminRecountryRepopo.create({
             name,
             isoCode,
             iso3Code,
@@ -50,7 +55,7 @@ export const createCountry = async (req: any, res: Response) => {
             isActive: isActive ?? true,
         });
 
-        await countryRepo.save(newCountry);
+        await adminRecountryRepopo.save(newCountry);
         return res.status(201).json({ message: "Country created", country: newCountry });
     } catch (error) {
         return res.status(500).json({ message: "Error creating country", error });

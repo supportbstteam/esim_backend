@@ -10,7 +10,7 @@ import { TopUpPlan } from "./entity/Topup.entity";
 import { Order } from "./entity/order.entity";
 import { Token } from "./entity/Token";
 import { Transaction } from "./entity/Transactions";
-
+import path from "path";
 // Detect if running compiled JS (dist/) or dev TS (src/)
 const isCompiled = __dirname.includes("dist");
 
@@ -24,7 +24,7 @@ export const AppDataSource = new DataSource({
     synchronize: false,
     logging: true,
     entities: isCompiled
-        ? [__dirname + "/entity/*.js"] // Vercel / production path
+        ? [path.join(__dirname, "entity", "*.js")] // safer absolute path
         : [Admin, Country, User, Charges, Esim, Plan, TopUpPlan, Order, Token, Transaction], // dev
     migrations: [],
     subscribers: [],
