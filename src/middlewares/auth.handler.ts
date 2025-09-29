@@ -5,6 +5,8 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
   // Paths that do NOT require authentication
   const allowPaths = [
     "/api/admin/login",
+    "/",
+    "/api",
     "/api/admin/register",
   ];
 
