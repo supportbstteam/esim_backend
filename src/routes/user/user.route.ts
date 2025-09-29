@@ -9,7 +9,7 @@ const router = Router();
 
 router.post("/auth", userAuth);
 router.use("/country", countryAuth);
-router.use("/plans", planRoute);
+router.use("/plans", planRoute); // pass countryId = "all" to get all the avaiable plans in DB
 router.use("/top-up", auth, topUpPlanRoute);
 router.use("/e-sim", esimRoute);
 
