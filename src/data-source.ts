@@ -25,7 +25,7 @@ export const AppDataSource = new DataSource({
     database: "u353451574_esim",
     synchronize: false, // keep this false only turn this true once require for update the DB
     logging: true,
-    entities: [User, Admin, Country, Plan, Esim, Transaction, Charges, Order, Token, TopUpPlan],
+    entities: [__dirname + "/entity/*.{js,ts}"],
     migrations: [],
     subscribers: [],
 });
