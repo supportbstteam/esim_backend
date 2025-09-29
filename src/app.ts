@@ -25,6 +25,11 @@ app.get("/", (req, res) => {
     res.send("Hello from Node + TypeORM + MySQL!");
 });
 
+// ======= Routes =======
+app.get("/api", (req, res) => {
+    res.send("Hello from Node + TypeORM + MySQL! with our Esim products");
+});
+
 // ====== Admin =======
 app.use(`${basePath}/admin`, auth, adminRouter);
 
