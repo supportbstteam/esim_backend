@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { AppDataSource } from "../../data-source";
 import { User } from "../../entity/User.entity";
+import { sendOtpEmail } from "../../utils/email";
 
 // ⚙️ Helper to generate JWT for User
 const generateToken = (user: User) => {
@@ -15,50 +16,37 @@ const generateToken = (user: User) => {
 
 // 📝 SIGNUP
 export const postCreateUser = async (req: Request, res: Response) => {
-
-    console.log("--- sign up ---");
     try {
         const { firstName, lastName, email, password } = req.body;
-
         if (!firstName || !lastName || !email || !password) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
         const userRepo = AppDataSource.getRepository(User);
-
-        // Check if email already exists
         const existingUser = await userRepo.findOneBy({ email });
-        if (existingUser) {
-            return res.status(409).json({ message: "Email already registered" });
-        }
+        if (existingUser) return res.status(409).json({ message: "Email already registered" });
 
-        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create user
+        // Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+        const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
         const newUser = userRepo.create({
             firstName,
             lastName,
             email,
             password: hashedPassword,
+            otp,
+            otpExpires,
         });
-
         await userRepo.save(newUser);
 
-        return res.status(201).json({
-            message: "User registered successfully",
-            data: {
-                id: newUser.id,
-                firstName: newUser.firstName,
-                lastName: newUser.lastName,
-                email: newUser.email,
-                // dob: newUser.dob,
-                role: newUser.role,
-            },
-            token: generateToken(newUser),
-        });
-    } catch (err: any) {
-        console.error("--- Error in signup ---", err);
+        await sendOtpEmail(email, otp); // send OTP email
+
+        return res.status(201).json({ message: "User registered, OTP sent to email", email });
+    } catch (err) {
+        console.error(err);
         return res.status(500).json({ message: "Signup failed", error: err });
     }
 };
@@ -73,10 +61,15 @@ export const postUserLogin = async (req: Request, res: Response) => {
         }
 
         const userRepo = AppDataSource.getRepository(User);
-
         const user = await userRepo.findOneBy({ email });
+
         if (!user) {
             return res.status(404).json({ message: "Invalid credentials" });
+        }
+
+        // Check if email is verified
+        if (!user.isVerified) {
+            return res.status(403).json({ message: "Please verify your email before logging in" });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -130,5 +123,30 @@ export const getUserDetails = async (req: any, res: Response) => {
     } catch (err: any) {
         console.error("--- Error in getUserDetails ---", err.message);
         return res.status(500).json({ message: "Failed to get user details", error: err.message });
+    }
+};
+
+export const postVerifyOtp = async (req: Request, res: Response) => {
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) return res.status(400).json({ message: "Email and OTP required" });
+
+        const userRepo = AppDataSource.getRepository(User);
+        const user = await userRepo.findOneBy({ email });
+
+        if (!user) return res.status(404).json({ message: "User not found" });
+        if (user.otp !== otp) return res.status(400).json({ message: "Invalid OTP" });
+        if (user.otpExpires! < Date.now()) return res.status(400).json({ message: "OTP expired" });
+
+        // OTP verified → clear OTP fields
+        user.isVerified = true;
+        user.otp = null;
+        user.otpExpires = null;
+        await userRepo.save(user);
+
+        return res.status(200).json({ message: "Email verified successfully" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "OTP verification failed", error: err });
     }
 };

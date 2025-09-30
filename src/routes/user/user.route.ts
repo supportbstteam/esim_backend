@@ -5,12 +5,15 @@ import topUpPlanRoute from "./userTopupPlan.route"
 import esimRoute from "./userEsim.route"
 import planRoute from "./userPlans.route"
 import { auth } from "../../middlewares/auth.handler";
-import { getUserDetails, postCreateUser, postUserLogin } from "../../controllers/user/userAuth.controllers";
+import { getUserDetails, postCreateUser, postUserLogin, postVerifyOtp } from "../../controllers/user/userAuth.controllers";
 const router = Router();
 
 
 // Public
-router.post("/signup", postCreateUser);
+
+
+router.post("/verify-otp", postCreateUser);
+router.post("/signup", postVerifyOtp);
 router.post("/login", postUserLogin);
 router.get("/details", auth, getUserDetails);
 

@@ -1,5 +1,5 @@
 // src/entity/User.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
 import { Esim } from "./Esim.entity";
 
 @Entity({ name: "users" })
@@ -31,6 +31,15 @@ export class User {
     @Column({ type: "boolean", default: false })
     isDeleted!: boolean;
 
+    @Column({ type: "varchar", length: 6, nullable: true })
+    otp!: string | null;
+
+    @Column({ type: "bigint", nullable: true })
+    otpExpires!: number | null; // timestamp in ms
+
+    @Column({ type: "boolean", default: false })
+    isVerified!: boolean; // new field
+
     @Column({ type: "enum", enum: ["admin", "user"], default: "user" })
     role!: "admin" | "user";
 
@@ -39,5 +48,4 @@ export class User {
 
     @UpdateDateColumn()
     updatedAt!: Date;
-
 }
