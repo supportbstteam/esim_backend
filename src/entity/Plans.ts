@@ -50,6 +50,9 @@ export class Plan {
     @Column({ type: "boolean", default: false })
     isDeleted!: boolean;
 
+    @Column({ type: "boolean", default: true })
+    isActive!: boolean;
+
     // Many-to-one relationship with Country
     @ManyToOne(() => Country, { nullable: false })
     country!: Country;

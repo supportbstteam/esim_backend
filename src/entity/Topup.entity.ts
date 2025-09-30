@@ -46,9 +46,13 @@ export class TopUpPlan {
     @Column({ type: "boolean", default: false })
     isDeleted!: boolean;
 
+    @Column({ type: "boolean", default: true })
+    isActive!: boolean;  
+    
     @CreateDateColumn()
     createdAt!: Date;
 
     @UpdateDateColumn()
     updatedAt!: Date;
 }
+

@@ -3,6 +3,7 @@ import { Response, Request } from "express";
 import { AppDataSource } from "../../data-source";
 import { Country } from "../../entity/Country";
 import { TopUpPlan } from "../../entity/Topup.entity";
+import { checkAdmin } from "../../utils/checkAdmin";
 
 /**
  * Create/Update TopUp Plans
@@ -188,5 +189,42 @@ export const deleteTopupPlan = async (req: Request, res: Response) => {
     } catch (err: any) {
         console.error("--- Error in deleteTopupPlan ---", err.message);
         return res.status(500).json({ message: "Failed to delete plan", error: err.message });
+    }
+};
+
+
+export const postStatusChangeTopup = async (req: any, res: any) => {
+    try {
+        const isAdmin = await checkAdmin(req, res);
+        if (!isAdmin) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+
+        const { id } = req.params; // assuming your route has /:topupId
+        const planRepo = AppDataSource.getRepository(TopUpPlan);
+
+        const plan = await planRepo.findOneBy({ id });
+        if (!plan) {
+            return res.status(404).json({ message: "Top-up plan not found" });
+        }
+
+        // toggle or set isActive based on body
+        if (typeof req.body.isActive === "boolean") {
+            plan.isActive = !req.body.isActive;
+        } else {
+            plan.isActive = !plan.isActive; // toggle if not explicitly set
+        }
+
+        await planRepo.save(plan);
+
+        return res.status(200).json({
+            message: `Top-up plan status updated successfully`,
+            data: { topupId: plan.topupId, isActive: plan.isActive },
+        });
+    } catch (err: any) {
+        console.error("--- Error in postStatusChangeTopup ---", err.message);
+        return res
+            .status(500)
+            .json({ message: "Failed to change status", error: err.message });
     }
 };

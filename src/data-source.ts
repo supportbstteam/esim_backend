@@ -22,7 +22,7 @@ export const AppDataSource = new DataSource({
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
     synchronize: false,
-    logging: true,
+    logging: false,
     entities: isCompiled
         ? [path.join(__dirname, "entity", "*.js")] // safer absolute path
         : [Admin, Country, User, Charges, Esim, Plan, TopUpPlan, Order, Token, Transaction], // dev

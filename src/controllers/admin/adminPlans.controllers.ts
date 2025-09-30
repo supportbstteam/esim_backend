@@ -2,6 +2,7 @@ import { Response, Request } from "express";
 import { AppDataSource } from "../../data-source";
 import { Plan } from "../../entity/Plans";
 import { Country } from "../../entity/Country";
+import { checkAdmin } from "../../utils/checkAdmin";
 /**
  * Controller to save plans from JSON payload
  * Expects body to be an array of plans from third-party API
@@ -208,5 +209,60 @@ export const deletePlan = async (req: Request, res: Response) => {
     } catch (err: any) {
         console.error("--- Error in deletePlan ---", err);
         return res.status(500).json({ message: "Failed to soft delete plan", error: err.message });
+    }
+};
+
+
+export const postImportPlans = async (req: any, res: any) => {
+    const { id, role } = req.user;
+    const isAdmin = checkAdmin(req, res);
+    if (!isAdmin)
+        return res.status(401).json({
+            messgae: "Unauthrized, Please Login"
+        })
+
+    try {
+
+
+
+    }
+    catch (err: any) {
+        return res.status(500).json({ message: "Failed to soft delete plan", error: err.message });
+    }
+}
+
+export const postStatusChangePlan = async (req: any, res: any) => {
+    try {
+        const isAdmin = await checkAdmin(req, res);
+        if (!isAdmin) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+
+        const { id } = req.params; // assuming your route has /:topupId
+        const planRepo = AppDataSource.getRepository(Plan);
+
+        const plan = await planRepo.findOneBy({ id });
+        if (!plan) {
+            return res.status(404).json({ message: "Top-up plan not found" });
+        }
+
+        // toggle or set isActive based on body
+        if (typeof req.body.isActive === "boolean") {
+            plan.isActive = !req.body.isActive;
+        } else {
+            plan.isActive = !plan.isActive; // toggle if not explicitly set
+        }
+
+        await planRepo.save(plan);
+
+        return res.status(200).json({
+            message: `Top-up plan status updated successfully`,
+            data: { topupId: plan.planId, isActive: plan.isActive },
+        });
+    } catch (err: any) {
+        console.error("--- Error in postStatusChangeTopup ---", err.message);
+        return res
+            .status(500)
+            .json({ message: "Failed to change status", error: err.message });
     }
 };

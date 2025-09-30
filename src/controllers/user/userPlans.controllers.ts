@@ -1,3 +1,4 @@
+import { AppDataSource } from "../../data-source";
 import { Plan } from "../../entity/Plans";
 import { getDataSource } from "../../lib/serverless";
 
@@ -60,3 +61,19 @@ export const getUserPlans = async (req: any, res: any) => {
       .json({ success: false, message: "Server error", error });
   }
 };
+
+export const getUserPlanByCountry = async (req: any, res: any) => {
+  const { countryId } = req.body;
+  try {
+
+    const dataSource = await getDataSource();
+    const planRepo = dataSource.getRepository(Plan);
+    let whereCondition: any = { isDeleted: false };
+
+    // const plans = 
+  }
+  catch (err: any) {
+    console.error("Error in the get user plan by country ", err);
+
+  }
+}
