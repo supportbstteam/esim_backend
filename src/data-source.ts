@@ -36,3 +36,4 @@ export const AppDataSource = new DataSource({
     migrations: [],
     subscribers: [],
 });
+// first do npm run dev in terminal and then push on github
