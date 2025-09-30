@@ -14,6 +14,7 @@ import path from "path";
 // Detect if running compiled JS (dist/) or dev TS (src/)
 const isCompiled = __dirname.includes("dist");
 
+// doing like previously
 export const AppDataSource = new DataSource({
     type: "mysql",
     host: process.env.DB_HOST,
