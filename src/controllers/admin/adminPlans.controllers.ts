@@ -1,7 +1,7 @@
 import { Response, Request } from "express";
 import { AppDataSource } from "../../data-source";
-import { Plan } from "../../entity/Plans";
-import { Country } from "../../entity/Country";
+import { Plan } from "../../entity/Plans.entity";
+import { Country } from "../../entity/Country.entity";
 import { checkAdmin } from "../../utils/checkAdmin";
 /**
  * Controller to save plans from JSON payload

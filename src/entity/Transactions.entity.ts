@@ -8,8 +8,8 @@ import {
     JoinColumn
 } from "typeorm";
 import { Order } from "./order.entity";
-import { User } from "./User";
-import { Plan } from "./Plans";
+import { User } from "./User.entity";
+import { Plan } from "./Plans.entity";
 
 @Entity()
 export class Transaction {

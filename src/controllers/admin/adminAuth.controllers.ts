@@ -1,4 +1,4 @@
-import { Admin } from "../../entity/Admin";
+import { Admin } from "../../entity/Admin.entity";
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../../utils/generateToken";

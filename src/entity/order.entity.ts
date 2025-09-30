@@ -8,12 +8,12 @@ import {
     UpdateDateColumn,
     JoinColumn
 } from "typeorm";
-import { User } from "./User";
-import { Plan } from "./Plans";
-import { Transaction } from "./Transactions";
-import { Esim } from "./Esim";
-import { Charges } from "./Charges";
-import { Country } from "./Country";
+import { User } from "./User.entity";
+import { Plan } from "./Plans.entity";
+import { Transaction } from "./Transactions.entity";
+import { Esim } from "./Esim.entity";
+import { Charges } from "./Charges.entity";
+import { Country } from "./Country.entity";
 
 @Entity()
 export class Order {

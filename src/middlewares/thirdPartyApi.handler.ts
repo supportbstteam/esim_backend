@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppDataSource } from "../data-source";
-import { Token } from "../entity/Token";
+import { Token } from "../entity/Token.entity";
 import { tokenTurismApi } from "../service/token.service";
 import axios from "axios";
 

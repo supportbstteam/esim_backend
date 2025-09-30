@@ -1,20 +1,17 @@
+// src/data-source.ts
 import "reflect-metadata";
 import { DataSource } from "typeorm";
-import { Admin } from "./entity/Admin";
-import { Country } from "./entity/Country";
-import { User } from "./entity/User";
-import { Charges } from "./entity/Charges";
-import { Esim } from "./entity/Esim";
-import { Plan } from "./entity/Plans";
+import { Admin } from "./entity/Admin.entity";
+import { Country } from "./entity/Country.entity";
+import { User } from "./entity/User.entity";
+import { Charges } from "./entity/Charges.entity";
+import { Esim } from "./entity/Esim.entity";
+import { Plan } from "./entity/Plans.entity";
 import { TopUpPlan } from "./entity/Topup.entity";
 import { Order } from "./entity/order.entity";
-import { Token } from "./entity/Token";
-import { Transaction } from "./entity/Transactions";
-import path from "path";
-// Detect if running compiled JS (dist/) or dev TS (src/)
-const isCompiled = __dirname.includes("dist");
+import { Token } from "./entity/Token.entity";
+import { Transaction } from "./entity/Transactions.entity";
 
-// doing like previously
 export const AppDataSource = new DataSource({
     type: "mysql",
     host: process.env.DB_HOST,
@@ -24,9 +21,18 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME,
     synchronize: false,
     logging: false,
-    entities: isCompiled
-        ? [path.resolve(__dirname, "entity", "*.{js,ts}")]
-        : [Admin, Country, User, Charges, Esim, Plan, TopUpPlan, Order, Token, Transaction], // dev
+    entities: [
+        Admin,
+        Country,
+        User,
+        Charges,
+        Esim,
+        Plan,
+        TopUpPlan,
+        Order,
+        Token,
+        Transaction,
+    ],
     migrations: [],
     subscribers: [],
 });

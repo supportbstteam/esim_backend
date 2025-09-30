@@ -1,6 +1,6 @@
 // src/entity/User.ts
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index, OneToMany } from "typeorm";
-import { Esim } from "./Esim";
+import { Esim } from "./Esim.entity";
 
 @Entity({ name: "users" })
 export class User {

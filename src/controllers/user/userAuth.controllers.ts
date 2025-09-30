@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { AppDataSource } from "../../data-source";
-import { User } from "../../entity/User";
+import { User } from "../../entity/User.entity";
 
 // ⚙️ Helper to generate JWT for User
 const generateToken = (user: User) => {

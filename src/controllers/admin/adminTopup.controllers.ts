@@ -1,7 +1,7 @@
 // src/controllers/topupController.ts
 import { Response, Request } from "express";
 import { AppDataSource } from "../../data-source";
-import { Country } from "../../entity/Country";
+import { Country } from "../../entity/Country.entity";
 import { TopUpPlan } from "../../entity/Topup.entity";
 import { checkAdmin } from "../../utils/checkAdmin";
 

@@ -1,11 +1,11 @@
 import { Response, Request } from "express";
 import { tokenTurismApi } from "../../service/token.service";
-import { Token } from "../../entity/Token";
+import { Token } from "../../entity/Token.entity";
 import { AppDataSource } from "../../data-source";
 import { checkAdmin } from "../../utils/checkAdmin";
 import axios from "axios";
-import { Country } from "../../entity/Country";
-import { Plan } from "../../entity/Plans";
+import { Country } from "../../entity/Country.entity";
+import { Plan } from "../../entity/Plans.entity";
 import { TopUpPlan } from "../../entity/Topup.entity";
 
 export const thirdPartyLogin = async (req: any, res: Response) => {

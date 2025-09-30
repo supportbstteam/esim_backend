@@ -2,7 +2,7 @@
 
 import { Request, Response } from "express";
 import { AppDataSource } from "../data-source";
-import { Admin } from "../entity/Admin";
+import { Admin } from "../entity/Admin.entity";
 
 export const checkAdmin = async (req: any, res: Response): Promise<boolean> => {
     const { id, role } = req.user;

@@ -1,5 +1,5 @@
 import { Response, Request } from "express";
-import { Country } from "../../entity/Country";
+import { Country } from "../../entity/Country.entity";
 import { getDataSource } from "../../lib/serverless";
 
 export const getCountryUser = async (_req: Request, res: Response) => {

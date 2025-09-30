@@ -8,7 +8,7 @@ import {
     UpdateDateColumn,
     Index,
 } from "typeorm";
-import { Country } from "./Country";
+import { Country } from "./Country.entity";
 
 @Entity({ name: "plans" })
 export class Plan {

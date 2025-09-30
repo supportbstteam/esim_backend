@@ -2,16 +2,16 @@ import "reflect-metadata"; // MUST be first
 import "dotenv/config";
 import app from "./app";
 import { connectDB } from "./lib/db";
-import { Admin } from "./entity/Admin";
-import { Country } from "./entity/Country";
-import { User } from "./entity/User";
-import { Charges } from "./entity/Charges";
-import { Esim } from "./entity/Esim";
-import { Plan } from "./entity/Plans";
+import { Admin } from "./entity/Admin.entity";
+import { Country } from "./entity/Country.entity";
+import { User } from "./entity/User.entity";
+import { Charges } from "./entity/Charges.entity";
+import { Esim } from "./entity/Esim.entity";
+import { Plan } from "./entity/Plans.entity";
 import { TopUpPlan } from "./entity/Topup.entity";
 import { Order } from "./entity/order.entity";
-import { Token } from "./entity/Token";
-import { Transaction } from "./entity/Transactions";
+import { Token } from "./entity/Token.entity";
+import { Transaction } from "./entity/Transactions.entity";
 
 const PORT = process.env.PORT || 4000;
 

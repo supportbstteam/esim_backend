@@ -1,5 +1,5 @@
 import { AppDataSource } from "../../data-source";
-import { Plan } from "../../entity/Plans";
+import { Plan } from "../../entity/Plans.entity";
 import { getDataSource } from "../../lib/serverless";
 
 export const getUserPlans = async (req: any, res: any) => {

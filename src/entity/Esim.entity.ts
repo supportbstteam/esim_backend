@@ -10,9 +10,9 @@ import {
     UpdateDateColumn,
     Index,
 } from "typeorm";
-import { User } from "./User";
-import { Country } from "./Country";
-import { Plan } from "./Plans";
+import { User } from "./User.entity";
+import { Country } from "./Country.entity";
+import { Plan } from "./Plans.entity";
 import { TopUpPlan } from "./Topup.entity";
 
 /**

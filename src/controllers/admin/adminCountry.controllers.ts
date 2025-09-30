@@ -2,7 +2,7 @@
 
 import { Request, Response } from "express";
 import { AppDataSource } from "../../data-source"; // your TypeORM datasource
-import { Country } from "../../entity/Country";
+import { Country } from "../../entity/Country.entity";
 import { checkAdmin } from "../../utils/checkAdmin";
 import { getDataSource } from "../../lib/serverless"; // singleton DataSource
 
