@@ -1,23 +1,13 @@
-// src/lib/db.ts
 import { AppDataSource } from "../data-source";
 
+let isDataSourceInitialized = false;
+
 export const connectDB = async () => {
-  try {
-    // Initialize TypeORM
+  if (!isDataSourceInitialized) {
     await AppDataSource.initialize();
-
-    console.log("✅ MySQL connected successfully with TypeORM");
-
-    // 👀 Debug: list loaded entities to confirm User is included
-    const loadedEntities = AppDataSource.entityMetadatas.map(e => e.name);
-    console.log("📦 Loaded entities:", loadedEntities);
-
-    if (!loadedEntities.includes("User")) {
-      console.warn("⚠️ User entity not loaded! Signup/login will fail.");
-    }
-
-  } catch (err) {
-    console.error("❌ MySQL connection failed:", err);
-    process.exit(1);
+    isDataSourceInitialized = true;
+    console.log("📦 Data Source initialized");
+    console.log("📦 Loaded entities:", AppDataSource.entityMetadatas.map(e => e.name));
   }
+  return AppDataSource;
 };
