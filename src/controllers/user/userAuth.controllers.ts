@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { AppDataSource } from "../../data-source";
 import { User } from "../../entity/User";
 
-// ⚙️ Helper to generate JWT
+// ⚙️ Helper to generate JWT for User
 const generateToken = (user: User) => {
     return jwt.sign(
         { id: user.id, role: user.role },
