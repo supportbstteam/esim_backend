@@ -58,8 +58,8 @@ export const postCreateUser = async (req: Request, res: Response) => {
             token: generateToken(newUser),
         });
     } catch (err: any) {
-        console.error("--- Error in signup ---", err.message);
-        return res.status(500).json({ message: "Signup failed", error: err.message });
+        console.error("--- Error in signup ---", err);
+        return res.status(500).json({ message: "Signup failed", error: err });
     }
 };
 
