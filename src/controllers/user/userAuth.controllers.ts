@@ -16,35 +16,65 @@ const generateToken = (user: User) => {
 
 // 📝 SIGNUP
 export const postCreateUser = async (req: Request, res: Response) => {
+    const { firstName, lastName, email, password } = req.body;
+
+    if (!firstName || !lastName || !email || !password) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const userRepo = AppDataSource.getRepository(User);
+
     try {
-        const { firstName, lastName, email, password } = req.body;
-        if (!firstName || !lastName || !email || !password) {
-            return res.status(400).json({ message: "All fields are required" });
+        const existingUser = await userRepo.findOneBy({ email });
+
+        if (existingUser) {
+            if (existingUser.isVerified) {
+                // Already verified → cannot register again
+                return res.status(409).json({ message: "Email already registered" });
+            } else {
+                // Not verified → resend OTP
+                const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+                const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+                existingUser.otp = otp;
+                existingUser.otpExpires = otpExpires;
+
+                await userRepo.save(existingUser); // update OTP
+
+                // Resend OTP email
+                await sendOtpEmail(email, otp);
+
+                return res.status(200).json({
+                    message: "OTP resent to email",
+                    email
+                });
+            }
         }
 
-        const userRepo = AppDataSource.getRepository(User);
-        const existingUser = await userRepo.findOneBy({ email });
-        if (existingUser) return res.status(409).json({ message: "Email already registered" });
-
+        // New user → create account
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Generate OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-        const newUser = userRepo.create({
-            firstName,
-            lastName,
-            email,
-            password: hashedPassword,
-            otp,
-            otpExpires,
-        });
-        await userRepo.save(newUser);
+        // Use transaction to ensure email sent only if user saved
+        await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+            const newUser = transactionalEntityManager.create(User, {
+                firstName,
+                lastName,
+                email,
+                password: hashedPassword,
+                otp,
+                otpExpires,
+            });
 
-        await sendOtpEmail(email, otp); // send OTP email
+            await transactionalEntityManager.save(newUser);
+
+            // Send OTP email
+            await sendOtpEmail(email, otp);
+        });
 
         return res.status(201).json({ message: "User registered, OTP sent to email", email });
+
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: "Signup failed", error: err });
@@ -112,7 +142,7 @@ export const getUserDetails = async (req: any, res: Response) => {
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
-            dob: user.dob,
+            // dob: user.dob,
             role: user.role,
             isBlocked: user.isBlocked,
             isDeleted: user.isDeleted,
@@ -126,10 +156,14 @@ export const getUserDetails = async (req: any, res: Response) => {
     }
 };
 
+// export const postOtpVerification = async
+
 export const postVerifyOtp = async (req: Request, res: Response) => {
     try {
         const { email, otp } = req.body;
-        if (!email || !otp) return res.status(400).json({ message: "Email and OTP required" });
+        if (!email || !otp) {
+            return res.status(400).json({ message: "Email and OTP required" });
+        }
 
         const userRepo = AppDataSource.getRepository(User);
         const user = await userRepo.findOneBy({ email });
@@ -138,13 +172,22 @@ export const postVerifyOtp = async (req: Request, res: Response) => {
         if (user.otp !== otp) return res.status(400).json({ message: "Invalid OTP" });
         if (user.otpExpires! < Date.now()) return res.status(400).json({ message: "OTP expired" });
 
-        // OTP verified → clear OTP fields
+        // OTP verified → clear OTP fields and mark user as verified
         user.isVerified = true;
         user.otp = null;
         user.otpExpires = null;
         await userRepo.save(user);
 
-        return res.status(200).json({ message: "Email verified successfully" });
+        // Generate JWT token
+        const token = generateToken(user);
+
+        return res.status(200).json({
+            message: "Email verified successfully",
+            data: {
+                user,
+                token
+            }
+        });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: "OTP verification failed", error: err });
