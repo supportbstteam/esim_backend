@@ -6,6 +6,9 @@ import eSimOperatorRoute from "./adminOperator.route"
 import thirdPartyRouter from "./thirdPartyUrl.route"
 import eSimRoute from "./adminESim.route"
 import eTopupRoute from "./adminETopup.route"
+import adminUserRouter from "./adminUser.route"
+
+
 const router = express.Router();
 
 router.post("/login", loginAdmin);
@@ -21,6 +24,9 @@ router.use("/third-party-api", thirdPartyRouter); // third party library api
 
 // plans
 router.use("/plans", eSimPlanRoute);
+
+// plans
+router.use("/users", adminUserRouter);
 
 // top up
 router.use("/top-up", eTopupRoute);
