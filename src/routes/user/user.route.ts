@@ -19,7 +19,7 @@ router.get("/details", auth, getUserDetails);
 
 
 router.use("/country", countryRoute);
-router.use("/plans", planRoute); // pass countryId = "all" to get all the avaiable plans in DB
+router.use("/plans", planRoute); 
 router.use("/top-up", auth, topUpPlanRoute);
 router.use("/e-sim",auth, esimRoute);
 

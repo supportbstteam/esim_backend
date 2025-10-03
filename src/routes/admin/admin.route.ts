@@ -7,7 +7,9 @@ import thirdPartyRouter from "./thirdPartyUrl.route"
 import eSimRoute from "./adminESim.route"
 import eTopupRoute from "./adminETopup.route"
 import adminUserRouter from "./adminUser.route"
-
+import adminContactRouter from "./adminContact.route"
+import adminSocialRouter from "./adminSocial.route"
+import contentRouter from './adminContent.route'
 
 const router = express.Router();
 
@@ -33,6 +35,11 @@ router.use("/top-up", eTopupRoute);
 
 //e-sim
 router.use("/e-sim", eSimRoute);
+
+// contact
+router.use("/contact", adminContactRouter);
+router.use("/social-media", adminSocialRouter);
+router.use("/content", contentRouter);
 
 // note
 

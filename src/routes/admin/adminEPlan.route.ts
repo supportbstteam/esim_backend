@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createPlan, getPlanById, getPlans, updatePlan, deletePlan, postImportPlans, postStatusChangePlan } from "../../controllers/admin/adminPlans.controllers";
+import { createPlan, getPlanById, getPlans, updatePlan, deletePlan, postImportPlans, postStatusChangePlan, postAddFeaturingPlan } from "../../controllers/admin/adminPlans.controllers";
 
 const router = Router();
 // always take care of the order of routes
@@ -11,5 +11,6 @@ router.delete("/:planId", deletePlan);
 
 router.post("/import", postImportPlans);
 router.post("/status/:id", postStatusChangePlan);
+router.post("/feature/:id", postAddFeaturingPlan);
 
 export default router;

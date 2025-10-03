@@ -53,6 +53,9 @@ export class Plan {
     @Column({ type: "boolean", default: true })
     isActive!: boolean;
 
+    @Column({ type: "boolean", default: false })
+    isFeatured!: boolean;
+
     // Many-to-one relationship with Country
     @ManyToOne(() => Country, { nullable: false })
     country!: Country;

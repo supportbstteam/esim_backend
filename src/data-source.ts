@@ -12,6 +12,9 @@ import { Order } from "./entity/order.entity";
 import { Token } from "./entity/Token.entity";
 import { Transaction } from "./entity/Transactions.entity";
 import { Reservation } from "./entity/Reservation.entity";
+import { Social } from "./entity/SocialMedia.entity";
+import { Contact } from "./entity/ContactUs.entity";
+import { Content } from "./entity/Content.entity";
 
 export const AppDataSource = new DataSource({
     type: "mysql",
@@ -33,7 +36,10 @@ export const AppDataSource = new DataSource({
         Order,
         Token,
         Transaction,
-        Reservation
+        Reservation,
+        Social,
+        Contact,
+        Content
     ],
     migrations: [],
     subscribers: [],

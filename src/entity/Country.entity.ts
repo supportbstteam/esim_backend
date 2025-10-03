@@ -19,6 +19,9 @@ export class Country {
     @Column({ type: "varchar", length: 255, unique: true })
     name!: string;
 
+    @Column({ type: "text", nullable: true, comment: "Detailed description of the country" })
+    description?: string;
+
     @Column({ type: "varchar", length: 2, unique: true })
     isoCode!: string;
 
