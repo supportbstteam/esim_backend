@@ -4,14 +4,16 @@ import countryRoute from "./userCountry.route"
 import topUpPlanRoute from "./userTopupPlan.route"
 import esimRoute from "./userEsim.route"
 import planRoute from "./userPlans.route"
+import useContactRoute from "./userContact.route";
+import useSocialRoute from "./userSocial.route";
 import { auth } from "../../middlewares/auth.handler";
+
 import { getUserDetails, postCreateUser, postUserLogin, postVerifyOtp } from "../../controllers/user/userAuth.controllers";
+import { getSocials } from "../../controllers/Social.Media.controllers";
 const router = Router();
 
 
 // Public
-
-
 router.post("/verify-otp", postCreateUser);
 router.post("/signup", postVerifyOtp);
 router.post("/login", postUserLogin);
@@ -19,9 +21,13 @@ router.get("/details", auth, getUserDetails);
 
 
 router.use("/country", countryRoute);
-router.use("/plans", planRoute); 
+router.use("/plans", planRoute);
 router.use("/top-up", auth, topUpPlanRoute);
-router.use("/e-sim",auth, esimRoute);
+router.use("/e-sim", auth, esimRoute);
+
+router.use("/cms", useContactRoute);
+router.get("/social-media", getSocials);
+
 
 export default router;
 
