@@ -5,7 +5,8 @@ import topUpPlanRoute from "./userTopupPlan.route"
 import esimRoute from "./userEsim.route"
 import planRoute from "./userPlans.route"
 import useContactRoute from "./userContact.route";
-import useSocialRoute from "./userSocial.route";
+import userQuickies from "./userQuickies.route";
+import userSupport from "./userSupport.route";
 import { auth } from "../../middlewares/auth.handler";
 
 import { getUserDetails, postCreateUser, postUserLogin, postVerifyOtp } from "../../controllers/user/userAuth.controllers";
@@ -28,6 +29,12 @@ router.use("/e-sim", auth, esimRoute);
 router.use("/cms", useContactRoute);
 router.get("/social-media", getSocials);
 
+// ---- quickies -----
+router.use("/quick-links", userQuickies);
+// ---- support ----
+router.use("/support", userSupport);
+
+// handlling the post for the content and social media query
 
 export default router;
 
