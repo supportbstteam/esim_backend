@@ -10,7 +10,7 @@ import adminUserRouter from "./adminUser.route"
 import adminContactRouter from "./adminContact.route"
 import adminSocialRouter from "./adminSocial.route"
 import contentRouter from './adminContent.route'
-
+import queryRoute from "../query.routes"
 const router = express.Router();
 
 router.post("/login", loginAdmin);
@@ -41,7 +41,8 @@ router.use("/contact", adminContactRouter);
 router.use("/social-media", adminSocialRouter);
 router.use("/content", contentRouter);
 
-// note
+// query
+router.use("/query", queryRoute);
 
 
 

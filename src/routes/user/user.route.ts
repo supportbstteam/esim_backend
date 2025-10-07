@@ -8,7 +8,7 @@ import useContactRoute from "./userContact.route";
 import userQuickies from "./userQuickies.route";
 import userSupport from "./userSupport.route";
 import { auth } from "../../middlewares/auth.handler";
-
+import queryRoute from "../query.routes"
 import { getUserDetails, postCreateUser, postUserLogin, postVerifyOtp } from "../../controllers/user/userAuth.controllers";
 import { getSocials } from "../../controllers/Social.Media.controllers";
 const router = Router();
@@ -31,8 +31,12 @@ router.get("/social-media", getSocials);
 
 // ---- quickies -----
 router.use("/quick-links", userQuickies);
+
 // ---- support ----
 router.use("/support", userSupport);
+
+// ---- query ------
+router.use("/query", queryRoute);
 
 // handlling the post for the content and social media query
 

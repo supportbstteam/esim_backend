@@ -6,7 +6,10 @@ export class Content {
     id!: string;
 
     @Column({ unique: true })
-    page!: string; // e.g., "about", "privacy"
+    page!: string;
+
+    @Column()
+    title!: string;
 
     @Column("longtext")
     html!: string;

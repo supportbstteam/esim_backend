@@ -16,6 +16,7 @@ import { Social } from "./entity/SocialMedia.entity";
 import { Contact } from "./entity/ContactUs.entity";
 import { Content } from "./entity/Content.entity";
 import { Faq } from "./entity/Faq.entity";
+import { Query } from "./entity/Query.entity";
 
 export const AppDataSource = new DataSource({
     type: "mysql",
@@ -25,7 +26,7 @@ export const AppDataSource = new DataSource({
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
     synchronize: false,
-    logging: false,
+    logging: true,
     entities: [
         Admin,
         Country,
@@ -41,7 +42,8 @@ export const AppDataSource = new DataSource({
         Social,
         Contact,
         Content,
-        Faq
+        Faq,
+        Query
     ],
     migrations: [],
     subscribers: [],
