@@ -117,8 +117,9 @@ export const getPlanById = async (req: Request, res: Response) => {
         const planRepo = AppDataSource.getRepository(Plan);
         const { planId } = req.params;
 
+        // Query by UUID id instead of numeric planId
         const plan = await planRepo.findOne({
-            where: { planId: Number(planId), isDeleted: false },
+            where: { id: planId, isDeleted: false },
             relations: ["country"],
         });
 

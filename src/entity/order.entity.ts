@@ -15,49 +15,50 @@ import { Esim } from "./Esim.entity";
 import { Charges } from "./Charges.entity";
 import { Country } from "./Country.entity";
 
-@Entity()
+@Entity({ name: "orders" })
 export class Order {
-     @PrimaryGeneratedColumn("uuid")
+    @PrimaryGeneratedColumn("uuid")
     id!: string;
 
     @ManyToOne(() => User)
     @JoinColumn({ name: "userId" })
-    user !: User;
+    user!: User;
 
     @ManyToOne(() => Plan)
     @JoinColumn({ name: "planId" })
-    plan !: Plan;
+    plan!: Plan;
 
-    @ManyToOne(() => Esim)
+    @ManyToOne(() => Esim, { nullable: true })
     @JoinColumn({ name: "esimId" })
-    esim !: Esim;
+    esim?: Esim | null;
 
     @ManyToOne(() => Country, { nullable: true })
     @JoinColumn({ name: "countryId" })
-    country !: Country;
+    country?: Country | null;
 
     @OneToMany(() => Transaction, (transaction) => transaction.order)
-    transactions !: Transaction[];
+    transactions!: Transaction[];
 
     @ManyToOne(() => Charges, { nullable: true })
     @JoinColumn({ name: "chargesId" })
-    charges !: Charges;
+    charges?: Charges | null;
 
+    // Use string for decimal to avoid TypeScript type errors
     @Column({ type: "decimal", precision: 10, scale: 2 })
-    totalAmount !: number;
+    totalAmount!: string;
 
     @Column({ type: "varchar", length: 50, default: "pending" })
-    status !: string; // pending | completed | failed
+    status!: string; // pending | completed | failed
 
     @Column({ type: "boolean", default: false })
-    activated !: boolean; // whether eSIM is activated
+    activated!: boolean; // whether eSIM is activated
 
     @Column({ type: "datetime", nullable: true })
-    activationDate !: Date;
+    activationDate?: Date | null;
 
     @CreateDateColumn()
-    createdAt !: Date;
+    createdAt!: Date;
 
     @UpdateDateColumn()
-    updatedAt !: Date;
+    updatedAt!: Date;
 }

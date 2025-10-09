@@ -12,6 +12,7 @@ import { Country } from "./Country.entity";
 
 @Entity({ name: "plans" })
 export class Plan {
+    
     @PrimaryGeneratedColumn("uuid")
     id!: string;
 
