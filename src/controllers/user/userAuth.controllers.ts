@@ -8,7 +8,7 @@ import { sendOtpEmail } from "../../utils/email";
 // ⚙️ Helper to generate JWT for User
 const generateToken = (user: User) => {
     return jwt.sign(
-        { id: user.id, role: user.role },
+        { id: user.id, role: "user" },
         process.env.JWT_SECRET as string,
         // { expiresIn: "7d" }
     );

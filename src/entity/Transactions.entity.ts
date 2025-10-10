@@ -3,45 +3,45 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
+    OneToMany,
     CreateDateColumn,
     UpdateDateColumn,
     JoinColumn
 } from "typeorm";
-import { Order } from "./order.entity";
 import { User } from "./User.entity";
 import { Plan } from "./Plans.entity";
+import { Charges } from "./Charges.entity";
 
 @Entity()
 export class Transaction {
-     @PrimaryGeneratedColumn("uuid")
+    @PrimaryGeneratedColumn("uuid")
     id!: string;
-
-    @ManyToOne(() => Order, (order) => order.transactions)
-    @JoinColumn({ name: "orderId" })
-    order!: Order;
 
     @ManyToOne(() => User)
     @JoinColumn({ name: "userId" })
-    user!: User; // optional but useful for reporting
+    user!: User;
 
     @ManyToOne(() => Plan)
     @JoinColumn({ name: "planId" })
-    plan!: Plan; // the plan for which this transaction is done
+    plan!: Plan;
 
     @Column({ type: "varchar", length: 100 })
-    paymentGateway!: string; // e.g., Razorpay, Stripe, PayPal
+    paymentGateway!: string;
 
     @Column({ type: "varchar", length: 100 })
-    transactionId!: string; // ID from payment gateway
+    transactionId!: string;
 
     @Column({ type: "decimal", precision: 10, scale: 2 })
     amount!: number;
 
     @Column({ type: "varchar", length: 50 })
-    status!: string; // pending | success | failed
+    status!: string;
 
     @Column({ type: "text", nullable: true })
-    response!: string; // raw response from gateway if needed
+    response?: string;
+
+    @OneToMany(() => Charges, (charge) => charge.transaction, { cascade: true })
+    charges!: Charges[];
 
     @CreateDateColumn()
     createdAt!: Date;

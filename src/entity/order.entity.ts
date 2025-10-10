@@ -3,19 +3,18 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    OneToMany,
+    OneToOne,
     CreateDateColumn,
     UpdateDateColumn,
     JoinColumn
 } from "typeorm";
+import { Transaction } from "./Transactions.entity";
 import { User } from "./User.entity";
 import { Plan } from "./Plans.entity";
-import { Transaction } from "./Transactions.entity";
 import { Esim } from "./Esim.entity";
-import { Charges } from "./Charges.entity";
-import { Country } from "./Country.entity";
+import { Country } from "./Country.entity"; // Import Country entity
 
-@Entity({ name: "orders" })
+@Entity()
 export class Order {
     @PrimaryGeneratedColumn("uuid")
     id!: string;
@@ -28,33 +27,29 @@ export class Order {
     @JoinColumn({ name: "planId" })
     plan!: Plan;
 
-    @ManyToOne(() => Esim, { nullable: true })
+    @ManyToOne(() => Transaction, { nullable: false, onDelete: "CASCADE" })
+    @JoinColumn({ name: "transactionId" })
+    transaction!: Transaction;
+
+    @OneToOne(() => Esim, { nullable: true })
     @JoinColumn({ name: "esimId" })
-    esim?: Esim | null;
+    esim?: Esim; // Relation to eSIM, optional
 
-    @ManyToOne(() => Country, { nullable: true })
+    @ManyToOne(() => Country, { nullable: false })
     @JoinColumn({ name: "countryId" })
-    country?: Country | null;
+    country!: Country; // Add country relation
 
-    @OneToMany(() => Transaction, (transaction) => transaction.order)
-    transactions!: Transaction[];
-
-    @ManyToOne(() => Charges, { nullable: true })
-    @JoinColumn({ name: "chargesId" })
-    charges?: Charges | null;
-
-    // Use string for decimal to avoid TypeScript type errors
     @Column({ type: "decimal", precision: 10, scale: 2 })
-    totalAmount!: string;
+    totalAmount!: number;
 
-    @Column({ type: "varchar", length: 50, default: "pending" })
-    status!: string; // pending | completed | failed
+    @Column({ type: "varchar", length: 50 })
+    status!: string;
 
     @Column({ type: "boolean", default: false })
-    activated!: boolean; // whether eSIM is activated
+    activated!: boolean;
 
-    @Column({ type: "datetime", nullable: true })
-    activationDate?: Date | null;
+    @Column({ type: "text", nullable: true })
+    errorMessage?: string;
 
     @CreateDateColumn()
     createdAt!: Date;

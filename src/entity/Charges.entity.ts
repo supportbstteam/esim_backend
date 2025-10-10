@@ -2,11 +2,12 @@ import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
+    ManyToOne,
     CreateDateColumn,
     UpdateDateColumn,
-    OneToMany
+    JoinColumn
 } from "typeorm";
-import { Order } from "./order.entity";
+import { Transaction } from "./Transactions.entity";
 
 @Entity()
 export class Charges {
@@ -14,16 +15,17 @@ export class Charges {
     id!: string;
 
     @Column({ type: "varchar", length: 100 })
-    name!: string; // e.g., "Service Fee", "Activation Fee"
+    name!: string;
 
     @Column({ type: "decimal", precision: 10, scale: 2 })
-    amount!: number; // fixed amount
+    amount!: number;
 
     @Column({ type: "boolean", default: true })
-    isActive!: boolean; // allow disabling a charge
+    isActive!: boolean;
 
-    @OneToMany(() => Order, (order) => order.charges)
-    orders!: Order[];
+    @ManyToOne(() => Transaction, (transaction) => transaction.charges, { nullable: false })
+    @JoinColumn({ name: "transactionId" })
+    transaction!: Transaction;
 
     @CreateDateColumn()
     createdAt!: Date;

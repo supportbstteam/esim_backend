@@ -1,38 +1,40 @@
-// src/entity/Reservation.ts
 import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
     CreateDateColumn,
-    UpdateDateColumn
+    UpdateDateColumn,
+    JoinColumn
 } from "typeorm";
-import { Country } from "./Country.entity";
-import { Plan } from "./Plans.entity";
 import { User } from "./User.entity";
+import { Plan } from "./Plans.entity";
+import { Country } from "./Country.entity";
+import { Order } from "./order.entity";
 
 @Entity({ name: "reservations" })
 export class Reservation {
     @PrimaryGeneratedColumn("uuid")
-    id!: string; // Reservation unique id
+    id!: string;
 
-    @Column({ type: "varchar", length: 100, unique: true })
-    reserveId!: string; // external/custom reservation id if you want
+    @Column({ type: "varchar", length: 100 })
+    reserveId!: string;
 
-    // 🔗 Relation to Plan
-    @ManyToOne(() => Plan, { nullable: false })
-    plan!: Plan;
-
-    // 🔗 Relation to Country
-    @ManyToOne(() => Country, { nullable: false })
-    country!: Country;
-
-    // 🔗 Relation to User
-    @ManyToOne(() => User, { nullable: false })
+    @ManyToOne(() => User)
+    @JoinColumn({ name: "userId" })
     user!: User;
 
-    @Column({ type: "boolean", default: false })
-    isDelete!: boolean;
+    @ManyToOne(() => Plan)
+    @JoinColumn({ name: "planId" })
+    plan!: Plan;
+
+    @ManyToOne(() => Country)
+    @JoinColumn({ name: "countryId" })
+    country!: Country;
+
+    @ManyToOne(() => Order)
+    @JoinColumn({ name: "orderId" })
+    order!: Order;
 
     @CreateDateColumn()
     createdAt!: Date;

@@ -7,56 +7,87 @@ import { Country } from "../../entity/Country.entity";
 import { User } from "../../entity/User.entity";
 import { Order } from "../../entity/order.entity";
 import { Esim } from "../../entity/Esim.entity";
+import { Transaction } from "../../entity/Transactions.entity";
+import { Charges } from "../../entity/Charges.entity";
 
 export const postOrder = async (req: any, res: Response) => {
-    const { planId, transactionId } = req.body;
+    const { planId } = req.body;
     const { id: userId } = req.user;
-
     const thirdPartyToken = { Authorization: `Bearer ${req.thirdPartyToken}` };
-    let reservation: any= null; // 👈 to access in catch block
+
+    let transaction: Transaction | null = null;
+    let order: Order | null = null;
+    let reservation: Reservation | null = null;
+    let esim: Esim | null = null;
 
     try {
-        console.log("🔹 Starting postOrder process");
+        console.log("📌 Starting postOrder process", { userId, planId });
 
         if (!userId || !planId) {
-            console.log("❌ Missing userId or planId or transactionId");
-            return res.status(400).json({ message: "userId, planId and transactionId are required" });
+            console.log("❌ Missing userId or planId");
+            return res.status(400).json({ message: "userId and planId are required", status: "error" });
         }
 
         const dataSource = await getDataSource();
         const userRepo = dataSource.getRepository(User);
         const planRepo = dataSource.getRepository(Plan);
+        const transactionRepo = dataSource.getRepository(Transaction);
         const orderRepo = dataSource.getRepository(Order);
+        const chargeRepo = dataSource.getRepository(Charges);
         const reserveRepo = dataSource.getRepository(Reservation);
         const esimRepo = dataSource.getRepository(Esim);
 
-        console.log("🔹 Fetching User and Plan");
+        // Fetch User
         const user = await userRepo.findOne({ where: { id: userId, isDeleted: false } });
-        if (!user) return res.status(404).json({ message: "User not found" });
+        console.log("👤 Fetched user", user?.id);
+        if (!user) throw new Error("User not found");
 
+        // Fetch Plan
         const plan = await planRepo.findOne({
             where: { id: planId, isDeleted: false, isActive: true },
             relations: ["country"],
         });
-        if (!plan) return res.status(404).json({ message: "Plan not found" });
+        console.log("📦 Fetched plan", plan?.id);
+        if (!plan) throw new Error("Plan not found");
 
         const country = plan.country as Country;
-        if (!country) return res.status(400).json({ message: "Plan does not have a country assigned" });
+        if (!country) throw new Error("Plan does not have an assigned country");
+        console.log("🌍 Country assigned", country.id);
 
-        console.log("🔹 Creating Order in DB");
-        const order = orderRepo.create({
-            user: { id: user.id },
-            plan: { id: plan.id },
-            country: { id: country.id },
-            totalAmount: plan.price.toString(),
+        // Create Fake Transaction
+        const fakeTransactionId = `FAKE-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+        transaction = transactionRepo.create({
+            user,
+            plan,
+            paymentGateway: "FakeGateway",
+            transactionId: fakeTransactionId,
+            amount: Number(plan.price) || 0,
+            status: "success",
+            response: JSON.stringify({ message: "Simulated transaction success" }),
+        });
+        await transactionRepo.save(transaction);
+        console.log("💰 Transaction created", { id: transaction.id, transactionId: transaction.transactionId });
+
+        // Create Charges linked to Transaction
+        const charge1 = chargeRepo.create({ name: "Service Fee", amount: 10, transaction, isActive: true });
+        const charge2 = chargeRepo.create({ name: "Activation Fee", amount: 5, transaction, isActive: true });
+        await chargeRepo.save([charge1, charge2]);
+        console.log("🧾 Charges created", charge1.id, charge2.id);
+
+        // Create Order linked to Transaction
+        order = orderRepo.create({
+            user,
+            plan,
+            country,
+            transaction,
+            totalAmount: Number(plan.price),
             status: "pending",
             activated: false,
         });
         await orderRepo.save(order);
-        console.log("✅ Order created:", order.id);
+        console.log("📄 Order created", order.id);
 
-        // 🔹 Reserve eSIM
-        console.log("🔹 Reserving eSIM via third-party API (Plan ID)", plan.planId);
+        // Reserve eSIM
         const reserveResponse = await axios.get(
             `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${plan.planId}`,
             { headers: thirdPartyToken }
@@ -69,18 +100,11 @@ export const postOrder = async (req: any, res: Response) => {
         const externalReserveId = reserveResponse.data.data?.id;
         if (!externalReserveId) throw new Error("Reservation returned invalid ID");
 
-        console.log("🔹 Saving Reservation in DB");
-        reservation = reserveRepo.create({
-            reserveId: externalReserveId,
-            plan: { id: plan.id },
-            country: { id: country.id },
-            user: { id: user.id },
-        });
+        reservation = reserveRepo.create({ reserveId: externalReserveId, plan, country, user, order });
         await reserveRepo.save(reservation);
-        console.log("✅ Reservation saved:", reservation.id);
+        console.log("🎫 Reservation created", reservation.id, "External ID:", reservation.reserveId);
 
-        // 🔹 Create eSIM
-        console.log("🔹 Creating eSIM using Reservation ID from DB");
+        // Create eSIM
         const createSimResponse = await axios.post(
             `${process.env.TURISM_URL}/v2/sims/${reservation.reserveId}/purchase`,
             {},
@@ -90,50 +114,140 @@ export const postOrder = async (req: any, res: Response) => {
         const esimData = createSimResponse.data?.data;
         if (!esimData) throw new Error("Failed to create eSIM");
 
-        console.log("🔹 Saving eSIM in DB");
-        const esim = esimRepo.create({
+        esim = esimRepo.create({
             simNumber: esimData.sim_number || `ESIM-${Date.now()}`,
-            country: { id: country.id },
-            user: { id: user.id },
+            country,
+            user,
             plans: [plan],
             isActive: true,
             startDate: new Date(),
             endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
         });
         await esimRepo.save(esim);
+        console.log("📶 eSIM created", esim.id, esim.simNumber);
 
-        console.log("🔹 Updating Order with eSIM info");
+        // Update Order
         order.esim = esim;
         order.status = "completed";
         order.activated = true;
-        order.activationDate = new Date();
         await orderRepo.save(order);
+        console.log("✅ Order updated with eSIM", order.id, "status:", order.status);
 
         return res.status(201).json({
-            message: "Order created, eSIM reserved and activated successfully",
-            data: { order, reservation, esim, createSimResponse: createSimResponse.data },
+            message: "Transaction, Charges, Order, and eSIM created successfully",
+            status: "success",
+            data: { transaction, order, charges: [charge1, charge2], reservation, esim },
         });
 
     } catch (err: any) {
-        console.error("❌ Error in postOrder:", err.response?.data || err.message || err);
+        console.error("❌ Error in postOrder:", err.response?.data || err.message);
 
-        // 🧷 Save error message in reservation if already created
-        try {
-            if (reservation) {
-                const dataSource = await getDataSource();
-                const reserveRepo = dataSource.getRepository(Reservation);
-                reservation.error = err.response?.data?.message || err.message || "Unknown error";
-                await reserveRepo.save(reservation);
-                console.log("💾 Saved error message in reservation:", reservation.error);
-            }
-        } catch (saveErr) {
-            console.error("⚠️ Failed to save error in reservation:", saveErr);
+        if (order) {
+            order.status = "failed";
+            order.errorMessage = err.response?.data?.message || err.message;
+            const dataSource = await getDataSource();
+            const orderRepo = dataSource.getRepository(Order);
+            await orderRepo.save(order);
+            console.log("⚠️ Order marked as failed", order.id);
         }
 
-        return res.status(500).json({ message: "Internal server error", error: err.message });
+        return res.status(500).json({ message: "Order process failed", error: err.message });
     }
 };
 
+export const getOrderListByUser = async (req: any, res: Response) => {
+    const { id, role } = req.user;
+
+    if (!id || role !== "user") {
+        return res.status(401).json({ message: "Unauthorized User", status: "error" });
+    }
+
+    try {
+        const dataSource = await getDataSource();
+        const orderRepo = dataSource.getRepository(Order);
+
+        const orders = await orderRepo.find({
+            where: { user: { id } },
+            relations: [
+                "plan",
+                "esim",
+                "country",
+                "transaction",
+                "transaction.plan",
+                "transaction.user",
+                "transaction.charges",
+            ],
+            order: { createdAt: "DESC" },
+        });
+
+        // Map orders to simplified response
+        const formattedOrders = orders.map((order) => ({
+            id: order.id,
+            title: order.plan?.title || "",
+            planName: order.plan?.name || "",
+            data: order.plan?.data || "",
+            validityDays: order.plan?.validityDays || 0,
+            price: order.totalAmount || "",
+            country: order.country?.name || "",
+            isoCode: order.country?.isoCode || "",
+            phoneCode: order.country?.phoneCode || "",
+            isActive: order.activated,
+            status: order.status,
+            errorMessage: order.errorMessage,
+        }));
+
+        return res.status(200).json({
+            message: "Orders fetched successfully",
+            status: "success",
+            data: formattedOrders,
+        });
+    } catch (err: any) {
+        console.error("Error fetching orders:", err);
+        return res.status(500).json({
+            message: "Failed to fetch orders",
+            status: "error",
+            error: err.message,
+        });
+    }
+};
+
+export const getOrderDetailsByUser = async (req: any, res: Response) => {
+    const { id, role } = req.user;
+    const { orderId } = req.params;
+
+    if (!id || role !== "user") {
+        return res.status(401).json({ message: "Unauthorized User", status: "error" });
+    }
+
+    if (!orderId) {
+        return res.status(400).json({ message: "Order ID is required", status: "error" });
+    }
+
+    try {
+        const dataSource = await getDataSource();
+        const orderRepo = dataSource.getRepository(Order);
+
+        const order = await orderRepo.findOne({
+            where: { id: orderId, user: { id } },
+            relations: [
+                "plan",
+                "esim",
+                "country",
+                "transaction",
+                "transaction.plan",
+                "transaction.user",
+                "transaction.charges",
+            ],
+        });
+
+        if (!order) return res.status(404).json({ message: "Order not found", status: "error" });
+
+        return res.status(200).json({ message: "Order details fetched successfully", status: "success", data: order });
+    } catch (err: any) {
+        console.error("Error fetching order details:", err);
+        return res.status(500).json({ message: "Failed to fetch order details", status: "error", error: err.message });
+    }
+};
 
 export const postReserveEsim = async (req: any, res: Response) => {
     const { id: userId } = req.user; // user info from auth middleware

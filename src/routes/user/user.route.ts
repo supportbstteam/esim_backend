@@ -11,7 +11,7 @@ import { auth } from "../../middlewares/auth.handler";
 import queryRoute from "../query.routes"
 import { getUserDetails, postCreateUser, postUserLogin, postVerifyOtp } from "../../controllers/user/userAuth.controllers";
 import { getSocials } from "../../controllers/Social.Media.controllers";
-import { postOrder } from "../../controllers/user/userEsimControlllers";
+import { getOrderDetailsByUser, getOrderListByUser, postOrder } from "../../controllers/user/userEsimControlllers";
 import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handler";
 const router = Router();
 
@@ -28,11 +28,6 @@ router.use("/plans", planRoute);
 router.use("/top-up", auth, topUpPlanRoute);
 router.use("/e-sim", auth, esimRoute);
 
-router.post("/add-to-cart",()=>{
-
-});
-
-router.post("/order",auth,thirdPartyAuthMiddleware,postOrder);
 
 router.use("/cms", useContactRoute);
 router.get("/social-media", getSocials);
@@ -46,7 +41,10 @@ router.use("/support", userSupport);
 // ---- query ------
 router.use("/query", queryRoute);
 
-// handlling the post for the content and social media query
+// -------- order ------------
+router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
+router.get("/order-list", auth, getOrderListByUser);
+router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
 
 export default router;
 
