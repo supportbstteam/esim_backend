@@ -180,7 +180,7 @@ export const getOrderListByUser = async (req: any, res: Response) => {
             order: { createdAt: "DESC" },
         });
 
-        // Map orders to simplified response
+        // Map orders to simplified response to handle preciously
         const formattedOrders = orders.map((order) => ({
             id: order.id,
             title: order.plan?.title || "",
