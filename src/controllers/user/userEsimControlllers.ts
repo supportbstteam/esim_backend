@@ -222,7 +222,7 @@ export const generateFakeOrder = async (req: any, res: Response) => {
         const charge1 = chargeRepo.create({ name: "Service Fee", amount: 10, transaction, isActive: true });
         const charge2 = chargeRepo.create({ name: "Activation Fee", amount: 5, transaction, isActive: true });
         await chargeRepo.save([charge1, charge2]);
-        console.log("🧾 Fake charges created");
+        console.log("🧾 Fake charges created!");
 
         // ✅ Create Fake Reservation
         const fakeReserveId = `DEV-RES-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
