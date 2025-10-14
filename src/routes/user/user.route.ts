@@ -11,7 +11,7 @@ import { auth } from "../../middlewares/auth.handler";
 import queryRoute from "../query.routes"
 import { getUserDetails, postCreateUser, postUserLogin, postVerifyOtp } from "../../controllers/user/userAuth.controllers";
 import { getSocials } from "../../controllers/Social.Media.controllers";
-import { getOrderDetailsByUser, getOrderListByUser, postOrder } from "../../controllers/user/userEsimControlllers";
+import { generateFakeOrder, getOrderDetailsByUser, getOrderListByUser, postOrder } from "../../controllers/user/userEsimControlllers";
 import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handler";
 const router = Router();
 
@@ -42,7 +42,8 @@ router.use("/support", userSupport);
 router.use("/query", queryRoute);
 
 // -------- order ------------
-router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
+// router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
+router.post("/order", auth, generateFakeOrder);
 router.get("/order-list", auth, getOrderListByUser);
 router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
 
