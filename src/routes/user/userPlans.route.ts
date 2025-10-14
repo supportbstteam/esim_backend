@@ -5,5 +5,5 @@ import { getPlanById } from '../../controllers/admin/adminPlans.controllers';
 const router = express.Router();
 router.get("/", getUserPlans); // all country and can add query as well to find the plans by country id
 router.get("/feature", getFeaturePlans); // all country and can add query as well to find the plans by country id
-router.get("/:id", getPlanById)
+router.get("/:planId", getPlanById)
 export default router;
