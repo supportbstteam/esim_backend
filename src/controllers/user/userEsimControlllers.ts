@@ -52,7 +52,7 @@ export const postOrder = async (req: any, res: Response) => {
 
         const country = plan.country as Country;
         if (!country) throw new Error("Plan does not have an assigned country");
-        console.log("🌍 Country assigned", country.id);
+        // console.log("🌍 Country assigned", country.id);
 
         // Create Fake Transaction
         const fakeTransactionId = `FAKE-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
@@ -66,13 +66,13 @@ export const postOrder = async (req: any, res: Response) => {
             response: JSON.stringify({ message: "Simulated transaction success" }),
         });
         await transactionRepo.save(transaction);
-        console.log("💰 Transaction created", { id: transaction.id, transactionId: transaction.transactionId });
+        // console.log("💰 Transaction created", { id: transaction.id, transactionId: transaction.transactionId });
 
         // Create Charges linked to Transaction
         const charge1 = chargeRepo.create({ name: "Service Fee", amount: 10, transaction, isActive: true });
         const charge2 = chargeRepo.create({ name: "Activation Fee", amount: 5, transaction, isActive: true });
         await chargeRepo.save([charge1, charge2]);
-        console.log("🧾 Charges created", charge1.id, charge2.id);
+        // console.log("🧾 Charges created", charge1.id, charge2.id);
 
         // Create Order linked to Transaction
         order = orderRepo.create({
@@ -85,8 +85,9 @@ export const postOrder = async (req: any, res: Response) => {
             activated: false,
         });
         await orderRepo.save(order);
-        console.log("📄 Order created", order.id);
+        // console.log("📄 Order created", order.id);
 
+        console.log("---- esim plan id ----", plan.planId);
         // Reserve eSIM
         const reserveResponse = await axios.get(
             `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${plan.planId}`,
@@ -97,8 +98,12 @@ export const postOrder = async (req: any, res: Response) => {
             throw new Error(reserveResponse.data?.message || "Reservation failed");
         }
 
+        console.log("----- reserveResponse ----", reserveResponse?.data);
+
         const externalReserveId = reserveResponse.data.data?.id;
         if (!externalReserveId) throw new Error("Reservation returned invalid ID");
+
+        console.log("---- reservation id externalReserveId ----", externalReserveId);
 
         reservation = reserveRepo.create({ reserveId: externalReserveId, plan, country, user, order });
         await reserveRepo.save(reservation);
@@ -111,20 +116,35 @@ export const postOrder = async (req: any, res: Response) => {
             { headers: thirdPartyToken }
         );
 
+        // Create eSIM from 3rd party response
         const esimData = createSimResponse.data?.data;
         if (!esimData) throw new Error("Failed to create eSIM");
 
+        console.log("---- esim data ----", esimData);
+
         esim = esimRepo.create({
-            simNumber: esimData.sim_number || `ESIM-${Date.now()}`,
+            externalId: esimData.id?.toString(),
+            iccid: esimData.iccid || null,
+            qrCodeUrl: esimData.qr_code_url || null,
+            networkStatus: esimData.network_status || null,
+            statusText: esimData.status_text || null,
+            productName: esimData.name || null,
+            currency: esimData.currency || null,
+            price: parseFloat(esimData.price) || 0,
+            validityDays: esimData.validity_days || null,
+            dataAmount: esimData.data || 0,
+            callAmount: esimData.call || 0,
+            smsAmount: esimData.sms || 0,
+            isActive: esimData.network_status !== "NOT_ACTIVE",
+            startDate: new Date(),
+            endDate: new Date(new Date().setDate(new Date().getDate() + (esimData.validity_days || 30))),
             country,
             user,
             plans: [plan],
-            isActive: true,
-            startDate: new Date(),
-            endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
         });
+
         await esimRepo.save(esim);
-        console.log("📶 eSIM created", esim.id, esim.simNumber);
+        console.log("📶 eSIM created and stored", esim.id);
 
         // Update Order
         order.esim = esim;
@@ -156,141 +176,141 @@ export const postOrder = async (req: any, res: Response) => {
 };
 
 // fake generator esim 
-export const generateFakeOrder = async (req: any, res: Response) => {
-    const {id: userId} = req.user;
-    const { planId } = req.body;
+// export const generateFakeOrder = async (req: any, res: Response) => {
+//     const { id: userId } = req.user;
+//     const { planId } = req.body;
 
-    if (!userId || !planId) {
-        return res.status(400).json({
-            message: "userId and planId are required",
-            status: "error",
-        });
-    }
+//     if (!userId || !planId) {
+//         return res.status(400).json({
+//             message: "userId and planId are required",
+//             status: "error",
+//         });
+//     }
 
-    let transaction: Transaction | null = null;
-    let order: Order | null = null;
-    let reservation: Reservation | null = null;
-    let esim: Esim | null = null;
+//     let transaction: Transaction | null = null;
+//     let order: Order | null = null;
+//     let reservation: Reservation | null = null;
+//     let esim: Esim | null = null;
 
-    try {
-        console.log("🧪 Starting fake order generation for dev mode", { userId, planId });
+//     try {
+//         console.log("🧪 Starting fake order generation for dev mode", { userId, planId });
 
-        const dataSource = await getDataSource();
-        const userRepo = dataSource.getRepository(User);
-        const planRepo = dataSource.getRepository(Plan);
-        const transactionRepo = dataSource.getRepository(Transaction);
-        const orderRepo = dataSource.getRepository(Order);
-        const chargeRepo = dataSource.getRepository(Charges);
-        const reserveRepo = dataSource.getRepository(Reservation);
-        const esimRepo = dataSource.getRepository(Esim);
+//         const dataSource = await getDataSource();
+//         const userRepo = dataSource.getRepository(User);
+//         const planRepo = dataSource.getRepository(Plan);
+//         const transactionRepo = dataSource.getRepository(Transaction);
+//         const orderRepo = dataSource.getRepository(Order);
+//         const chargeRepo = dataSource.getRepository(Charges);
+//         const reserveRepo = dataSource.getRepository(Reservation);
+//         const esimRepo = dataSource.getRepository(Esim);
 
-        // ✅ Fetch existing user
-        const user = await userRepo.findOne({ where: { id: userId, isDeleted: false } });
-        if (!user) {
-            return res.status(404).json({ message: "User not found", status: "error" });
-        }
+//         // ✅ Fetch existing user
+//         const user = await userRepo.findOne({ where: { id: userId, isDeleted: false } });
+//         if (!user) {
+//             return res.status(404).json({ message: "User not found", status: "error" });
+//         }
 
-        // ✅ Fetch existing plan (with country)
-        const plan = await planRepo.findOne({
-            where: { id: planId, isDeleted: false, isActive: true },
-            relations: ["country"],
-        });
-        if (!plan) {
-            return res.status(404).json({ message: "Plan not found", status: "error" });
-        }
+//         // ✅ Fetch existing plan (with country)
+//         const plan = await planRepo.findOne({
+//             where: { id: planId, isDeleted: false, isActive: true },
+//             relations: ["country"],
+//         });
+//         if (!plan) {
+//             return res.status(404).json({ message: "Plan not found", status: "error" });
+//         }
 
-        const country = plan.country as Country;
-        if (!country) {
-            return res.status(400).json({ message: "Plan does not have an assigned country", status: "error" });
-        }
+//         const country = plan.country as Country;
+//         if (!country) {
+//             return res.status(400).json({ message: "Plan does not have an assigned country", status: "error" });
+//         }
 
-        // ✅ Create Fake Transaction
-        const fakeTransactionId = `FAKE-DEV-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-        transaction = transactionRepo.create({
-            user,
-            plan,
-            paymentGateway: "DevGateway",
-            transactionId: fakeTransactionId,
-            amount: Number(plan.price),
-            status: "success",
-            response: JSON.stringify({ message: "Simulated Dev Transaction" }),
-        });
-        await transactionRepo.save(transaction);
-        console.log("💰 Fake transaction created", transaction.id);
+//         // ✅ Create Fake Transaction
+//         const fakeTransactionId = `FAKE-DEV-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+//         transaction = transactionRepo.create({
+//             user,
+//             plan,
+//             paymentGateway: "DevGateway",
+//             transactionId: fakeTransactionId,
+//             amount: Number(plan.price),
+//             status: "success",
+//             response: JSON.stringify({ message: "Simulated Dev Transaction" }),
+//         });
+//         await transactionRepo.save(transaction);
+//         console.log("💰 Fake transaction created", transaction.id);
 
-        // ✅ Create Fake Charges
-        const charge1 = chargeRepo.create({ name: "Service Fee", amount: 10, transaction, isActive: true });
-        const charge2 = chargeRepo.create({ name: "Activation Fee", amount: 5, transaction, isActive: true });
-        await chargeRepo.save([charge1, charge2]);
-        console.log("🧾 Fake charges created!");
+//         // ✅ Create Fake Charges
+//         const charge1 = chargeRepo.create({ name: "Service Fee", amount: 10, transaction, isActive: true });
+//         const charge2 = chargeRepo.create({ name: "Activation Fee", amount: 5, transaction, isActive: true });
+//         await chargeRepo.save([charge1, charge2]);
+//         console.log("🧾 Fake charges created!");
 
-        // ✅ Create Fake Reservation
-        const fakeReserveId = `DEV-RES-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-        reservation = reserveRepo.create({
-            reserveId: fakeReserveId,
-            plan,
-            country,
-            user,
-        });
-        await reserveRepo.save(reservation);
-        console.log("🎫 Fake reservation created", reservation.id);
+//         // ✅ Create Fake Reservation
+//         const fakeReserveId = `DEV-RES-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+//         reservation = reserveRepo.create({
+//             reserveId: fakeReserveId,
+//             plan,
+//             country,
+//             user,
+//         });
+//         await reserveRepo.save(reservation);
+//         console.log("🎫 Fake reservation created", reservation.id);
 
-        // ✅ Create Fake eSIM
-        const fakeSimNumber = `DEV-SIM-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-        esim = esimRepo.create({
-            simNumber: fakeSimNumber,
-            country,
-            user,
-            plans: [plan],
-            isActive: true,
-            startDate: new Date(),
-            endDate: new Date(new Date().setDate(new Date().getDate() + plan.validityDays)),
-        });
-        await esimRepo.save(esim);
-        console.log("📶 Fake eSIM created", esim.id);
+//         // ✅ Create Fake eSIM
+//         const fakeSimNumber = `DEV-SIM-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+//         esim = esimRepo.create({
+//             // simNumber: fakeSimNumber,
+//             country,
+//             user,
+//             plans: [plan],
+//             isActive: true,
+//             startDate: new Date(),
+//             endDate: new Date(new Date().setDate(new Date().getDate() + plan.validityDays)),
+//         });
+//         await esimRepo.save(esim);
+//         console.log("📶 Fake eSIM created", esim.id);
 
-        // ✅ Create Fake Order
-        order = orderRepo.create({
-            user,
-            plan,
-            country,
-            transaction,
-            totalAmount: Number(plan.price),
-            status: "completed",
-            activated: true,
-            esim,
-        });
-        await orderRepo.save(order);
-        console.log("📄 Fake order created", order.id);
+//         // ✅ Create Fake Order
+//         order = orderRepo.create({
+//             user,
+//             plan,
+//             country,
+//             transaction,
+//             totalAmount: Number(plan.price),
+//             status: "completed",
+//             activated: true,
+//             esim,
+//         });
+//         await orderRepo.save(order);
+//         console.log("📄 Fake order created", order.id);
 
-        return res.status(201).json({
-            message: "✅ Fake order generated successfully (Dev Mode)",
-            status: "success",
-            data: {
-                transaction,
-                order,
-                charges: [charge1, charge2],
-                reservation,
-                esim,
-            },
-        });
-    } catch (err: any) {
-        console.error("❌ Error generating fake order:", err.message);
-        if (order) {
-            order.status = "failed";
-            order.errorMessage = err.message;
-            const dataSource = await getDataSource();
-            const orderRepo = dataSource.getRepository(Order);
-            await orderRepo.save(order);
-            console.log("⚠️ Order marked as failed", order.id);
-        }
+//         return res.status(201).json({
+//             message: "✅ Fake order generated successfully (Dev Mode)",
+//             status: "success",
+//             data: {
+//                 transaction,
+//                 order,
+//                 charges: [charge1, charge2],
+//                 reservation,
+//                 esim,
+//             },
+//         });
+//     } catch (err: any) {
+//         console.error("❌ Error generating fake order:", err.message);
+//         if (order) {
+//             order.status = "failed";
+//             order.errorMessage = err.message;
+//             const dataSource = await getDataSource();
+//             const orderRepo = dataSource.getRepository(Order);
+//             await orderRepo.save(order);
+//             console.log("⚠️ Order marked as failed", order.id);
+//         }
 
-        return res.status(500).json({
-            message: "Failed to generate fake order (Dev Mode)",
-            error: err.message,
-        });
-    }
-};
+//         return res.status(500).json({
+//             message: "Failed to generate fake order (Dev Mode)",
+//             error: err.message,
+//         });
+//     }
+// };
 
 export const getOrderListByUser = async (req: any, res: Response) => {
     const { id, role } = req.user;

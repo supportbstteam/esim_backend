@@ -11,6 +11,7 @@ import adminContactRouter from "./adminContact.route"
 import adminSocialRouter from "./adminSocial.route"
 import contentRouter from './adminContent.route'
 import queryRoute from "../query.routes"
+import adminOrderRouter from "./adminOrder.route"
 const router = express.Router();
 
 router.post("/login", loginAdmin);
@@ -27,8 +28,11 @@ router.use("/third-party-api", thirdPartyRouter); // third party library api
 // plans
 router.use("/plans", eSimPlanRoute);
 
-// plans
+// users
 router.use("/users", adminUserRouter);
+
+// order
+router.use("/orders", adminOrderRouter);
 
 // top up
 router.use("/top-up", eTopupRoute);

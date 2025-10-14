@@ -1,71 +1,99 @@
-// src/entity/Esim.ts
 import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    ManyToOne,
-    ManyToMany,
-    JoinTable,
-    CreateDateColumn,
-    UpdateDateColumn,
-    Index,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  ManyToMany,
+  JoinTable,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
 } from "typeorm";
 import { User } from "./User.entity";
 import { Country } from "./Country.entity";
 import { Plan } from "./Plans.entity";
 import { TopUpPlan } from "./Topup.entity";
 
-/**
- * eSIM entity for MySQL using TypeORM
- */
 @Entity({ name: "esims" })
 export class Esim {
-    @PrimaryGeneratedColumn("uuid")
-    id!: string;
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
-    @Column({ type: "varchar", length: 255, unique: true })
-    simNumber!: string;
+  @ManyToOne(() => Country, { nullable: false })
+  country!: Country;
 
-    @ManyToOne(() => Country, { nullable: false })
-    country!: Country;
+  @Column({ type: "date", nullable: true })
+  startDate?: Date;
 
-    @Column({ type: "date", nullable: true })
-    startDate?: Date;
+  @Column({ type: "date", nullable: true })
+  endDate?: Date;
 
-    @Column({ type: "date", nullable: true })
-    endDate?: Date;
+  @Index()
+  @Column({ type: "boolean", default: true })
+  isActive!: boolean;
 
-    @Index()
-    @Column({ type: "boolean", default: true })
-    isActive!: boolean;
+  @Column({ type: "boolean", default: false })
+  isDeleted!: boolean;
 
-    @Column({ type: "boolean", default: false })
-    isDeleted!: boolean;
+  @ManyToOne(() => User, (user) => user.simIds, { nullable: true })
+  user?: User | null;
 
-    @ManyToOne(() => User, (user) => user.simIds, { nullable: true })
-    user?: User | null;
+  @ManyToMany(() => Plan)
+  @JoinTable({
+    name: "esim_plans",
+    joinColumn: { name: "esim_id", referencedColumnName: "id" },
+    inverseJoinColumn: { name: "plan_id", referencedColumnName: "id" },
+  })
+  plans!: Plan[];
 
-    // Plans assigned to this eSIM
-    @ManyToMany(() => Plan)
-    @JoinTable({
-        name: "esim_plans",
-        joinColumn: { name: "esim_id", referencedColumnName: "id" },
-        inverseJoinColumn: { name: "plan_id", referencedColumnName: "id" },
-    })
-    plans!: Plan[];
+  @ManyToMany(() => TopUpPlan)
+  @JoinTable({
+    name: "esim_topups",
+    joinColumn: { name: "esim_id", referencedColumnName: "id" },
+    inverseJoinColumn: { name: "topup_id", referencedColumnName: "id" },
+  })
+  topUps!: TopUpPlan[];
 
-    // Top-ups purchased by this eSIM
-    @ManyToMany(() => TopUpPlan)
-    @JoinTable({
-        name: "esim_topups",
-        joinColumn: { name: "esim_id", referencedColumnName: "id" },
-        inverseJoinColumn: { name: "topup_id", referencedColumnName: "id" },
-    })
-    topUps!: TopUpPlan[];
+  // 🔽 NEW FIELDS for external API data
+  @Column({ type: "varchar", nullable: true })
+  externalId?: string; // 19646
 
-    @CreateDateColumn()
-    createdAt!: Date;
+  @Column({ type: "varchar", nullable: true })
+  iccid?: string;
 
-    @UpdateDateColumn()
-    updatedAt!: Date;
+  @Column({ type: "varchar", nullable: true })
+  qrCodeUrl?: string;
+
+  @Column({ type: "varchar", nullable: true })
+  networkStatus?: string; // NOT_ACTIVE, ACTIVE, etc.
+
+  @Column({ type: "varchar", nullable: true })
+  statusText?: string; // waiting, activated, etc.
+
+  @Column({ type: "varchar", nullable: true })
+  productName?: string; // "1 GB -30 days"
+
+  @Column({ type: "varchar", nullable: true })
+  currency?: string;
+
+  @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
+  price?: number;
+
+  @Column({ type: "int", nullable: true })
+  validityDays?: number;
+
+  @Column({ type: "float", nullable: true })
+  dataAmount?: number;
+
+  @Column({ type: "float", nullable: true })
+  callAmount?: number;
+
+  @Column({ type: "float", nullable: true })
+  smsAmount?: number;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }

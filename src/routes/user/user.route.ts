@@ -9,9 +9,9 @@ import userQuickies from "./userQuickies.route";
 import userSupport from "./userSupport.route";
 import { auth } from "../../middlewares/auth.handler";
 import queryRoute from "../query.routes"
-import { getUserDetails, postCreateUser, postUserLogin, postVerifyOtp } from "../../controllers/user/userAuth.controllers";
+import { deleteAccount, getUserDetails, postCreateUser, postUserLogin, postVerifyOtp, updateProfile } from "../../controllers/user/userAuth.controllers";
 import { getSocials } from "../../controllers/Social.Media.controllers";
-import { generateFakeOrder, getOrderDetailsByUser, getOrderListByUser, postOrder } from "../../controllers/user/userEsimControlllers";
+import { getOrderDetailsByUser, getOrderListByUser, postOrder } from "../../controllers/user/userEsimControlllers";
 import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handler";
 const router = Router();
 
@@ -21,6 +21,8 @@ router.post("/verify-otp", postCreateUser);
 router.post("/signup", postVerifyOtp);
 router.post("/login", postUserLogin);
 router.get("/details", auth, getUserDetails);
+router.put("/update", auth, updateProfile);
+router.delete("/delete", auth, deleteAccount);
 
 
 router.use("/country", countryRoute);
@@ -42,8 +44,8 @@ router.use("/support", userSupport);
 router.use("/query", queryRoute);
 
 // -------- order ------------
-// router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
-router.post("/order", auth, generateFakeOrder);
+router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
+// router.post("/order", auth, generateFakeOrder);
 router.get("/order-list", auth, getOrderListByUser);
 router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
 

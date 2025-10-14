@@ -25,38 +25,53 @@ export const postCreateUser = async (req: Request, res: Response) => {
     const userRepo = AppDataSource.getRepository(User);
 
     try {
-        const existingUser = await userRepo.findOneBy({ email });
+        const existingUser = await userRepo.findOne({ where: { email } });
 
         if (existingUser) {
+            if (existingUser.isDeleted) {
+                // Previously deleted → allow re-register
+                const hashedPassword = await bcrypt.hash(password, 10);
+                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                const otpExpires = Date.now() + 10 * 60 * 1000; // 10 mins
+
+                existingUser.firstName = firstName;
+                existingUser.lastName = lastName;
+                existingUser.password = hashedPassword;
+                existingUser.otp = otp;
+                existingUser.otpExpires = otpExpires;
+                existingUser.isDeleted = false;
+                existingUser.isVerified = false;
+
+                await userRepo.save(existingUser);
+
+                await sendOtpEmail(email, otp);
+
+                return res.status(201).json({ message: "User re-registered, OTP sent to email", email });
+            }
+
             if (existingUser.isVerified) {
                 // Already verified → cannot register again
                 return res.status(409).json({ message: "Email already registered" });
             } else {
                 // Not verified → resend OTP
-                const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
-                const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                const otpExpires = Date.now() + 10 * 60 * 1000;
 
                 existingUser.otp = otp;
                 existingUser.otpExpires = otpExpires;
 
-                await userRepo.save(existingUser); // update OTP
-
-                // Resend OTP email
+                await userRepo.save(existingUser);
                 await sendOtpEmail(email, otp);
 
-                return res.status(200).json({
-                    message: "OTP resent to email",
-                    email
-                });
+                return res.status(200).json({ message: "OTP resent to email", email });
             }
         }
 
         // New user → create account
         const hashedPassword = await bcrypt.hash(password, 10);
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+        const otpExpires = Date.now() + 10 * 60 * 1000;
 
-        // Use transaction to ensure email sent only if user saved
         await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
             const newUser = transactionalEntityManager.create(User, {
                 firstName,
@@ -68,16 +83,14 @@ export const postCreateUser = async (req: Request, res: Response) => {
             });
 
             await transactionalEntityManager.save(newUser);
-
-            // Send OTP email
             await sendOtpEmail(email, otp);
         });
 
         return res.status(201).json({ message: "User registered, OTP sent to email", email });
 
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Signup failed", error: err });
+    } catch (err: any) {
+        console.error("--- Error in postCreateUser ---", err);
+        return res.status(500).json({ message: "Signup failed", error: err.message || err });
     }
 };
 
@@ -93,20 +106,33 @@ export const postUserLogin = async (req: Request, res: Response) => {
         const userRepo = AppDataSource.getRepository(User);
         const user = await userRepo.findOneBy({ email });
 
+        console.log("---- user ----", user);
+
         if (!user) {
             return res.status(404).json({ message: "Invalid credentials" });
         }
 
-        // Check if email is verified
-        if (!user.isVerified) {
-            return res.status(403).json({ message: "Please verify your email before logging in" });
+        // 🚫 Check if user account is deleted
+        if (user.isDeleted) {
+            return res.status(403).json({
+                message: "Your account has been deleted. Please contact support for assistance.",
+            });
         }
 
+        // 🚫 Check if email is verified
+        if (!user.isVerified) {
+            return res.status(403).json({
+                message: "Please verify your email before logging in",
+            });
+        }
+
+        // 🔐 Check password validity
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
+        // ✅ Successful login
         return res.status(200).json({
             message: "Login successful",
             data: {
@@ -124,6 +150,7 @@ export const postUserLogin = async (req: Request, res: Response) => {
     }
 };
 
+
 // 👤 GET USER DETAILS (requires JWT)
 export const getUserDetails = async (req: any, res: Response) => {
     try {
@@ -137,12 +164,16 @@ export const getUserDetails = async (req: any, res: Response) => {
             return res.status(404).json({ message: "User not found" });
         }
 
+        // Check for soft-deleted user
+        if (user.isDeleted) {
+            return res.status(410).json({ message: "This account has been deleted" });
+        }
+
         return res.status(200).json({
             id: user.id,
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
-            // dob: user.dob,
             role: user.role,
             isBlocked: user.isBlocked,
             isDeleted: user.isDeleted,
@@ -153,6 +184,85 @@ export const getUserDetails = async (req: any, res: Response) => {
     } catch (err: any) {
         console.error("--- Error in getUserDetails ---", err.message);
         return res.status(500).json({ message: "Failed to get user details", error: err.message });
+    }
+};
+
+// UPDATE USER DETAILS
+export const updateProfile = async (req: any, res: Response) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized access" });
+        }
+
+        const userRepo = AppDataSource.getRepository(User);
+        const user = await userRepo.findOne({ where: { id: userId } });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const { firstName, lastName, email } = req.body;
+
+        // Allow updating only these fields
+        if (firstName !== undefined) user.firstName = firstName.trim();
+        if (lastName !== undefined) user.lastName = lastName.trim();
+        if (email !== undefined) user.email = email.trim();
+
+        await userRepo.save(user);
+
+        return res.status(200).json({
+            message: "Profile updated successfully",
+            status: "success",
+            user: {
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                role: user.role,
+                isBlocked: user.isBlocked,
+                isDeleted: user.isDeleted,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+            },
+        });
+    } catch (err: any) {
+        console.error("--- Error in updateProfile ---", err.message);
+        return res
+            .status(500)
+            .json({ message: "Failed to update profile", error: err.message });
+    }
+};
+
+// DELETE USER ACCOUNT
+export const deleteAccount = async (req: any, res: Response) => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized access" });
+        }
+
+        const userRepo = AppDataSource.getRepository(User);
+        const user = await userRepo.findOne({ where: { id: userId } });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.isDeleted) {
+            return res.status(400).json({ message: "Account already deleted" });
+        }
+
+        user.isDeleted = true;
+        await userRepo.save(user);
+
+        return res.status(200).json({ message: "Account deleted successfully", status: "success" });
+    } catch (err: any) {
+        console.error("--- Error in deleteAccount ---", err.message);
+        return res
+            .status(500)
+            .json({ message: "Failed to delete account", error: err.message });
     }
 };
 
