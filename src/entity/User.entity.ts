@@ -1,7 +1,7 @@
 // src/entity/User.ts
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
 import { Esim } from "./Esim.entity";
-
+import { Cart } from "./Carts.entity";
 @Entity({ name: "users" })
 export class User {
     @PrimaryGeneratedColumn("uuid")
@@ -15,6 +15,9 @@ export class User {
 
     // @Column({ type: "date" })
     // dob!: Date;
+
+    @OneToMany(() => Cart, (cart) => cart?.user)
+    carts !: Cart[]
 
     @Column({ type: "varchar", length: 255, unique: true })
     email!: string;

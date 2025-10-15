@@ -13,6 +13,7 @@ import { deleteAccount, getUserDetails, postCreateUser, postUserLogin, postVerif
 import { getSocials } from "../../controllers/Social.Media.controllers";
 import { getOrderDetailsByUser, getOrderListByUser, postOrder } from "../../controllers/user/userEsimControlllers";
 import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handler";
+import userCartRoute from "./userCart.route"
 const router = Router();
 
 
@@ -48,6 +49,10 @@ router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
 // router.post("/order", auth, generateFakeOrder);
 router.get("/order-list", auth, getOrderListByUser);
 router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
+
+
+router.use("/add-to-cart", auth, userCartRoute)
+
 
 export default router;
 

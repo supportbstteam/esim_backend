@@ -13,6 +13,7 @@ import { User } from "./User.entity";
 import { Country } from "./Country.entity";
 import { Plan } from "./Plans.entity";
 import { TopUpPlan } from "./Topup.entity";
+import { CartItem } from "./CartItem.entity";
 
 @Entity({ name: "esims" })
 export class Esim {
@@ -21,6 +22,10 @@ export class Esim {
 
   @ManyToOne(() => Country, { nullable: false })
   country!: Country;
+
+  @ManyToOne(() => CartItem, (cartItem) => cartItem.esims, { nullable: true })
+  cartItem?: CartItem;
+
 
   @Column({ type: "date", nullable: true })
   startDate?: Date;

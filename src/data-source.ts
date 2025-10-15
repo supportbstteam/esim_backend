@@ -17,6 +17,9 @@ import { Contact } from "./entity/ContactUs.entity";
 import { Content } from "./entity/Content.entity";
 import { Faq } from "./entity/Faq.entity";
 import { Query } from "./entity/Query.entity";
+import { Notification } from "./entity/Notification.entity";
+import { Cart } from "./entity/Carts.entity";
+import { CartItem } from "./entity/CartItem.entity";
 
 export const AppDataSource = new DataSource({
     type: "mysql",
@@ -43,7 +46,10 @@ export const AppDataSource = new DataSource({
         Contact,
         Content,
         Faq,
-        Query
+        Query,
+        Notification,
+        Cart,
+        CartItem
     ],
     migrations: [],
     subscribers: [],
