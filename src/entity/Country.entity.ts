@@ -27,6 +27,9 @@ export class Country {
     @Column({ type: "varchar", length: 3, nullable: true })
     iso3Code?: string;
 
+    @Column({ type: "varchar", length: 500, nullable: true, comment: "Country flag or representative image URL" })
+    imageUrl?: string;
+
     @Column({ type: "varchar", length: 10 })
     phoneCode!: string;
 
