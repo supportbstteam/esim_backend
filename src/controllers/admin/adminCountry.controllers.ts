@@ -99,7 +99,7 @@ export const updateCountry = async (req: Request, res: Response) => {
 
     try {
         const { id } = req.params;
-        const { name, isoCode, iso3Code, phoneCode, currency, isActive } = req.body;
+        const { name, isoCode, iso3Code, phoneCode, currency, isActive, description } = req.body;
 
         const countryRepo = AppDataSource.getRepository(Country);
         const country = await countryRepo.findOne({ where: { id, isDelete: false } });
@@ -112,6 +112,7 @@ export const updateCountry = async (req: Request, res: Response) => {
         country.phoneCode = phoneCode ?? country.phoneCode;
         country.currency = currency ?? country.currency;
         country.isActive = isActive ?? country.isActive;
+        country.description = description ?? country.description;
 
         const updatedCountry = await countryRepo.save(country);
         res.json(updatedCountry);

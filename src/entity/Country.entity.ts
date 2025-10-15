@@ -5,7 +5,6 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
-    Index,
 } from "typeorm";
 
 /**
@@ -45,5 +44,4 @@ export class Country {
 
     @UpdateDateColumn()
     updatedAt!: Date;
-
 }
