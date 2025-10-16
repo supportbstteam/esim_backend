@@ -94,7 +94,9 @@ export const postCreateUser = async (req: Request, res: Response) => {
     }
 };
 
-// 🔑 LOGIN
+// -----------------------------
+// POST USER LOGIN
+// -----------------------------
 export const postUserLogin = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
@@ -106,41 +108,38 @@ export const postUserLogin = async (req: Request, res: Response) => {
         const userRepo = AppDataSource.getRepository(User);
         const user = await userRepo.findOneBy({ email });
 
-        console.log("---- user ----", user);
-
         if (!user) {
             return res.status(404).json({ message: "Invalid credentials" });
         }
 
-        // 🚫 Check if user account is deleted
+        // Check if account is deleted
         if (user.isDeleted) {
             return res.status(403).json({
-                message: "Your account has been deleted. Please contact support for assistance.",
+                message: "Your account has been deleted. Please contact support.",
             });
         }
 
-        // 🚫 Check if email is verified
+        // Check if email is verified
         if (!user.isVerified) {
             return res.status(403).json({
                 message: "Please verify your email before logging in",
             });
         }
 
-        // 🚫 Check if email is verified
-        if (!user.isBlocked) {
+        // Check if user is blocked
+        if (user.isBlocked) {
             return res.status(403).json({
-                message: "Action forbidden: user is currently not blocked.",
+                message: "Your account is blocked. Please contact support.",
             });
         }
 
-
-        // 🔐 Check password validity
+        // Check password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
-        // ✅ Successful login
+        // Successful login
         return res.status(200).json({
             message: "Login successful",
             data: {
@@ -149,6 +148,9 @@ export const postUserLogin = async (req: Request, res: Response) => {
                 lastName: user.lastName,
                 email: user.email,
                 role: user.role,
+                isBlocked: user.isBlocked,
+                isDeleted: user.isDeleted,
+                isVerified: user.isVerified,
             },
             token: generateToken(user),
         });
@@ -159,30 +161,30 @@ export const postUserLogin = async (req: Request, res: Response) => {
 };
 
 
-// 👤 GET USER DETAILS (requires JWT)
+// -----------------------------
+// GET USER DETAILS (requires JWT)
+// -----------------------------
 export const getUserDetails = async (req: any, res: Response) => {
     console.log("---- fetch user details ------");
     try {
         const userRepo = AppDataSource.getRepository(User);
 
-        const { id } = req.user;
+        const { id } = req.user; // Added by auth middleware
 
-        console.log("----- id -----", id);
-
-        // Find user by ID, including related sims
+        // Find user by ID, including related sims and carts
         const user = await userRepo.findOne({
-            where: { id: (req as any).user.id }, // req.user added by auth middleware
-            relations: ["simIds", "carts"], // include carts if needed
+            where: { id },
+            relations: ["simIds", "carts"],
         });
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // 🚫 Block if user is deleted
+        // Check if account is deleted
         if (user.isDeleted) {
             return res.status(403).json({
-                message: "Your account has been deleted. Please contact support for assistance.",
+                message: "Your account has been deleted. Please contact support.",
             });
         }
 
