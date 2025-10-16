@@ -153,20 +153,29 @@ export const postUserLogin = async (req: Request, res: Response) => {
 
 // 👤 GET USER DETAILS (requires JWT)
 export const getUserDetails = async (req: any, res: Response) => {
+    console.log("---- fetch user details ------");
     try {
         const userRepo = AppDataSource.getRepository(User);
+
+        const { id } = req.user;
+
+        console.log("----- id -----", id);
+
+        // Find user by ID, including related sims
         const user = await userRepo.findOne({
-            where: { id: req.user.id }, // req.user is set in auth middleware
-            relations: ["simIds"], // load related sims if needed
+            where: { id: (req as any).user.id }, // req.user added by auth middleware
+            relations: ["simIds", "carts"], // include carts if needed
         });
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Check for soft-deleted user
+        // 🚫 Block if user is deleted
         if (user.isDeleted) {
-            return res.status(410).json({ message: "This account has been deleted" });
+            return res.status(403).json({
+                message: "Your account has been deleted. Please contact support for assistance.",
+            });
         }
 
         return res.status(200).json({
@@ -177,7 +186,9 @@ export const getUserDetails = async (req: any, res: Response) => {
             role: user.role,
             isBlocked: user.isBlocked,
             isDeleted: user.isDeleted,
+            isVerified: user.isVerified,
             sims: user.simIds,
+            carts: user.carts,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
         });

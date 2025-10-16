@@ -5,13 +5,15 @@
   "scripts": {
     "dev": "nodemon --watch src -e ts --exec ts-node src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "typeorm": "typeorm-ts-node-commonjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/stripe": "^8.0.416",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
@@ -24,6 +26,7 @@
     "nodemailer": "^7.0.6",
     "react-hot-toast": "^2.6.0",
     "reflect-metadata": "^0.2.2",
+    "stripe": "^19.1.0",
     "typeorm": "^0.3.27"
   },
   "devDependencies": {

@@ -32,9 +32,10 @@ export class Reservation {
     @JoinColumn({ name: "countryId" })
     country!: Country;
 
-    @ManyToOne(() => Order)
+    @ManyToOne(() => Order, { onDelete: "CASCADE" })
     @JoinColumn({ name: "orderId" })
     order!: Order;
+
 
     @CreateDateColumn()
     createdAt!: Date;

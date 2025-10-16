@@ -1,5 +1,4 @@
 import { Router } from "express";
-import userAuth from "./userAuth.route"
 import countryRoute from "./userCountry.route"
 import topUpPlanRoute from "./userTopupPlan.route"
 import esimRoute from "./userEsim.route"
@@ -14,14 +13,16 @@ import { getSocials } from "../../controllers/Social.Media.controllers";
 import { getOrderDetailsByUser, getOrderListByUser, postOrder } from "../../controllers/user/userEsimControlllers";
 import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handler";
 import userCartRoute from "./userCart.route"
-const router = Router();
+import userTransactionRoute from "./userTransaction.route"
 
+const router = Router();
 
 // Public
 router.post("/verify-otp", postCreateUser);
 router.post("/signup", postVerifyOtp);
 router.post("/login", postUserLogin);
 router.get("/details", auth, getUserDetails);
+
 router.put("/update", auth, updateProfile);
 router.delete("/delete", auth, deleteAccount);
 
@@ -37,6 +38,9 @@ router.get("/social-media", getSocials);
 
 // ---- quickies -----
 router.use("/quick-links", userQuickies);
+
+// ---- quickies -----
+router.use("/transactions", auth, userTransactionRoute);
 
 // ---- support ----
 router.use("/support", userSupport);

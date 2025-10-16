@@ -9,169 +9,148 @@ import { Order } from "../../entity/order.entity";
 import { Esim } from "../../entity/Esim.entity";
 import { Transaction } from "../../entity/Transactions.entity";
 import { Charges } from "../../entity/Charges.entity";
+import { AppDataSource } from "../../data-source";
 
 export const postOrder = async (req: any, res: Response) => {
-    const { planId } = req.body;
-    const { id: userId } = req.user;
+    const { transactionId } = req.body;
+    const { id } = req.user;
     const thirdPartyToken = { Authorization: `Bearer ${req.thirdPartyToken}` };
 
-    let transaction: Transaction | null = null;
-    let order: Order | null = null;
-    let reservation: Reservation | null = null;
-    let esim: Esim | null = null;
+    console.log("---- transaction id ----", transactionId);
+
+    if (!transactionId || !id) {
+        return res.status(400).json({ message: "transactionId and userId are required" });
+    }
 
     try {
-        console.log("📌 Starting postOrder process", { userId, planId });
+        const transactionRepo = AppDataSource.getRepository(Transaction);
+        const orderRepo = AppDataSource.getRepository(Order);
+        const esimRepo = AppDataSource.getRepository(Esim);
 
-        if (!userId || !planId) {
-            console.log("❌ Missing userId or planId");
-            return res.status(400).json({ message: "userId and planId are required", status: "error" });
+        // Fetch transaction with cart and cart items
+        const transaction = await transactionRepo.findOne({
+            where: { id: transactionId },
+            relations: [
+                "user",
+                "cart",
+                "cart.items",
+                "cart.items.plan",
+                "cart.items.plan.country",
+            ],
+        });
+
+        console.log("---- transaction ----", transaction);
+
+        if (!transaction) return res.status(404).json({ message: "Transaction not found" });
+
+        // Only proceed if transaction is SUCCESS
+        if (transaction.status !== "SUCCESS") {
+            return res.status(400).json({
+                message: `Transaction status is '${transaction.status}', cannot proceed with order.`
+            });
         }
 
-        const dataSource = await getDataSource();
-        const userRepo = dataSource.getRepository(User);
-        const planRepo = dataSource.getRepository(Plan);
-        const transactionRepo = dataSource.getRepository(Transaction);
-        const orderRepo = dataSource.getRepository(Order);
-        const chargeRepo = dataSource.getRepository(Charges);
-        const reserveRepo = dataSource.getRepository(Reservation);
-        const esimRepo = dataSource.getRepository(Esim);
+        const cartItems = transaction.cart.items;
 
-        // Fetch User
-        const user = await userRepo.findOne({ where: { id: userId, isDeleted: false } });
-        console.log("👤 Fetched user", user?.id);
-        if (!user) throw new Error("User not found");
+        if (!cartItems || cartItems.length === 0) {
+            return res.status(400).json({ message: "Cart is empty" });
+        }
 
-        // Fetch Plan
-        const plan = await planRepo.findOne({
-            where: { id: planId, isDeleted: false, isActive: true },
-            relations: ["country"],
-        });
-        console.log("📦 Fetched plan", plan?.id);
-        if (!plan) throw new Error("Plan not found");
+        const createdOrders: Order[] = [];
+        const createdEsims: Esim[] = [];
 
-        const country = plan.country as Country;
-        if (!country) throw new Error("Plan does not have an assigned country");
-        // console.log("🌍 Country assigned", country.id);
+        for (const item of cartItems) {
+            const plan = item.plan;
+            const country = plan.country;
 
-        // Create Fake Transaction
-        const fakeTransactionId = `FAKE-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-        transaction = transactionRepo.create({
-            user,
-            plan,
-            paymentGateway: "FakeGateway",
-            transactionId: fakeTransactionId,
-            amount: Number(plan.price) || 0,
-            status: "success",
-            response: JSON.stringify({ message: "Simulated transaction success" }),
-        });
+            // Create eSIMs based on quantity
+            for (let i = 0; i < item.quantity; i++) {
+                // Reserve eSIM
+                const reserveResponse = await axios.get(
+                    `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${plan.planId}`,
+                    { headers: thirdPartyToken }
+                );
+
+                if (reserveResponse.data?.status !== "success") {
+                    throw new Error(reserveResponse.data?.message || "Reservation failed");
+                }
+
+                const externalReserveId = reserveResponse.data.data?.id;
+                if (!externalReserveId) throw new Error("Reservation returned invalid ID");
+
+                console.log("----- externalReserveId ----", externalReserveId);
+
+                // Purchase eSIM
+                const createSimResponse = await axios.post(
+                    `${process.env.TURISM_URL}/v2/sims/${externalReserveId}/purchase`,
+                    {},
+                    { headers: thirdPartyToken }
+                );
+
+                const esimData = createSimResponse.data?.data;
+                if (!esimData) throw new Error("Failed to create eSIM");
+
+                // Save eSIM
+                const esim = esimRepo.create({
+                    externalId: esimData.id?.toString(),
+                    iccid: esimData.iccid || null,
+                    qrCodeUrl: esimData.qr_code_url || null,
+                    networkStatus: esimData.network_status || null,
+                    statusText: esimData.status_text || null,
+                    productName: esimData.name || null,
+                    currency: esimData.currency || null,
+                    price: parseFloat(esimData.price) || 0,
+                    validityDays: esimData.validity_days || null,
+                    dataAmount: esimData.data || 0,
+                    callAmount: esimData.call || 0,
+                    smsAmount: esimData.sms || 0,
+                    isActive: esimData.network_status !== "NOT_ACTIVE",
+                    startDate: new Date(),
+                    endDate: new Date(new Date().setDate(new Date().getDate() + (esimData.validity_days || 30))),
+                    country,
+                    user: transaction.user,
+                    plans: [plan],
+                    cartItem: item, // link to cart item
+                });
+
+                await esimRepo.save(esim);
+                createdEsims.push(esim);
+
+                // Save Order
+                const order = orderRepo.create({
+                    user: transaction.user,
+                    plan,
+                    country,
+                    transaction,
+                    totalAmount: parseFloat(plan.price),
+                    status: "completed",
+                    activated: true,
+                    esim,
+                });
+
+                await orderRepo.save(order);
+                createdOrders.push(order);
+            }
+        }
+
+        // Mark cart as checked out
+        transaction.cart.isCheckedOut = true;
+        await AppDataSource.getRepository("carts").save(transaction.cart);
+
+        // Mark transaction as success
+        transaction.status = "SUCCESS";
         await transactionRepo.save(transaction);
-        // console.log("💰 Transaction created", { id: transaction.id, transactionId: transaction.transactionId });
-
-        // Create Charges linked to Transaction
-        const charge1 = chargeRepo.create({ name: "Service Fee", amount: 10, transaction, isActive: true });
-        const charge2 = chargeRepo.create({ name: "Activation Fee", amount: 5, transaction, isActive: true });
-        await chargeRepo.save([charge1, charge2]);
-        // console.log("🧾 Charges created", charge1.id, charge2.id);
-
-        // Create Order linked to Transaction
-        order = orderRepo.create({
-            user,
-            plan,
-            country,
-            transaction,
-            totalAmount: Number(plan.price),
-            status: "pending",
-            activated: false,
-        });
-        await orderRepo.save(order);
-        // console.log("📄 Order created", order.id);
-
-        console.log("---- esim plan id ----", plan.planId);
-        // Reserve eSIM
-        const reserveResponse = await axios.get(
-            `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${plan.planId}`,
-            { headers: thirdPartyToken }
-        );
-
-        if (reserveResponse.data?.status !== "success") {
-            throw new Error(reserveResponse.data?.message || "Reservation failed");
-        }
-
-        console.log("----- reserveResponse ----", reserveResponse?.data);
-
-        const externalReserveId = reserveResponse.data.data?.id;
-        if (!externalReserveId) throw new Error("Reservation returned invalid ID");
-
-        console.log("---- reservation id externalReserveId ----", externalReserveId);
-
-        reservation = reserveRepo.create({ reserveId: externalReserveId, plan, country, user, order });
-        await reserveRepo.save(reservation);
-        console.log("🎫 Reservation created", reservation.id, "External ID:", reservation.reserveId);
-
-        // Create eSIM
-        const createSimResponse = await axios.post(
-            `${process.env.TURISM_URL}/v2/sims/${reservation.reserveId}/purchase`,
-            {},
-            { headers: thirdPartyToken }
-        );
-
-        // Create eSIM from 3rd party response
-        const esimData = createSimResponse.data?.data;
-        if (!esimData) throw new Error("Failed to create eSIM");
-
-        console.log("---- esim data ----", esimData);
-
-        esim = esimRepo.create({
-            externalId: esimData.id?.toString(),
-            iccid: esimData.iccid || null,
-            qrCodeUrl: esimData.qr_code_url || null,
-            networkStatus: esimData.network_status || null,
-            statusText: esimData.status_text || null,
-            productName: esimData.name || null,
-            currency: esimData.currency || null,
-            price: parseFloat(esimData.price) || 0,
-            validityDays: esimData.validity_days || null,
-            dataAmount: esimData.data || 0,
-            callAmount: esimData.call || 0,
-            smsAmount: esimData.sms || 0,
-            isActive: esimData.network_status !== "NOT_ACTIVE",
-            startDate: new Date(),
-            endDate: new Date(new Date().setDate(new Date().getDate() + (esimData.validity_days || 30))),
-            country,
-            user,
-            plans: [plan],
-        });
-
-        await esimRepo.save(esim);
-        console.log("📶 eSIM created and stored", esim.id);
-
-        // Update Order
-        order.esim = esim;
-        order.status = "completed";
-        order.activated = true;
-        await orderRepo.save(order);
-        console.log("✅ Order updated with eSIM", order.id, "status:", order.status);
 
         return res.status(201).json({
-            message: "Transaction, Charges, Order, and eSIM created successfully",
-            status: "success",
-            data: { transaction, order, charges: [charge1, charge2], reservation, esim },
+            message: "Order completed successfully",
+            transaction,
+            orders: createdOrders,
+            esims: createdEsims,
+            status: 201
         });
-
     } catch (err: any) {
-        console.error("❌ Error in postOrder:", err.response?.data || err.message);
-
-        if (order) {
-            order.status = "failed";
-            order.errorMessage = err.response?.data?.message || err.message;
-            const dataSource = await getDataSource();
-            const orderRepo = dataSource.getRepository(Order);
-            await orderRepo.save(order);
-            console.log("⚠️ Order marked as failed", order.id);
-        }
-
-        return res.status(500).json({ message: "Order process failed", error: err.message });
+        console.error("❌ postOrder error:", err.message || err);
+        return res.status(500).json({ message: "Order process failed", error: err.message || "Server error" });
     }
 };
 

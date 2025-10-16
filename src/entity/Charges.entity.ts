@@ -23,9 +23,13 @@ export class Charges {
     @Column({ type: "boolean", default: true })
     isActive!: boolean;
 
-    @ManyToOne(() => Transaction, (transaction) => transaction.charges, { nullable: false })
+    @ManyToOne(() => Transaction, (transaction) => transaction.charges, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+    })
     @JoinColumn({ name: "transactionId" })
     transaction!: Transaction;
+
 
     @CreateDateColumn()
     createdAt!: Date;
