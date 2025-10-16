@@ -74,10 +74,12 @@ export const postOrder = async (req: any, res: Response) => {
                 if (reserveResponse.data?.status !== "success") {
                     throw new Error(reserveResponse.data?.message || "Reservation failed");
                 }
-
+                
+                console.log("----- reserveResponse?.data ----", reserveResponse?.data);
+                
                 const externalReserveId = reserveResponse.data.data?.id;
                 if (!externalReserveId) throw new Error("Reservation returned invalid ID");
-
+                
                 console.log("----- externalReserveId ----", externalReserveId);
 
                 // Purchase eSIM

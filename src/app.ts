@@ -26,6 +26,14 @@ app.use(async (req, res, next) => {
     next();
 });
 
+// (async () => {
+//     await AppDataSource.initialize();
+//     await AppDataSource.dropDatabase();
+//     console.log("✅ Database dropped successfully!");
+//     await AppDataSource.synchronize(); // recreate schema if needed
+//     console.log("✅ Schema recreated!");
+//     await AppDataSource.destroy();
+// })();
 // ======= Routes =======
 app.get("/", (req, res) => {
     res.send("Hello from Node + TypeORM + MySQL!");
@@ -50,8 +58,10 @@ app.get("/api/entities", (req, res) => {
     });
 });
 
+
+
 // ====== Admin =======
-app.use("/api/admin", auth, adminRouter);
+app.use("/api/admin", adminRouter);
 
 // ====== User =======
 app.use("/api/user", userRouter);

@@ -126,6 +126,14 @@ export const postUserLogin = async (req: Request, res: Response) => {
             });
         }
 
+        // 🚫 Check if email is verified
+        if (!user.isBlocked) {
+            return res.status(403).json({
+                message: "Action forbidden: user is currently not blocked.",
+            });
+        }
+
+
         // 🔐 Check password validity
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {

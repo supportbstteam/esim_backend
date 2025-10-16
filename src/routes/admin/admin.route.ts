@@ -12,41 +12,42 @@ import adminSocialRouter from "./adminSocial.route"
 import contentRouter from './adminContent.route'
 import queryRoute from "../query.routes"
 import adminOrderRouter from "./adminOrder.route"
+import { auth } from '../../middlewares/auth.handler';
 const router = express.Router();
 
 router.post("/login", loginAdmin);
 router.post("/register", registerAdmin);
-router.get("/details", adminDetails);
+router.get("/details", auth, adminDetails);
 
 // countries
-router.use("/countries", adminCountryRoute);
+router.use("/countries", auth, adminCountryRoute);
 
 // operator
-router.use("/operator", eSimOperatorRoute);
-router.use("/third-party-api", thirdPartyRouter); // third party library api
+router.use("/operator", auth, eSimOperatorRoute);
+router.use("/third-party-api", auth, thirdPartyRouter); // third party library api
 
 // plans
-router.use("/plans", eSimPlanRoute);
+router.use("/plans", auth, eSimPlanRoute);
 
 // users
-router.use("/users", adminUserRouter);
+router.use("/users", auth, adminUserRouter);
 
 // order
-router.use("/orders", adminOrderRouter);
+router.use("/orders", auth, adminOrderRouter);
 
 // top up
-router.use("/top-up", eTopupRoute);
+router.use("/top-up", auth, eTopupRoute);
 
 //e-sim
-router.use("/e-sim", eSimRoute);
+router.use("/e-sim", auth, eSimRoute);
 
 // contact
-router.use("/contact", adminContactRouter);
-router.use("/social-media", adminSocialRouter);
-router.use("/content", contentRouter);
+router.use("/contact", auth, adminContactRouter);
+router.use("/social-media", auth, adminSocialRouter);
+router.use("/content", auth, contentRouter);
 
 // query
-router.use("/query", queryRoute);
+router.use("/query", auth, queryRoute);
 
 
 
