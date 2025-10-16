@@ -61,7 +61,7 @@ app.get("/api/entities", (req, res) => {
 
 
 // ====== Admin =======
-app.use("/api/admin", adminRouter);
+app.use("/api/admin",auth, adminRouter);
 
 // ====== User =======
 app.use("/api/user", userRouter);

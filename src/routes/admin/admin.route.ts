@@ -17,37 +17,37 @@ const router = express.Router();
 
 router.post("/login", loginAdmin);
 router.post("/register", registerAdmin);
-router.get("/details", auth, adminDetails);
+router.get("/details", adminDetails);
 
 // countries
-router.use("/countries", auth, adminCountryRoute);
+router.use("/countries", adminCountryRoute);
 
 // operator
-router.use("/operator", auth, eSimOperatorRoute);
-router.use("/third-party-api", auth, thirdPartyRouter); // third party library api
+router.use("/operator", eSimOperatorRoute);
+router.use("/third-party-api", thirdPartyRouter); // third party library api
 
 // plans
-router.use("/plans", auth, eSimPlanRoute);
+router.use("/plans", eSimPlanRoute);
 
 // users
-router.use("/users", auth, adminUserRouter);
+router.use("/users", adminUserRouter);
 
 // order
-router.use("/orders", auth, adminOrderRouter);
+router.use("/orders", adminOrderRouter);
 
 // top up
-router.use("/top-up", auth, eTopupRoute);
+router.use("/top-up", eTopupRoute);
 
 //e-sim
-router.use("/e-sim", auth, eSimRoute);
+router.use("/e-sim", eSimRoute);
 
 // contact
-router.use("/contact", auth, adminContactRouter);
-router.use("/social-media", auth, adminSocialRouter);
-router.use("/content", auth, contentRouter);
+router.use("/contact", adminContactRouter);
+router.use("/social-media", adminSocialRouter);
+router.use("/content", contentRouter);
 
 // query
-router.use("/query", auth, queryRoute);
+router.use("/query", queryRoute);
 
 
 
