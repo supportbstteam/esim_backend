@@ -66,7 +66,7 @@ export const deleteAdminUser = async (req: Request, res: Response) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        user.isDeleted = true;
+        user.isDeleted = !user.isDeleted;
         await userRepo.save(user);
 
         return res.status(200).json({ message: "User soft deleted successfully" });
@@ -125,7 +125,7 @@ export const getAdminAllUsers = async (req: Request, res: Response) => {
             .leftJoinAndSelect("esim.country", "country")
             .leftJoinAndSelect("esim.plans", "plan")
             .leftJoinAndSelect("esim.topUps", "topUps")
-            .where("user.isDeleted = :isDeleted", { isDeleted: false })
+            // .where("user.isDeleted = :isDeleted", { isDeleted: false })
             .orderBy("user.createdAt", "DESC");
 
         if (countryId) {
@@ -240,5 +240,53 @@ export const getFilteredUsers = async (req: Request, res: Response) => {
     } catch (err) {
         console.error("❌ Error in getFilteredUsers:", err);
         return res.status(500).json({ status: "error", message: "Internal Server Error" });
+    }
+};
+
+export const putAdminUpdateUser = async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const { firstName, lastName, email, password } = req.body;
+
+    try {
+        const isAdmin = await checkAdmin(req, res);
+        if (!isAdmin) return;
+
+        const dataSource = await getDataSource();
+        const userRepo = dataSource.getRepository(User);
+
+        const user = await userRepo.findOne({ where: { id: userId } });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Check if email is being updated and is already taken
+        if (email && email !== user.email) {
+            const existingUser = await userRepo.findOne({ where: { email } });
+            if (existingUser) {
+                return res.status(400).json({ message: "Email is already in use" });
+            }
+        }
+
+        // Update fields if provided
+        if (firstName) user.firstName = firstName;
+        if (lastName) user.lastName = lastName;
+        if (email) user.email = email;
+        // if (role) user.role = role;
+        if (password) {
+            user.password = await bcrypt.hash(password, 10);
+        }
+
+        await userRepo.save(user);
+
+        // exclude password in response
+        const { password: _, ...safeUser } = user;
+
+        return res.status(200).json({
+            message: "User updated successfully",
+            user: safeUser,
+        });
+    } catch (err: any) {
+        console.error("Error updating user by admin:", err);
+        return res.status(500).json({ message: "Internal server error" });
     }
 };

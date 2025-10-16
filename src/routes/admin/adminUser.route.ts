@@ -6,6 +6,7 @@ import {
     getAdminAllUsers,
     getAdminUserDetails,
     getFilteredUsers,
+    putAdminUpdateUser,
 } from "../../controllers/admin/adminUser.contollers";
 
 const router = Router();
@@ -14,6 +15,7 @@ const router = Router();
 router.post("/create-user", postAdminCreateUser);              // Create user
 router.delete("/:userId/delete", deleteAdminUser);        // Soft delete
 router.patch("/:userId/block", patchAdminToggleBlockUser); // Block/Unblock
+router.put("/:userId/update", putAdminUpdateUser); // Block/Unblock
 
 // User Queries
 router.get("/", getAdminAllUsers);                  // All users (with filters)
