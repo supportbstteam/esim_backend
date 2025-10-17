@@ -50,11 +50,12 @@ export const postAdminCreateUser = async (req: Request, res: Response) => {
     }
 };
 
-// ----------------- SOFT DELETE USER -----------------
+// ----------------- HARD DELETE USER -----------------
 export const deleteAdminUser = async (req: Request, res: Response) => {
     const { userId } = req.params;
 
     try {
+        // Check if requester is admin
         const isAdmin = await checkAdmin(req, res);
         if (!isAdmin) return;
 
@@ -66,15 +67,16 @@ export const deleteAdminUser = async (req: Request, res: Response) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        user.isDeleted = !user.isDeleted;
-        await userRepo.save(user);
+        // Hard delete
+        await userRepo.remove(user);
 
-        return res.status(200).json({ message: "User soft deleted successfully" });
+        return res.status(200).json({ message: "User permanently deleted successfully" });
     } catch (err: any) {
-        console.error("Error soft deleting user:", err);
+        console.error("Error hard deleting user:", err);
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 // ----------------- TOGGLE BLOCK/UNBLOCK USER -----------------
 export const patchAdminToggleBlockUser = async (req: Request, res: Response) => {
