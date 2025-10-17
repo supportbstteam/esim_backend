@@ -10,6 +10,9 @@ export class Cart {
     @ManyToOne(() => User, user => user.carts, { nullable: false })
     user!: User;
 
+    @Column({ type: "boolean", default: false })
+    isDeleted!: boolean; // soft delete
+
     @OneToMany(() => CartItem, item => item.cart, { cascade: true })
     items!: CartItem[];
 

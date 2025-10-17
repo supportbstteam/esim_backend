@@ -10,7 +10,4 @@ const router = express.Router();
 router.post("/signup", postCreateUser);
 router.post("/login", postUserLogin);
 
-// Protected
-router.get("/me", getUserDetails);
-
 export default router;
