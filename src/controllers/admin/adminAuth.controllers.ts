@@ -124,12 +124,11 @@ export const adminChangeNotificationMail = async (req: any, res: Response) => {
     const { notificationMail } = req.body;
     const adminId = req.user.id;
 
-    // Validation
     if (!notificationMail) {
       return res.status(400).json({ message: "Notification mail is required" });
     }
 
-    // Basic email validation (optional but good to include)
+    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(notificationMail)) {
       return res.status(400).json({ message: "Invalid email format" });
@@ -143,13 +142,16 @@ export const adminChangeNotificationMail = async (req: any, res: Response) => {
       return res.status(404).json({ message: "Admin not found" });
     }
 
-    // Update notification mail
-    admin.notificationMail = notificationMail;
-    await adminRepo.save(admin);
+    // 🔁 Update notificationMail for ALL admins
+    await adminRepo
+      .createQueryBuilder()
+      .update(Admin)
+      .set({ notificationMail })
+      .execute();
 
     return res.status(200).json({
-      message: "Notification mail updated successfully",
-      notificationMail: admin.notificationMail,
+      message: "Notification mail updated successfully for all admins",
+      notificationMail,
     });
   } catch (error) {
     console.error("Error updating notification mail:", error);
@@ -162,7 +164,7 @@ export const adminChangeNotificationMail = async (req: any, res: Response) => {
 
 export const updateAdminProfile = async (req: any, res: Response) => {
   try {
-    const adminId = req.user.id; // assuming it's coming from the token middleware
+    const adminId = req.user.id;
     const { name, notificationMail, email } = req.body;
 
     const dataSource = await getDataSource();
@@ -173,10 +175,26 @@ export const updateAdminProfile = async (req: any, res: Response) => {
       return res.status(404).json({ message: "Admin not found" });
     }
 
-    // Update fields (only if provided)
+    // Update individual fields
     if (name) admin.name = name;
     if (email) admin.username = email;
-    if (notificationMail !== undefined) admin.notificationMail = notificationMail;
+
+    // 🔁 If notificationMail is being changed, update it for ALL admins
+    if (notificationMail !== undefined && notificationMail !== admin.notificationMail) {
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(notificationMail)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      await adminRepo
+        .createQueryBuilder()
+        .update(Admin)
+        .set({ notificationMail })
+        .execute();
+
+      admin.notificationMail = notificationMail; // Update local admin instance too
+    }
 
     await adminRepo.save(admin);
 
