@@ -123,7 +123,7 @@ export const getPlanById = async (req: Request, res: Response) => {
 
         // Query by UUID id instead of numeric planId
         const plan = await planRepo.findOne({
-            where: { id: planId, isDeleted: false },
+            where: { id: planId, isDeleted: false, isActive: true },
             relations: ["country"],
         });
 

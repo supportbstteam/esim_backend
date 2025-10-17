@@ -140,7 +140,7 @@ export const getUserPlanByCountry = async (req: Request, res: Response) => {
     }
 
     const plans = await planRepo.find({
-      where: whereCondition,
+      where: { ...whereCondition, isActive: true },
       relations: ["country"],
       order: { price: "ASC" },
     });
