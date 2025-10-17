@@ -10,6 +10,8 @@ import { Esim } from "../../entity/Esim.entity";
 import { Transaction } from "../../entity/Transactions.entity";
 import { Charges } from "../../entity/Charges.entity";
 import { AppDataSource } from "../../data-source";
+import { Cart } from "../../entity/Carts.entity";
+import { CartItem } from "../../entity/CartItem.entity";
 
 export const postOrder = async (req: any, res: Response) => {
     const { transactionId } = req.body;
@@ -26,6 +28,8 @@ export const postOrder = async (req: any, res: Response) => {
         const transactionRepo = AppDataSource.getRepository(Transaction);
         const orderRepo = AppDataSource.getRepository(Order);
         const esimRepo = AppDataSource.getRepository(Esim);
+        const cartRepo = AppDataSource.getRepository(Cart);
+        const cartItemRepo = AppDataSource.getRepository(CartItem);
 
         // Fetch transaction with cart and cart items
         const transaction = await transactionRepo.findOne({
@@ -39,27 +43,39 @@ export const postOrder = async (req: any, res: Response) => {
             ],
         });
 
-        console.log("---- transaction ----", transaction);
-
-        if (!transaction) return res.status(404).json({ message: "Transaction not found" });
+        if (!transaction) {
+            return res.status(404).json({ message: "Transaction not found" });
+        }
 
         // Only proceed if transaction is SUCCESS
         if (transaction.status !== "SUCCESS") {
             return res.status(400).json({
-                message: `Transaction status is '${transaction.status}', cannot proceed with order.`
+                message: `Transaction status is '${transaction.status}', cannot proceed with order.`,
             });
         }
 
-        const cartItems = transaction.cart.items;
+        const cart = transaction.cart;
 
-        if (!cartItems || cartItems.length === 0) {
-            return res.status(400).json({ message: "Cart is empty" });
+        if (!cart) {
+            return res.status(404).json({ message: "Cart not found for transaction" });
+        }
+
+        // Skip deleted cart and deleted cart items
+        if (cart.isDeleted) {
+            return res.status(400).json({ message: "Cart is deleted. Cannot process order." });
+        }
+
+        // Filter out deleted cart items
+        const validCartItems = cart.items.filter((item) => !item.isDeleted);
+
+        if (!validCartItems.length) {
+            return res.status(400).json({ message: "No valid cart items found to process order" });
         }
 
         const createdOrders: Order[] = [];
         const createdEsims: Esim[] = [];
 
-        for (const item of cartItems) {
+        for (const item of validCartItems) {
             const plan = item.plan;
             const country = plan.country;
 
@@ -74,13 +90,9 @@ export const postOrder = async (req: any, res: Response) => {
                 if (reserveResponse.data?.status !== "success") {
                     throw new Error(reserveResponse.data?.message || "Reservation failed");
                 }
-                
-                console.log("----- reserveResponse?.data ----", reserveResponse?.data);
-                
+
                 const externalReserveId = reserveResponse.data.data?.id;
                 if (!externalReserveId) throw new Error("Reservation returned invalid ID");
-                
-                console.log("----- externalReserveId ----", externalReserveId);
 
                 // Purchase eSIM
                 const createSimResponse = await axios.post(
@@ -112,7 +124,7 @@ export const postOrder = async (req: any, res: Response) => {
                     country,
                     user: transaction.user,
                     plans: [plan],
-                    cartItem: item, // link to cart item
+                    cartItem: item,
                 });
 
                 await esimRepo.save(esim);
@@ -136,8 +148,8 @@ export const postOrder = async (req: any, res: Response) => {
         }
 
         // Mark cart as checked out
-        transaction.cart.isCheckedOut = true;
-        await AppDataSource.getRepository("carts").save(transaction.cart);
+        cart.isCheckedOut = true;
+        await cartRepo.save(cart);
 
         // Mark transaction as success
         transaction.status = "SUCCESS";
@@ -148,13 +160,16 @@ export const postOrder = async (req: any, res: Response) => {
             transaction,
             orders: createdOrders,
             esims: createdEsims,
-            status: 201
         });
     } catch (err: any) {
         console.error("❌ postOrder error:", err.message || err);
-        return res.status(500).json({ message: "Order process failed", error: err.message || "Server error" });
+        return res.status(500).json({
+            message: "Order process failed",
+            error: err.message || "Server error",
+        });
     }
 };
+
 
 // fake generator esim 
 // export const generateFakeOrder = async (req: any, res: Response) => {
