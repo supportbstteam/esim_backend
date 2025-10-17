@@ -155,6 +155,62 @@ export const postOrder = async (req: any, res: Response) => {
         transaction.status = "SUCCESS";
         await transactionRepo.save(transaction);
 
+        // Prepare response with only necessary fields
+        const userResponse = {
+            id: transaction.user.id,
+            firstName: transaction.user.firstName,
+            lastName: transaction.user.lastName,
+            email: transaction.user.email,
+            isVerified: transaction.user.isVerified,
+            isBlocked: transaction.user.isBlocked,
+        };
+
+        const ordersResponse = createdOrders.map((order) => ({
+            id: order.id,
+            totalAmount: order.totalAmount,
+            status: order.status,
+            activated: order.activated,
+            plan: {
+                id: order.plan.id,
+                name: order.plan.name,
+                price: order.plan.price,
+                validityDays: order.plan.validityDays,
+            },
+            country: {
+                id: order.country.id,
+                name: order.country.name,
+                isoCode: order.country.isoCode,
+                iso3Code: order.country.iso3Code,
+            },
+            esim: {
+                id: order?.esim?.id || "",
+                externalId: order?.esim?.externalId,
+                iccid: order?.esim?.iccid,
+                qrCodeUrl: order?.esim?.qrCodeUrl,
+                productName: order?.esim?.productName,
+                price: order?.esim?.price,
+                validityDays: order?.esim?.validityDays,
+                dataAmount: order?.esim?.dataAmount,
+                callAmount: order?.esim?.callAmount,
+                smsAmount: order?.esim?.smsAmount,
+                isActive: order?.esim?.isActive,
+                statusText: order?.esim?.statusText,
+                networkStatus: order?.esim?.networkStatus,
+                startDate: order?.esim?.startDate,
+                endDate: order?.esim?.endDate,
+            },
+        }));
+
+        const transactionResponse = {
+            id: transaction.id,
+            paymentGateway: transaction.paymentGateway,
+            transactionId: transaction.transactionId,
+            amount: transaction.amount,
+            status: transaction.status,
+            createdAt: transaction.createdAt,
+            updatedAt: transaction.updatedAt,
+        };
+
         return res.status(201).json({
             message: "Order completed successfully",
             transaction,
