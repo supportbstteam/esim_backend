@@ -213,9 +213,9 @@ export const postOrder = async (req: any, res: Response) => {
 
         return res.status(201).json({
             message: "Order completed successfully",
-            transaction,
-            orders: createdOrders,
-            esims: createdEsims,
+            user: userResponse,
+            transaction: transactionResponse,
+            orders: ordersResponse,
         });
     } catch (err: any) {
         console.error("❌ postOrder error:", err.message || err);
