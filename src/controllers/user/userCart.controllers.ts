@@ -192,6 +192,7 @@ export const getUserCart = async (req: any, res: Response) => {
                         id: i.plan.id,
                         name: i.plan.name,
                         price: i.plan.price,
+                        data: i.plan?.data,
                         validityDays: i.plan.validityDays,
                         country: { id: i.plan.country.id, name: i.plan.country.name },
                     },
