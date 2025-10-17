@@ -1,5 +1,5 @@
 import express from 'express'
-import { adminDetails, loginAdmin, registerAdmin } from '../../controllers/admin/adminAuth.controllers';
+import { adminAuthChangePassword, adminChangeNotificationMail, adminDetails, loginAdmin, registerAdmin, updateAdminProfile } from '../../controllers/admin/adminAuth.controllers';
 import eSimPlanRoute from "./adminEPlan.route"
 import adminCountryRoute from "./adminCountry.route"
 import eSimOperatorRoute from "./adminOperator.route"
@@ -18,6 +18,9 @@ const router = express.Router();
 router.post("/login", loginAdmin);
 router.post("/register", registerAdmin);
 router.get("/details", adminDetails);
+router.post("/change-password", adminAuthChangePassword);
+router.post("/change-notification-mail", adminChangeNotificationMail);
+router.put("/update", updateAdminProfile);
 
 // countries
 router.use("/countries", adminCountryRoute);

@@ -22,6 +22,10 @@ export class Admin {
     @Column({ type: "varchar", length: 255 })
     password!: string;
 
+    // ✅ New field for notification mail
+    @Column({ type: "varchar", length: 255, nullable: true })
+    notificationMail!: string | null;
+
     @CreateDateColumn()
     createdAt!: Date;
 
