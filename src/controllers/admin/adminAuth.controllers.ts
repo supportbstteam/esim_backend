@@ -165,7 +165,7 @@ export const adminChangeNotificationMail = async (req: any, res: Response) => {
 export const updateAdminProfile = async (req: any, res: Response) => {
   try {
     const adminId = req.user.id;
-    const { name, notificationMail, email } = req.body;
+    const { name, notificationMail, email, newPassword, currentPassword } = req.body;
 
     const dataSource = await getDataSource();
     const adminRepo = dataSource.getRepository(Admin);
@@ -179,9 +179,8 @@ export const updateAdminProfile = async (req: any, res: Response) => {
     if (name) admin.name = name;
     if (email) admin.username = email;
 
-    // 🔁 If notificationMail is being changed, update it for ALL admins
+    // 🔁 Update notificationMail for ALL admins
     if (notificationMail !== undefined && notificationMail !== admin.notificationMail) {
-      // Basic email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(notificationMail)) {
         return res.status(400).json({ message: "Invalid email format" });
@@ -193,7 +192,30 @@ export const updateAdminProfile = async (req: any, res: Response) => {
         .set({ notificationMail })
         .execute();
 
-      admin.notificationMail = notificationMail; // Update local admin instance too
+      admin.notificationMail = notificationMail;
+    }
+
+    // 🔁 Update password for ALL admins
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ message: "Current password is required to change password" });
+      }
+
+      const isMatch = await bcrypt.compare(currentPassword, admin.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
+
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+      await adminRepo
+        .createQueryBuilder()
+        .update(Admin)
+        .set({ password: hashedPassword })
+        .execute();
+
+      admin.password = hashedPassword; // Update local instance
     }
 
     await adminRepo.save(admin);
