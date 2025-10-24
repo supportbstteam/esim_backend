@@ -3,6 +3,7 @@ import { User } from "../../entity/User.entity";
 import { getDataSource } from "../../lib/serverless";
 import { checkAdmin } from "../../utils/checkAdmin";
 import bcrypt from "bcryptjs";
+import { Cart } from "../../entity/Carts.entity";
 
 // ----------------- CREATE USER -----------------
 export const postAdminCreateUser = async (req: Request, res: Response) => {
@@ -50,7 +51,6 @@ export const postAdminCreateUser = async (req: Request, res: Response) => {
     }
 };
 
-// ----------------- HARD DELETE USER -----------------
 export const deleteAdminUser = async (req: Request, res: Response) => {
     const { userId } = req.params;
 
@@ -61,21 +61,27 @@ export const deleteAdminUser = async (req: Request, res: Response) => {
 
         const dataSource = await getDataSource();
         const userRepo = dataSource.getRepository(User);
+        const cartRepo = dataSource.getRepository(Cart);
 
+        // Find the user
         const user = await userRepo.findOne({ where: { id: userId } });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Hard delete
+        // Delete only carts (not orders)
+        await cartRepo.delete({ user });
+
+        // Now remove the user
         await userRepo.remove(user);
 
-        return res.status(200).json({ message: "User permanently deleted successfully" });
+        return res.status(200).json({ message: "User and their carts deleted successfully" });
     } catch (err: any) {
         console.error("Error hard deleting user:", err);
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 
 // ----------------- TOGGLE BLOCK/UNBLOCK USER -----------------

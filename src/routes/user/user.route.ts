@@ -14,6 +14,7 @@ import { getOrderDetailsByUser, getOrderListByUser, postOrder } from "../../cont
 import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handler";
 import userCartRoute from "./userCart.route"
 import userTransactionRoute from "./userTransaction.route"
+import esimUsage from "./userESimUsage.route"
 
 const router = Router();
 
@@ -47,6 +48,10 @@ router.use("/support", userSupport);
 
 // ---- query ------
 router.use("/query", queryRoute);
+
+// ---- e sim usage ----
+router.use("/usage", esimUsage);
+
 
 // -------- order ------------
 router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
