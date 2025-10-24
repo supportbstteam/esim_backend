@@ -231,7 +231,6 @@ export const postOrder = async (req: any, res: Response) => {
     }
 };
 
-
 // fake generator esim 
 // export const generateFakeOrder = async (req: any, res: Response) => {
 //     const { id: userId } = req.user;
@@ -399,20 +398,28 @@ export const getOrderListByUser = async (req: any, res: Response) => {
         });
 
         // 3️⃣ Format orders for frontend consumption
-        const formattedOrders = orders.map((order) => ({
-            id: order.id,
-            planName: order.plan?.name || "N/A",
-            data: order.plan?.data || null,
-            validityDays: order.plan?.validityDays || null,
-            price: Number(order.totalAmount) || 0,
-            country: order.country?.name || "Unknown",
-            isoCode: order.country?.isoCode || null,
-            phoneCode: order.country?.phoneCode || null,
-            isActive: !!order.activated,
-            status: order.status,
-            errorMessage: order.errorMessage || null,
-            createdAt: order.createdAt,
-        }));
+        const formattedOrders = orders.map((order) => {
+
+            console.log("----- order ------", order);
+
+            return ({
+                id: order.id,
+                planName: order.esim?.productName || "N/A",
+                data: order.esim?.dataAmount || null,
+                validityDays: order.esim?.validityDays || null,
+                // iccid, order?.esim?.iccid,
+                price: Number(order.totalAmount) || 0,
+                sms : order?.esim?.smsAmount,
+                number : order?.esim?.iccid,
+                country: order.country?.name || "Unknown",
+                isoCode: order.country?.isoCode || null,
+                phoneCode: order.country?.phoneCode || null,
+                isActive: !!order.activated,
+                status: order.status,
+                errorMessage: order.errorMessage || null,
+                createdAt: order.createdAt,
+            })
+        });
 
         // 4️⃣ Respond success
         return res.status(200).json({
