@@ -46,6 +46,7 @@ export const postOrder = async (req: any, res: Response) => {
         if (!validCartItems.length) return res.status(400).json({ message: "No valid cart items found to process order" });
 
         const createdOrders: Order[] = [];
+        const createdEsims: Esim[] = [];
 
         for (const item of validCartItems) {
             const plan = item.plan;
@@ -103,6 +104,7 @@ export const postOrder = async (req: any, res: Response) => {
                     });
 
                     await esimRepo.save(esim);
+                    createdEsims.push(esim);
 
                 } catch (err: any) {
                     console.error("❌ eSIM provisioning error:", err.message || err);
@@ -145,8 +147,9 @@ export const postOrder = async (req: any, res: Response) => {
         await cartRepo.save(cart);
 
         return res.status(201).json({
-            message: "Order processing completed",
-            transactionId: transaction.id,
+            message: "Order completed successfully",
+            transaction,
+            esim: createdEsims,
             orders: createdOrders.map((order) => ({
                 id: order.id,
                 userId: order.userId,
