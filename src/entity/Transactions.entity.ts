@@ -27,7 +27,7 @@ export class Transaction {
     @JoinColumn({ name: "userId" })
     user!: User;
 
-    @ManyToOne(() => Cart, { nullable: false })
+    @ManyToOne(() => Cart, { nullable: true })
     @JoinColumn({ name: "cartId" })
     cart!: Cart;
 
