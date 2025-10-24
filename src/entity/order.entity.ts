@@ -3,123 +3,67 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    JoinColumn,
+    OneToOne,
     CreateDateColumn,
     UpdateDateColumn,
+    JoinColumn
 } from "typeorm";
+import { Transaction } from "./Transactions.entity";
 import { User } from "./User.entity";
 import { Plan } from "./Plans.entity";
-import { Transaction } from "./Transactions.entity";
+import { Esim } from "./Esim.entity";
+import { Country } from "./Country.entity"; // Import Country entity
 
-@Entity({ name: "orders" })
+@Entity()
 export class Order {
     @PrimaryGeneratedColumn("uuid")
     id!: string;
 
-    // User reference
-    @Column({ type: "uuid", nullable: true })
-    userId!: string;
-
-    // Snapshot of user details (for historical purposes)
-    @Column({ type: "varchar", length: 255, nullable: true })
-    userName?: string;
-
-    @Column({ type: "varchar", length: 255, nullable: true })
-    userEmail?: string;
-
-    @Column({ type: "varchar", length: 20, nullable: true })
-    userPhone?: string;
-
-    @ManyToOne(() => User, { nullable: true, onDelete: "SET NULL" })
+    @ManyToOne(() => User)
     @JoinColumn({ name: "userId" })
-    user?: User;
+    user!: User;
 
-    // Plan reference
-    @ManyToOne(() => Plan, { nullable: true, onDelete: "SET NULL" })
+    @ManyToOne(() => Plan)
     @JoinColumn({ name: "planId" })
-    plan?: Plan;
+    plan!: Plan;
 
-    // Transaction reference
-    @ManyToOne(() => Transaction, { nullable: true, onDelete: "SET NULL" })
+    @ManyToOne(() => Transaction, { nullable: false, onDelete: "CASCADE" })
     @JoinColumn({ name: "transactionId" })
-    transaction?: Transaction;
+    transaction!: Transaction;
 
-    @Column({ type: "varchar", length: 50, default: "PLAN" })
-    orderType!: "PLAN" | "TOPUP";
+    @OneToOne(() => Esim, { nullable: true })
+    @JoinColumn({ name: "esimId" })
+    esim?: Esim; // Relation to eSIM, optional
 
-    @Column({ type: "varchar", length: 255 })
-    orderName!: string;
-
-    @Column({ type: "text", nullable: true })
-    aboutOrder?: string;
-
-    @Column({ type: "decimal", precision: 10, scale: 2 })
-    baseAmount!: number;
-
-    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
-    taxes!: number;
-
-    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
-    charges!: number;
+    @ManyToOne(() => Country, { nullable: false })
+    @JoinColumn({ name: "countryId" })
+    country!: Country; // Add country relation
 
     @Column({ type: "decimal", precision: 10, scale: 2 })
     totalAmount!: number;
 
-    @Column({ type: "varchar", length: 50, default: "PENDING" })
+    @Column({ type: "varchar", length: 50 })
     status!: string;
+
+    @Column({ type: "varchar", length: 50 })
+    name!: string;
+
+    // Replace with something like:
+    @Column({ type: "int", nullable: true })
+    productPlanId!: number;
+
+    @Column({ type: "varchar", length: 50 })
+    email!: string;
+
+    @Column({ type: "varchar", length: 50 })
+    planName!: string;
+
+    @Column({ type: "varchar", length: 50 })
+    price!: string;
 
     @Column({ type: "boolean", default: false })
     activated!: boolean;
 
-    // -------- Plan Snapshot --------
-    @Column({ type: "varchar", length: 255, nullable: true })
-    planName?: string;
-
-    @Column({ type: "varchar", length: 255, nullable: true })
-    planTitle?: string;
-
-    @Column({ type: "int", nullable: true })
-    planValidityDays?: number;
-
-    @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
-    planData?: number;
-
-    @Column({ type: "boolean", default: false })
-    planIsUnlimited?: boolean;
-
-    @Column({ type: "varchar", length: 10, nullable: true })
-    planCurrency?: string;
-
-    // -------- Plan Country Snapshot --------
-    @Column({ type: "varchar", length: 255, nullable: true })
-    planCountryName?: string;
-
-    @Column({ type: "varchar", length: 10, nullable: true })
-    planCountryIsoCode?: string;
-
-    @Column({ type: "varchar", length: 10, nullable: true })
-    planCountryPhoneCode?: string;
-
-    // -------- Top-Up Snapshot (if needed) --------
-    @Column({ type: "varchar", length: 255, nullable: true })
-    topupName?: string;
-
-    @Column({ type: "varchar", length: 255, nullable: true })
-    topupTitle?: string;
-
-    @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
-    topupPrice?: number;
-
-    @Column({ type: "int", nullable: true })
-    topupDataLimit?: number;
-
-    @Column({ type: "int", nullable: true })
-    topupValidityDays?: number;
-
-    @Column({ type: "varchar", length: 10, nullable: true })
-    topupCurrency?: string;
-
-    // Error + timestamps
     @Column({ type: "text", nullable: true })
     errorMessage?: string;
 
