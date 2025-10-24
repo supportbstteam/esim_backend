@@ -149,7 +149,7 @@ export const postOrder = async (req: any, res: Response) => {
         return res.status(201).json({
             message: "Order completed successfully",
             transaction,
-            esim: createdEsims,
+            esims: createdEsims,
             orders: createdOrders.map((order) => ({
                 id: order.id,
                 userId: order.userId,
