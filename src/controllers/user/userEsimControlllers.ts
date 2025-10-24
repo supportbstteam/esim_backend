@@ -118,6 +118,17 @@ export const postOrder = async (req: any, res: Response) => {
         totalAmount: mainOrder.totalAmount,
         status: mainOrder.status,
         activated: mainOrder.activated,
+        country: {
+          id: mainOrder.country.id,
+          name: mainOrder.country.name,
+        },
+        transaction: {
+          id: transaction.id,
+          status: transaction.status,
+          paymentGateway: transaction.paymentGateway,
+          amount: transaction.amount,
+          createdAt: transaction.createdAt,
+        },
         esims: createdEsims.map(e => ({
           id: e.id,
           externalId: e.externalId,
@@ -129,6 +140,9 @@ export const postOrder = async (req: any, res: Response) => {
           isActive: e.isActive,
           startDate: e.startDate,
           endDate: e.endDate,
+          dataAmount: e.dataAmount,
+          callAmount: e.callAmount,
+          smsAmount: e.smsAmount,
         })),
       },
     });
