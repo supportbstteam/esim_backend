@@ -149,6 +149,7 @@ export const postOrder = async (req: any, res: Response) => {
         return res.status(201).json({
             message: "Order completed successfully",
             transaction,
+            esims: createdEsims,
             orders: createdOrders.map((order) => ({
                 id: order.id,
                 userId: order.userId,
@@ -162,7 +163,6 @@ export const postOrder = async (req: any, res: Response) => {
                 planCountryPhoneCode: order.planCountryPhoneCode || "",
                 userName: `${transaction?.user?.firstName} ${transaction?.user?.lastName}`,
                 userEmail: transaction?.user?.email,
-                esims: createdEsims,
                 // userPhone:transaction?.user?.,
             })),
         });
@@ -358,6 +358,7 @@ export const getOrderListByUser = async (req: any, res: Response) => {
         });
     }
 };
+
 export const getOrderDetailsByUser = async (req: any, res: Response) => {
     const { id, role } = req.user;
     const { orderId } = req.params;
