@@ -8,7 +8,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
     try {
         const orderRepo = AppDataSource.getRepository(Order);
         const orders = await orderRepo.find({
-            relations: ["user", "plan", "transaction", "esim", "country"],
+            relations: ["user", "transaction", "esims", "country"],
             order: { createdAt: "DESC" },
         });
         return res.status(200).json({ orders });
