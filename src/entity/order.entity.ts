@@ -3,19 +3,18 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    OneToOne,
-    CreateDateColumn,
-    UpdateDateColumn,
+    OneToMany,
     JoinColumn,
-    OneToMany
+    CreateDateColumn,
+    UpdateDateColumn
 } from "typeorm";
 import { Transaction } from "./Transactions.entity";
 import { User } from "./User.entity";
 import { Plan } from "./Plans.entity";
 import { Esim } from "./Esim.entity";
-import { Country } from "./Country.entity"; // Import Country entity
+import { Country } from "./Country.entity";
 
-@Entity()
+@Entity({ name: "orders" })
 export class Order {
     @PrimaryGeneratedColumn("uuid")
     id!: string;
@@ -24,9 +23,10 @@ export class Order {
     @JoinColumn({ name: "userId" })
     user!: User;
 
-    @ManyToOne(() => Plan)
-    @JoinColumn({ name: "planId" })
-    plan!: Plan;
+    // optional: if main order doesn't need a single plan
+    // @ManyToOne(() => Plan)
+    // @JoinColumn({ name: "planId" })
+    // plan!: Plan;
 
     @ManyToOne(() => Transaction, { nullable: false, onDelete: "CASCADE" })
     @JoinColumn({ name: "transactionId" })
@@ -37,9 +37,9 @@ export class Order {
 
     @ManyToOne(() => Country, { nullable: false })
     @JoinColumn({ name: "countryId" })
-    country!: Country; // Add country relation
+    country!: Country;
 
-    @Column({ type: "decimal", precision: 10, scale: 2 })
+    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
     totalAmount!: number;
 
     @Column({ type: "varchar", length: 50 })
@@ -48,18 +48,8 @@ export class Order {
     @Column({ type: "varchar", length: 50 })
     name!: string;
 
-    // Replace with something like:
-    @Column({ type: "int", nullable: true })
-    productPlanId!: number;
-
     @Column({ type: "varchar", length: 50 })
     email!: string;
-
-    @Column({ type: "varchar", length: 50 })
-    planName!: string;
-
-    @Column({ type: "varchar", length: 50 })
-    price!: string;
 
     @Column({ type: "boolean", default: false })
     activated!: boolean;

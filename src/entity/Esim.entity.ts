@@ -28,7 +28,6 @@ export class Esim {
   @ManyToOne(() => CartItem, (cartItem) => cartItem.esims, { nullable: true })
   cartItem?: CartItem;
 
-
   @Column({ type: "date", nullable: true })
   startDate?: Date;
 
@@ -42,7 +41,7 @@ export class Esim {
   @Column({ type: "boolean", default: false })
   isDeleted!: boolean;
 
-  @ManyToOne(() => User, (user) => user.simIds, { nullable: true })
+  @ManyToOne(() => User, { nullable: true })
   user?: User | null;
 
   @ManyToMany(() => Plan)
@@ -65,9 +64,8 @@ export class Esim {
   @JoinColumn({ name: "orderId" })
   order?: Order;
 
-  // 🔽 NEW FIELDS for external API data
   @Column({ type: "varchar", nullable: true })
-  externalId?: string; // 19646
+  externalId?: string;
 
   @Column({ type: "varchar", nullable: true })
   iccid?: string;
@@ -76,13 +74,13 @@ export class Esim {
   qrCodeUrl?: string;
 
   @Column({ type: "varchar", nullable: true })
-  networkStatus?: string; // NOT_ACTIVE, ACTIVE, etc.
+  networkStatus?: string;
 
   @Column({ type: "varchar", nullable: true })
-  statusText?: string; // waiting, activated, etc.
+  statusText?: string;
 
   @Column({ type: "varchar", nullable: true })
-  productName?: string; // "1 GB -30 days"
+  productName?: string;
 
   @Column({ type: "varchar", nullable: true })
   currency?: string;
