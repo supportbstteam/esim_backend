@@ -448,7 +448,7 @@ export const getOrderDetailsByUser = async (req: any, res: Response) => {
                 "esim",
                 "country",
                 "transaction",
-                "transaction.plan",
+                // "transaction.plan",
                 "transaction.user",
                 "transaction.charges",
             ],
