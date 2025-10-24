@@ -370,16 +370,21 @@ export const postOrder = async (req: any, res: Response) => {
 // };
 
 export const getOrderListByUser = async (req: any, res: Response) => {
-    const { id, role } = req.user;
+    const { id, role } = (req as any).user;
 
+    // 1️⃣ Authorization check
     if (!id || role !== "user") {
-        return res.status(401).json({ message: "Unauthorized User", status: "error" });
+        return res.status(401).json({
+            status: "error",
+            message: "Unauthorized user access",
+        });
     }
 
     try {
         const dataSource = await getDataSource();
         const orderRepo = dataSource.getRepository(Order);
 
+        // 2️⃣ Query user orders
         const orders = await orderRepo.find({
             where: { user: { id } },
             relations: [
@@ -387,39 +392,40 @@ export const getOrderListByUser = async (req: any, res: Response) => {
                 "esim",
                 "country",
                 "transaction",
-                "transaction.plan",
                 "transaction.user",
                 "transaction.charges",
             ],
             order: { createdAt: "DESC" },
         });
 
-        // Map orders to simplified response to handle preciously
+        // 3️⃣ Format orders for frontend consumption
         const formattedOrders = orders.map((order) => ({
             id: order.id,
-            title: order.plan?.title || "",
-            planName: order.plan?.name || "",
-            data: order.plan?.data || "",
-            validityDays: order.plan?.validityDays || 0,
-            price: order.totalAmount || "",
-            country: order.country?.name || "",
-            isoCode: order.country?.isoCode || "",
-            phoneCode: order.country?.phoneCode || "",
-            isActive: order.activated,
+            planName: order.plan?.name || "N/A",
+            data: order.plan?.data || null,
+            validityDays: order.plan?.validityDays || null,
+            price: Number(order.totalAmount) || 0,
+            country: order.country?.name || "Unknown",
+            isoCode: order.country?.isoCode || null,
+            phoneCode: order.country?.phoneCode || null,
+            isActive: !!order.activated,
             status: order.status,
-            errorMessage: order.errorMessage,
+            errorMessage: order.errorMessage || null,
+            createdAt: order.createdAt,
         }));
 
+        // 4️⃣ Respond success
         return res.status(200).json({
-            message: "Orders fetched successfully",
             status: "success",
+            message: "Orders fetched successfully",
             data: formattedOrders,
         });
+
     } catch (err: any) {
         console.error("Error fetching orders:", err);
         return res.status(500).json({
-            message: "Failed to fetch orders",
             status: "error",
+            message: "Failed to fetch orders",
             error: err.message,
         });
     }
@@ -448,7 +454,6 @@ export const getOrderDetailsByUser = async (req: any, res: Response) => {
                 "esim",
                 "country",
                 "transaction",
-                // "transaction.plan",
                 "transaction.user",
                 "transaction.charges",
             ],
