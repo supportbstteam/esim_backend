@@ -8,12 +8,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  JoinColumn,
 } from "typeorm";
 import { User } from "./User.entity";
 import { Country } from "./Country.entity";
 import { Plan } from "./Plans.entity";
 import { TopUpPlan } from "./Topup.entity";
 import { CartItem } from "./CartItem.entity";
+import { Order } from "./order.entity";
 
 @Entity({ name: "esims" })
 export class Esim {
@@ -58,6 +60,10 @@ export class Esim {
     inverseJoinColumn: { name: "topup_id", referencedColumnName: "id" },
   })
   topUps!: TopUpPlan[];
+
+  @ManyToOne(() => Order, (order) => order.esims, { nullable: true })
+  @JoinColumn({ name: "orderId" })
+  order?: Order;
 
   // 🔽 NEW FIELDS for external API data
   @Column({ type: "varchar", nullable: true })

@@ -6,7 +6,8 @@ import {
     OneToOne,
     CreateDateColumn,
     UpdateDateColumn,
-    JoinColumn
+    JoinColumn,
+    OneToMany
 } from "typeorm";
 import { Transaction } from "./Transactions.entity";
 import { User } from "./User.entity";
@@ -31,9 +32,8 @@ export class Order {
     @JoinColumn({ name: "transactionId" })
     transaction!: Transaction;
 
-    @OneToOne(() => Esim, { nullable: true })
-    @JoinColumn({ name: "esimId" })
-    esim?: Esim; // Relation to eSIM, optional
+    @OneToMany(() => Esim, (esim) => esim.order, { cascade: true })
+    esims!: Esim[];
 
     @ManyToOne(() => Country, { nullable: false })
     @JoinColumn({ name: "countryId" })
