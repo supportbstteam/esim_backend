@@ -217,3 +217,48 @@ export const getOrderDetailsByUser = async (req: any, res: Response) => {
 export const postTransaction = async (req: any, res: Response) => {
 
 }
+
+
+// -------------------- plan -------------
+export const getUserAllSims = async (req: any, res: Response) => {
+  const { id, role } = req.user;
+
+  if (!id || role !== "user") return res.status(401).json({ message: "Unauthorized", status: "error" });
+
+  try {
+    const esimRepo = AppDataSource.getRepository(Esim);
+    const esims = await esimRepo.find({
+      where: { user: { id } },
+      relations: ["order", "order.transaction", "order.country"],
+    });
+
+    return res.status(200).json({ message: "All eSIMs fetched successfully", status: "success", data: esims });
+  } catch (err: any) {
+    console.error("Error fetching all eSIMs:", err);
+    return res.status(500).json({ message: "Failed to fetch all eSIMs", status: "error", error: err.message });
+  }
+}
+
+export const getUserEsimDetails = async (req: any, res: Response) => {
+  const { id, role } = req.user;
+  const { esimId } = req.params;
+
+  if (!id || role !== "user") return res.status(401).json({ message: "Unauthorized", status: "error" });
+  if (!esimId) return res.status(400).json({ message: "eSIM ID is required", status: "error" });
+
+  try {
+    const esimRepo = AppDataSource.getRepository(Esim);
+    const esim = await esimRepo.findOne({
+      where: { id: esimId, user: { id } },
+      relations: ["order", "order.transaction", "order.country", "plans", "topUps"],
+    });
+    if (!esim) return res.status(404).json({ message: "eSIM not found", status: "error" });
+
+    return res.status(200).json({ message: "eSIM details fetched successfully", status: "success", data: esim });
+  }
+  catch (err: any) {
+    console.error("Error fetching eSIM details:", err);
+    return res.status(500).json({ message: "Failed to fetch eSIM details", status: "error", error: err.message });
+  }
+
+}

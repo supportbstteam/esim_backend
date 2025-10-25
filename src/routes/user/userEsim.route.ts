@@ -1,10 +1,10 @@
 import express from 'express'
 // import { postReserveEsim } from '../../controllers/user/userEsimControlllers';
-import { thirdPartyAuthMiddleware } from '../../middlewares/thirdPartyApi.handler';
+import { getUserAllSims, getUserEsimDetails } from '../../controllers/user/userEsimControlllers';
 
 const router = express.Router();
-// router.get('')
-// router.post('/reserver-sim', thirdPartyAuthMiddleware, postReserveEsim);
-// router.post('/create-sim', thirdPartyAuthMiddleware, postReserveEsim);
+
+router.get("/", getUserAllSims);
+router.get("/:esimId", getUserEsimDetails);
 
 export default router;
