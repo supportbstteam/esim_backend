@@ -230,6 +230,9 @@ export const getUserAllSims = async (req: any, res: Response) => {
     const esims = await esimRepo.find({
       where: { user: { id } },
       relations: ["order", "order.transaction", "order.country"],
+      order:{
+        createdAt: "DESC"
+      }
     });
 
     return res.status(200).json({ message: "All eSIMs fetched successfully", status: "success", data: esims });
