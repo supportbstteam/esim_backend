@@ -33,7 +33,6 @@ router.use("/plans", planRoute);
 router.use("/top-up", auth, topUpPlanRoute);
 router.use("/e-sim", auth, esimRoute);
 
-
 router.use("/cms", useContactRoute);
 router.get("/social-media", getSocials);
 

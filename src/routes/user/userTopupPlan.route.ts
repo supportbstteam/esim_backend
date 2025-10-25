@@ -7,6 +7,7 @@ const router = express.Router();
 router.get("/", getUserTopUpPlans)
 router.post("/purchase", thirdPartyAuthMiddleware, postUserTopUpOrder);
 router.get("/order/", getUserTopUpOrderList);
+
 router.get("/order/:id", getUserTopUpOrderListById);
 
 export default router;
