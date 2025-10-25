@@ -10,21 +10,21 @@ export const getUserPlans = async (req: Request, res: Response) => {
     const dataSource = await getDataSource();
     const planRepo = dataSource.getRepository(Plan);
 
-    // Include only active and not deleted plans
+    // Base condition: active & not deleted
     let whereCondition: any = { isDeleted: false, isActive: true };
 
-    // Apply country filter only if countryId is passed and not "all"
+    // Apply country filter only if countryId is provided and not "all"
     if (countryId && countryId !== "all") {
       whereCondition.country = { id: countryId as string };
     }
 
     const plans = await planRepo.find({
       where: whereCondition,
-      relations: ["country"], // join with country table
+      relations: ["country"],
       order: { price: "ASC" },
     });
 
-    if (plans.length === 0) {
+    if (!plans.length) {
       return res.status(404).json({
         success: false,
         message:
@@ -34,7 +34,6 @@ export const getUserPlans = async (req: Request, res: Response) => {
       });
     }
 
-    // Format response: include plan + country details
     const formattedPlans = plans.map((plan) => ({
       id: plan.id,
       title: plan.title,
@@ -57,11 +56,11 @@ export const getUserPlans = async (req: Request, res: Response) => {
     }));
 
     return res.status(200).json({ success: true, data: formattedPlans });
-  } catch (error) {
-    console.error("Error fetching plans:", error);
+  } catch (err) {
+    console.error("Error fetching plans:", err);
     return res
       .status(500)
-      .json({ success: false, message: "Server error", error });
+      .json({ success: false, message: "Server error", error: (err as any).message });
   }
 };
 
