@@ -6,10 +6,17 @@ import { User } from "../../entity/User.entity";
 import { Plan } from "../../entity/Plans.entity";
 import { Transaction } from "../../entity/Transactions.entity";
 
-// -------------------- ADD TO CART --------------------
+/**
+ * Add plans to user's active cart.
+ * Creates a new cart if none exists, is deleted, or has an error.
+ */
 export const addToCart = async (req: any, res: Response) => {
-    const userId = req.user.id;
+    const userId = req.user?.id;
     const { plans } = req.body;
+
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!plans || !Array.isArray(plans) || plans.length === 0)
+        return res.status(400).json({ success: false, message: "No plans provided" });
 
     try {
         const cartRepo = AppDataSource.getRepository(Cart);
@@ -18,22 +25,27 @@ export const addToCart = async (req: any, res: Response) => {
         const userRepo = AppDataSource.getRepository(User);
         const transactionRepo = AppDataSource.getRepository(Transaction);
 
+        // Verify user exists
         const user = await userRepo.findOneBy({ id: userId });
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-        // 🔹 Find active (not deleted) and pending (not checked out) cart
+        // Find active cart
         let cart = await cartRepo.findOne({
             where: { user: { id: userId }, isCheckedOut: false, isDeleted: false },
-            relations: ["items", "items.plan"],
+            relations: ["items", "items.plan", "items.plan.country"],
         });
 
-        // 🔹 If cart is deleted or not found → create new
-        if (!cart || cart.isDeleted) {
-            cart = cartRepo.create({ user, items: [] });
-            await cartRepo.save(cart);
+        // Create new cart if none exists, deleted, or has error
+        if (!cart || cart.isDeleted || cart.isError) {
+            const newCart = cartRepo.create({ user, items: [], isError: false });
+            await cartRepo.save(newCart);
+            cart = await cartRepo.findOneOrFail({
+                where: { id: newCart.id },
+                relations: ["items", "items.plan", "items.plan.country"],
+            });
         }
 
-        // 🔹 Check last successful transaction (for safety)
+        // Optional: check last successful transaction
         const lastTransaction = await transactionRepo.findOne({
             where: { user: { id: userId }, status: "SUCCESS" },
             relations: ["cart"],
@@ -41,73 +53,74 @@ export const addToCart = async (req: any, res: Response) => {
         });
 
         if (lastTransaction?.cart?.isCheckedOut) {
-            cart = cartRepo.create({ user, items: [] });
-            await cartRepo.save(cart);
+            const newCart = cartRepo.create({ user, items: [], isError: false });
+            await cartRepo.save(newCart);
+            cart = await cartRepo.findOneOrFail({
+                where: { id: newCart.id },
+                relations: ["items", "items.plan", "items.plan.country"],
+            });
         }
 
-        // 🔹 Add each plan
+        // Add or update cart items
         for (const p of plans) {
             const plan = await planRepo.findOneBy({ id: p.planId, isDeleted: false, isActive: true });
-            if (!plan) return res.status(404).json({ message: `Plan with ID ${p.planId} not found or inactive` });
+            if (!plan) return res.status(404).json({ success: false, message: `Plan ${p.planId} not found` });
 
             const quantityToAdd = p.quantity && p.quantity > 0 ? p.quantity : 1;
 
-            // 🔹 Check for an existing, non-deleted item for this plan
+            // Check for existing active item
             let item = cart.items.find(i => i.plan.id === plan.id && !i.isDeleted);
 
-            // Case 1: item exists and not deleted → increment quantity
             if (item) {
                 item.quantity += quantityToAdd;
-                if (item.quantity < 1) item.quantity = 1;
                 await cartItemRepo.save(item);
             } else {
-                // Case 2: existing item is deleted OR does not exist → create new
                 const newItem = cartItemRepo.create({
                     cart,
+                    cartId: cart.id,
                     plan,
+                    planId: plan.id,
                     quantity: quantityToAdd,
-                    isDeleted: false,
+                    isDeleted: false, // explicitly false
+                    itemType: "ESIM",
                 });
                 await cartItemRepo.save(newItem);
-                cart.items.push(newItem);
             }
         }
 
-        await cartRepo.save(cart);
-
-        // 🔹 Reload cart with updated relations
-        const updatedCart = await cartRepo.findOne({
-            where: { id: cart.id, isDeleted: false },
+        // Reload cart with updated items
+        const updatedCart = await cartRepo.findOneOrFail({
+            where: { id: cart.id },
             relations: ["user", "items", "items.plan", "items.plan.country"],
         });
 
-        if (!updatedCart) return res.status(404).json({ message: "Cart not found after update" });
-
+        // Prepare response
         const responseCart = {
             id: updatedCart.id,
             user: { id: updatedCart.user.id },
-            items: updatedCart.items
-                .filter(i => !i.isDeleted)
-                .map(i => ({
-                    id: i.id,
-                    plan: {
-                        id: i.plan.id,
-                        name: i.plan.name,
-                        price: i.plan.price,
-                        validityDays: i.plan.validityDays,
-                        country: { id: i.plan.country.id, name: i.plan.country.name },
-                    },
-                    quantity: i.quantity,
-                })),
+            items: updatedCart.items.filter(i => !i.isDeleted).map(i => ({
+                id: i.id,
+                plan: {
+                    id: i.plan.id,
+                    name: i.plan.name,
+                    price: i.plan.price,
+                    data: i.plan.data,
+                    validityDays: i.plan.validityDays,
+                    country: { id: i.plan.country.id, name: i.plan.country.name },
+                },
+                quantity: i.quantity,
+            })),
             isCheckedOut: updatedCart.isCheckedOut,
         };
 
         return res.json({ success: true, message: "Plans added to cart", cart: responseCart });
     } catch (err) {
-        console.error(err);
+        console.error("Error adding to cart:", err);
         return res.status(500).json({ success: false, message: "Error adding to cart" });
     }
 };
+
+
 
 // -------------------- UPDATE CART ITEM --------------------
 export const updateCartItem = async (req: any, res: Response) => {
@@ -165,44 +178,51 @@ export const removeFromCart = async (req: any, res: Response) => {
     }
 };
 
-// -------------------- GET USER CART --------------------
+/**
+ * Get the user's active cart.
+ */
 export const getUserCart = async (req: any, res: Response) => {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
     try {
         const cartRepo = AppDataSource.getRepository(Cart);
+
         const cart = await cartRepo.findOne({
             where: { user: { id: userId }, isCheckedOut: false, isDeleted: false },
             relations: ["items", "items.plan", "items.plan.country"],
         });
 
-        if (!cart)
-            return res.json({ cart: { items: [] } });
+        if (!cart) return res.json({ cart: { items: [] } });
 
-        // Filter deleted items before returning
-        const filteredItems = cart.items.filter(i => !i.isDeleted);
+        console.log("---------------- tiem in cart ----------------", cart);
+
+        const activeItems = cart.items.filter(i => !i.isDeleted);
+
+        const responseItems = activeItems.map(i => ({
+            id: i.id,
+            plan: {
+                id: i.plan.id,
+                name: i.plan.name,
+                price: i.plan.price,
+                data: i.plan.data,
+                validityDays: i.plan.validityDays,
+                country: { id: i.plan.country.id, name: i.plan.country.name },
+            },
+            quantity: i.quantity,
+        }));
 
         return res.json({
             cart: {
                 id: cart.id,
                 user: { id: userId },
-                items: filteredItems.map(i => ({
-                    id: i.id,
-                    plan: {
-                        id: i.plan.id,
-                        name: i.plan.name,
-                        price: i.plan.price,
-                        data: i.plan?.data,
-                        validityDays: i.plan.validityDays,
-                        country: { id: i.plan.country.id, name: i.plan.country.name },
-                    },
-                    quantity: i.quantity,
-                })),
+                items: responseItems,
                 isCheckedOut: cart.isCheckedOut,
             },
         });
     } catch (err) {
-        console.error(err);
+        console.error("Error fetching cart:", err);
         return res.status(500).json({ message: "Error fetching cart" });
     }
 };
+

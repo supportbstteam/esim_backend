@@ -75,7 +75,8 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
 
         // ✅ Prepare request to third-party API
         const formdata: any = new FormData();
-        formdata.append("product_plan_id", topUp.topupId);
+        formdata.append("product_plan_id", topUp.topupId); // top up id
+        formdata.append("product_id", esim?.plans[0]?.id); // plan id
         formdata.append("iccid", esim.iccid);
 
         const response = await axios.post(
