@@ -230,7 +230,7 @@ export const getUserAllSims = async (req: any, res: Response) => {
     const esims = await esimRepo.find({
       where: { user: { id } },
       relations: ["order", "order.transaction", "order.country"],
-      order:{
+      order: {
         createdAt: "DESC"
       }
     });
@@ -265,3 +265,117 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
   }
 
 }
+
+export const getUserSimSummary = async (req: any, res: Response) => {
+  console.log("=== HIT getUserSimSummary route ===");
+  console.log("Request user:", req.user);
+
+  return res.status(200).json({ message: "eSIM summary fetched successfully", status: "success", data: {} });
+
+  const { id, role } = req.user;
+
+  if (!id || role !== "user") {
+    console.log("Unauthorized access attempt");
+    return res.status(401).json({ message: "Unauthorized", status: "error" });
+  }
+
+  try {
+    const esimRepo = AppDataSource.getRepository(Esim);
+    console.log("Repository initialized:", !!esimRepo);
+
+    // Fetch all eSIMs (linked directly or through an order)
+    const esims = await esimRepo.find({
+      where: [
+        { user: { id } },
+        { order: { user: { id } } },
+      ],
+      relations: ["user", "plans", "order", "order.user", "country"],
+      order: { createdAt: "DESC" },
+    });
+
+    console.log("------- esims fetched for summary --------", esims.length);
+    if (esims.length > 0) {
+      console.log("First eSIM record:", esims[0]);
+    }
+
+    if (!esims.length) {
+      console.log("No eSIMs found for this user");
+      return res.status(200).json({
+        message: "No eSIMs found for this user",
+        status: "success",
+        data: {
+          totalSims: 0,
+          activeSims: 0,
+          inactiveSims: 0,
+          totalData: 0,
+          planSummary: [],
+        },
+      });
+    }
+
+    // --- Stats ---
+    const totalSims = esims.length;
+    const activeSims = esims.filter((e) => e.isActive).length;
+    const inactiveSims = totalSims - activeSims;
+
+    console.log("Stats: totalSims =", totalSims, "activeSims =", activeSims, "inactiveSims =", inactiveSims);
+
+    // --- Group by Plan ---
+    const planSummary = new Map<
+      string,
+      {
+        planId: string;
+        name: string;
+        simsBought: number;
+        totalData: number;
+        isUnlimited: boolean;
+      }
+    >();
+
+    for (const esim of esims) {
+      for (const plan of esim.plans || []) {
+        if (!planSummary.has(plan.id)) {
+          planSummary.set(plan.id, {
+            planId: plan.id,
+            name: plan.title || plan.name,
+            simsBought: 0,
+            totalData: 0,
+            isUnlimited: plan.isUnlimited,
+          });
+        }
+
+        const summary = planSummary.get(plan.id)!;
+        summary.simsBought += 1;
+
+        if (!plan.isUnlimited && plan.data) {
+          summary.totalData += Number(plan.data);
+        }
+      }
+    }
+
+    const planSummaryArray = Array.from(planSummary.values());
+    const totalData = planSummaryArray.reduce((sum, p) => sum + p.totalData, 0);
+    console.log("Plan summary:", planSummaryArray);
+    console.log("Total data across all plans:", totalData);
+
+    // --- Response ---
+    return res.status(200).json({
+      message: "eSIM summary fetched successfully",
+      status: "success",
+      data: {
+        totalSims,
+        activeSims,
+        inactiveSims,
+        totalData,
+        planSummary: planSummaryArray,
+      },
+    });
+  } catch (err: any) {
+    console.error("Error fetching eSIM summary:", err);
+    return res.status(500).json({
+      message: "Failed to fetch eSIM summary",
+      status: "error",
+      error: err.message,
+    });
+  }
+};
