@@ -116,8 +116,14 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         // ---------------- CHANGE: Added null-check for cart to fix TS18048 ----------------
         if (!transaction.cart) return res.status(400).send("Cart missing in transaction");
 
+        if (!transaction.user) {
+            console.warn(`⚠️ Transaction ${transaction.id} has no user associated.`);
+            return res.status(400).send("User missing in transaction");
+        }
+
         for (const item of transaction?.cart.items) {
             for (let i = 0; i < item.quantity; i++) {
+
                 const esim = esimRepo.create({
                     user: { id: transaction.user.id },
                     plans: [item.plan],

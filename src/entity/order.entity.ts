@@ -19,9 +19,10 @@ export class Order {
     @PrimaryGeneratedColumn("uuid")
     id!: string;
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { nullable: true, onDelete: "SET NULL" })
     @JoinColumn({ name: "userId" })
-    user!: User;
+    user!: User | null;
+
 
     // optional: if main order doesn't need a single plan
     // @ManyToOne(() => Plan)

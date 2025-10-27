@@ -20,9 +20,10 @@ export class Reservation {
     @Column({ type: "varchar", length: 100 })
     reserveId!: string;
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { nullable: true, onDelete: "SET NULL" })
     @JoinColumn({ name: "userId" })
-    user!: User;
+    user!: User | null;
+
 
     @ManyToOne(() => Plan)
     @JoinColumn({ name: "planId" })

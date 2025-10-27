@@ -61,8 +61,8 @@ export const postOrder = async (req: any, res: Response) => {
     mainOrder = queryRunner.manager.create(Order, {
       user: transaction.user,
       transaction,
-      name: `${transaction.user.firstName} ${transaction.user.lastName}`,
-      email: transaction.user.email,
+      name: user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "Guest User",
+      email: user ? user.email : "no-mail",
       status: "processing",
       activated: false,
       totalAmount: 0,

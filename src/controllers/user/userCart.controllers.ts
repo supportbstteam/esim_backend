@@ -24,8 +24,14 @@ export const addToCart = async (req: any, res: Response) => {
         const userRepo = AppDataSource.getRepository(User);
         const transactionRepo = AppDataSource.getRepository(Transaction);
 
+        // ✅ Ensure user exists (might have been deleted)
         const user = await userRepo.findOneBy({ id: userId });
-        if (!user) return res.status(404).json({ success: false, message: "User not found." });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found or has been deleted.",
+            });
+        }
 
         // Find or create active cart
         let cart = await cartRepo.findOne({
@@ -103,7 +109,7 @@ export const addToCart = async (req: any, res: Response) => {
         return res.json({
             success: true,
             message: "Your cart has been updated successfully!",
-            cart: { id: updatedCart.id, user: { id: updatedCart.user.id }, items: responseItems, isCheckedOut: updatedCart.isCheckedOut },
+            cart: { id: updatedCart.id, user: { id: user.id }, items: responseItems, isCheckedOut: updatedCart.isCheckedOut },
         });
     } catch (err) {
         console.error("Error adding to cart:", err);
@@ -128,9 +134,8 @@ export const updateCartItem = async (req: any, res: Response) => {
             where: { id: cartItemId, isDeleted: false },
             relations: ["cart", "cart.user"],
         });
-
         if (!cartItem) return res.status(404).json({ success: false, message: "Cart item not found." });
-        if (cartItem.cart.user.id !== userId) return res.status(403).json({ success: false, message: "You are not authorized to update this item." });
+        if (cartItem.cart.user && cartItem.cart.user.id !== userId) return res.status(403).json({ success: false, message: "You are not authorized to update this item." });
 
         cartItem.quantity = quantity;
         await cartItemRepo.save(cartItem);
@@ -157,7 +162,7 @@ export const removeFromCart = async (req: any, res: Response) => {
         });
 
         if (!cartItem) return res.status(404).json({ success: false, message: "Cart item not found." });
-        if (cartItem.cart.user.id !== userId) return res.status(403).json({ success: false, message: "You are not authorized to remove this item." });
+        if ((cartItem.cart.user && cartItem.cart.user.id !== userId)) return res.status(403).json({ success: false, message: "You are not authorized to remove this item." });
 
         cartItem.isDeleted = true;
         await cartItemRepo.save(cartItem);

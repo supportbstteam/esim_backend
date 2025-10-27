@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, Column, CreateDateColumn, UpdateDateColumn, JoinColumn } from "typeorm";
 import { User } from "./User.entity";
 import { CartItem } from "./CartItem.entity";
 
@@ -7,8 +7,10 @@ export class Cart {
     @PrimaryGeneratedColumn("uuid")
     id!: string;
 
-    @ManyToOne(() => User, user => user.carts, { nullable: false })
-    user!: User;
+    @ManyToOne(() => User, { nullable: true, onDelete: "SET NULL" })
+    @JoinColumn({ name: "userId" })
+    user!: User | null;
+
 
     @Column({ type: "boolean", default: false })
     isDeleted!: boolean; // soft delete

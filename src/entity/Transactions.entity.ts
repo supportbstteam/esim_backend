@@ -25,9 +25,10 @@ export class Transaction {
     @PrimaryGeneratedColumn("uuid")
     id!: string;
 
-    @ManyToOne(() => User, { nullable: false })
+    @ManyToOne(() => User, { nullable: true, onDelete: "SET NULL" })
     @JoinColumn({ name: "userId" })
-    user!: User;
+    user!: User | null;
+
 
     @ManyToOne(() => Cart, { nullable: true })
     @JoinColumn({ name: "cartId" })
