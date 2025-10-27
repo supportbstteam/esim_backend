@@ -23,11 +23,19 @@ export const postOrder = async (req: any, res: Response) => {
   }
 
   const transactionRepo = AppDataSource.getRepository(Transaction);
+  const cartRepo = AppDataSource.getRepository(Cart);
   const orderRepo = AppDataSource.getRepository(Order);
   const esimRepo = AppDataSource.getRepository(Esim);
-  const cartRepo = AppDataSource.getRepository(Cart);
+  const userRepo = AppDataSource.getRepository(User);
 
-  let cart: Cart | null = null;
+  const queryRunner = AppDataSource.createQueryRunner();
+  await queryRunner.connect();
+  await queryRunner.startTransaction();
+
+  let latestCart: Cart | null = null;
+  let mainOrder: Order | null = null;
+
+
 
   try {
     const transaction = await transactionRepo.findOne({
@@ -35,140 +43,168 @@ export const postOrder = async (req: any, res: Response) => {
       relations: ["user", "cart", "cart.items", "cart.items.plan", "cart.items.plan.country"],
     });
 
-    if (!transaction) return res.status(404).json({ message: "Transaction not found" });
-    if (transaction.status !== "SUCCESS")
-      return res.status(400).json({ message: `Transaction status is '${transaction.status}'` });
+    const user = await userRepo.findOneBy({ id: userId });
+    if (!user) throw new Error("User not found");
 
-    cart = transaction.cart ?? null;
-    if (!cart || cart.isDeleted || cart.isCheckedOut || cart.isError) return res.status(400).json({ message: "Cart not found or deleted" });
+    if (!transaction) throw new Error("Transaction not found");
+    if (transaction.status !== "SUCCESS") throw new Error(`Invalid transaction status: ${transaction.status}`);
 
-    const validCartItems = cart.items.filter(item => !item.isDeleted);
-    if (!validCartItems.length) return res.status(400).json({ message: "No valid cart items found" });
-
-    // Nested try/catch for order creation
-    try {
-      const mainOrder = orderRepo.create({
-        user: transaction.user,
-        name: `${transaction.user.firstName} ${transaction.user.lastName}`,
-        email: transaction.user.email,
-        status: "processing",
-        activated: false,
-        totalAmount: 0,
-        transaction,
-        country: validCartItems[0].plan.country,
-      });
-      await orderRepo.save(mainOrder);
-
-      const createdEsims: Esim[] = [];
-
-      for (const item of validCartItems) {
-        const plan = item.plan;
-
-        for (let i = 0; i < item.quantity; i++) {
-          // Reserve eSIM
-          const reserveResponse = await axios.get(
-            `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${plan.planId}`,
-            { headers: thirdPartyToken }
-          );
-          if (reserveResponse.data?.status !== "success") throw new Error(reserveResponse.data?.message || "Reservation failed");
-
-          const externalReserveId = reserveResponse.data.data?.id;
-          if (!externalReserveId) throw new Error("Invalid reservation ID");
-
-          // Purchase eSIM
-          const createSimResponse = await axios.post(
-            `${process.env.TURISM_URL}/v2/sims/${externalReserveId}/purchase`,
-            {},
-            { headers: thirdPartyToken }
-          );
-          const esimData = createSimResponse.data?.data;
-          if (!esimData) throw new Error("Failed to purchase eSIM");
-
-          // Save eSIM
-          const esim = esimRepo.create({
-            externalId: esimData.id?.toString(),
-            iccid: esimData.iccid || null,
-            qrCodeUrl: esimData.qr_code_url || null,
-            networkStatus: esimData.network_status || null,
-            statusText: esimData.status_text || null,
-            productName: esimData.name || plan.name,
-            currency: esimData.currency || null,
-            price: parseFloat(esimData.price) || parseFloat(plan.price),
-            validityDays: esimData.validity_days || plan.validityDays,
-            dataAmount: esimData.data || 0,
-            callAmount: esimData.call || 0,
-            smsAmount: esimData.sms || 0,
-            isActive: esimData.network_status !== "NOT_ACTIVE",
-            startDate: new Date(),
-            endDate: new Date(new Date().setDate(new Date().getDate() + (esimData.validity_days || plan.validityDays || 30))),
-            country: plan.country,
-            user: transaction.user,
-            plans: [plan],
-            order: mainOrder,
-          });
-          await esimRepo.save(esim);
-          createdEsims.push(esim);
-
-          mainOrder.totalAmount += parseFloat(plan.price);
-        }
-      }
-
-      mainOrder.status = "completed";
-      mainOrder.activated = true;
-      await orderRepo.save(mainOrder);
-
-      cart.isCheckedOut = true;
-      await cartRepo.save(cart);
-
-      transaction.status = "SUCCESS";
-      await transactionRepo.save(transaction);
-
-      return res.status(201).json({
-        message: "Order completed successfully",
-        order: {
-          id: mainOrder.id,
-          totalAmount: mainOrder.totalAmount,
-          status: mainOrder.status,
-          activated: mainOrder.activated,
-          country: { id: mainOrder.country.id, name: mainOrder.country.name },
-          transaction: {
-            id: transaction.id,
-            status: transaction.status,
-            paymentGateway: transaction.paymentGateway,
-            amount: transaction.amount,
-            createdAt: transaction.createdAt,
-          },
-          esims: createdEsims.map(e => ({
-            id: e.id,
-            externalId: e.externalId,
-            iccid: e.iccid,
-            qrCodeUrl: e.qrCodeUrl,
-            productName: e.productName,
-            price: e.price,
-            validityDays: e.validityDays,
-            isActive: e.isActive,
-            startDate: e.startDate,
-            endDate: e.endDate,
-            dataAmount: e.dataAmount,
-            callAmount: e.callAmount,
-            smsAmount: e.smsAmount,
-          })),
-        },
-      });
-
-    } catch (err: any) {
-      // Mark cart as error if order creation fails
-      if (cart) {
-        cart.isError = true;
-        cart.isCheckedOut = false;
-        await cartRepo.save(cart);
-      }
-      throw err;
+    latestCart = transaction.cart ?? null;
+    if (!latestCart || latestCart.isDeleted || latestCart.isCheckedOut || latestCart.isError) {
+      throw new Error("No valid cart found for this transaction");
     }
 
+    const validCartItems = latestCart.items.filter((i) => !i.isDeleted);
+    if (!validCartItems.length) throw new Error("No valid cart items found");
+
+    // 🧾 Create main order (initially "processing")
+    mainOrder = queryRunner.manager.create(Order, {
+      user: transaction.user,
+      transaction,
+      name: `${transaction.user.firstName} ${transaction.user.lastName}`,
+      email: transaction.user.email,
+      status: "processing",
+      activated: false,
+      totalAmount: 0,
+      country: validCartItems[0].plan.country,
+    });
+    await queryRunner.manager.save(mainOrder);
+
+    const createdEsims: Esim[] = [];
+
+    for (const item of validCartItems) {
+      const plan = item.plan;
+
+      for (let i = 0; i < item.quantity; i++) {
+        // Reserve eSIM
+        const reserveResponse = await axios.get(
+          `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${plan.planId}`,
+          { headers: thirdPartyToken }
+        );
+
+        if (reserveResponse.data?.status !== "success") {
+          throw new Error(reserveResponse.data?.message || "Failed to reserve eSIM");
+        }
+
+        const externalReserveId = reserveResponse.data.data?.id;
+        if (!externalReserveId) throw new Error("Invalid reservation ID");
+
+        // Purchase eSIM
+        const createSimResponse = await axios.post(
+          `${process.env.TURISM_URL}/v2/sims/${externalReserveId}/purchase`,
+          {},
+          { headers: thirdPartyToken }
+        );
+
+        const esimData = createSimResponse.data?.data;
+        if (!esimData) throw new Error("Failed to purchase eSIM");
+
+        // Save eSIM
+        const esim = queryRunner.manager.create(Esim, {
+          externalId: esimData.id?.toString(),
+          iccid: esimData.iccid || null,
+          qrCodeUrl: esimData.qr_code_url || null,
+          networkStatus: esimData.network_status || null,
+          statusText: esimData.status_text || null,
+          productName: esimData.name || plan.name,
+          currency: esimData.currency || null,
+          price: parseFloat(esimData.price) || parseFloat(plan.price),
+          validityDays: esimData.validity_days || plan.validityDays,
+          dataAmount: esimData.data || 0,
+          callAmount: esimData.call || 0,
+          smsAmount: esimData.sms || 0,
+          isActive: esimData.network_status !== "NOT_ACTIVE",
+          startDate: new Date(),
+          endDate: new Date(
+            new Date().setDate(new Date().getDate() + (esimData.validity_days || plan.validityDays || 30))
+          ),
+          country: plan.country,
+          user: transaction.user,
+          plans: [plan],
+          order: mainOrder,
+        });
+
+        await queryRunner.manager.save(esim);
+        createdEsims.push(esim);
+
+        mainOrder.totalAmount += parseFloat(plan.price);
+      }
+    }
+
+    mainOrder.status = "completed";
+    mainOrder.activated = true;
+    await queryRunner.manager.save(mainOrder);
+
+    latestCart.isCheckedOut = true;
+    await queryRunner.manager.save(latestCart);
+
+    transaction.status = "SUCCESS";
+    await queryRunner.manager.save(transaction);
+
+    await queryRunner.commitTransaction();
+
+    return res.status(201).json({
+      message: "Order completed successfully",
+      order: {
+        id: mainOrder.id,
+        totalAmount: mainOrder.totalAmount,
+        status: mainOrder.status,
+        activated: mainOrder.activated,
+        country: { id: mainOrder.country.id, name: mainOrder.country.name },
+        esims: createdEsims.map((e) => ({
+          id: e.id,
+          externalId: e.externalId,
+          iccid: e.iccid,
+          qrCodeUrl: e.qrCodeUrl,
+          productName: e.productName,
+          price: e.price,
+          validityDays: e.validityDays,
+          isActive: e.isActive,
+        })),
+      },
+    });
   } catch (err: any) {
     console.error("❌ postOrder error:", err.message || err);
-    return res.status(500).json({ message: "Order process failed", error: err.message || "Server error" });
+    const userRepo = AppDataSource.getRepository(User);
+    const user = await userRepo.findOneBy({ id: userId });
+
+    // 🧨 Rollback all in-progress DB changes
+    await queryRunner.rollbackTransaction();
+
+    // 🧩 Mark the cart as error
+    if (latestCart) {
+      latestCart.isError = true;
+      latestCart.isCheckedOut = false;
+      await cartRepo.save(latestCart);
+    }
+
+    // 🧾 Log failed order with error message (committed separately)
+    if (mainOrder) {
+      mainOrder.status = "failed";
+      mainOrder.errorMessage = err.message || "Unknown order error";
+      await orderRepo.save(mainOrder);
+    } else {
+      // if order wasn’t created before crash, log a new failed record
+      const failedOrder = orderRepo.create({
+        user: { id: userId },
+        transaction: { id: transactionId },
+        status: "failed",
+        errorMessage: err.message || "Order creation failed before init",
+        activated: false,
+        totalAmount: 0,
+        name: user ? `${user.firstName} ${user.lastName}` : "N/A",
+        email: user ? user.email : "N/A",
+        country: latestCart?.items[0]?.plan.country,
+      });
+      await orderRepo.save(failedOrder);
+    }
+
+    return res.status(500).json({
+      message: "Order process failed",
+      error: err.message || "Server error",
+    });
+  } finally {
+    await queryRunner.release();
   }
 };
 

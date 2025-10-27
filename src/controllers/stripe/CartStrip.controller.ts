@@ -27,9 +27,11 @@ export const initiateTransaction = async (req: any, res: Response) => {
 
         // Fetch the cart with items and their plans
         const cart = await cartRepo.findOne({
-            where: { user: { id: userId }, isCheckedOut: false },
+            where: { user: { id: userId }, isCheckedOut: false, isDeleted: false, isError: false },
             relations: ["items", "items.plan"],
         });
+
+        console.log("----- cart item ---", cart);
 
         if (!cart || cart.items.length === 0) {
             return res.status(404).json({ message: "Cart is empty" });

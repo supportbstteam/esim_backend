@@ -175,43 +175,32 @@ export const removeFromCart = async (req: any, res: Response) => {
 export const getUserCart = async (req: any, res: Response) => {
     const { id, role } = req?.user || {};
 
-    // ✅ Fix condition: if user not logged in OR not a normal user
     if (!id || role !== "user") {
-        return res.status(401).json({
-            success: false,
-            message: "Unauthorized",
-        });
+        return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
     try {
-        const dataSource = AppDataSource;
-        const cartRepo = dataSource.getRepository(Cart);
+        const cartRepo = AppDataSource.getRepository(Cart);
 
-        // ✅ Get latest active cart for user
-        const cart = await cartRepo.findOne({
+        const latestCart = await cartRepo.findOne({
             where: {
                 user: { id },
                 isDeleted: false,
                 isCheckedOut: false,
                 isError: false,
             },
-            relations: ["items", "items.plan"], // load related entities if needed
-            order: {
-                createdAt: "DESC", // ✅ latest cart first
-            },
+            relations: ["items", "items.plan", "items.plan.country"],
+            order: { createdAt: "DESC" },
         });
 
-        if (!cart) {
+        if (!latestCart) {
             return res.status(404).json({
                 success: false,
                 message: "No active cart found",
             });
         }
 
-        return res.status(200).json({
-            success: true,
-            cart,
-        });
+        return res.status(200).json({ success: true, cart: latestCart });
     } catch (err) {
         console.error("❌ Error in getUserCart:", err);
         return res.status(500).json({
