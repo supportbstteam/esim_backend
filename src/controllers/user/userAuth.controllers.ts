@@ -225,26 +225,43 @@ export const updateProfile = async (req: any, res: Response) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const { firstName, lastName, email, phone, country, password } = req.body;
+        const {
+            firstName,
+            lastName,
+            email,
+            phone,
+            country,
+            password, // new password
+            currentPassword, // old password to verify
+        } = req.body;
 
-        // ✅ Update allowed fields only if provided
+        // ✅ Update non-sensitive fields
         if (firstName !== undefined) user.firstName = firstName.trim();
         if (lastName !== undefined) user.lastName = lastName.trim();
         if (email !== undefined) user.email = email.trim().toLowerCase();
-        if (phone !== undefined) user.phone = phone.trim();
+        if (phone !== undefined) user.phone = phone.toString().trim();
         if (country !== undefined) user.country = country.trim();
 
-        // ✅ Password change (optional)
+        // ✅ Password update with verification
         if (password) {
+            if (!currentPassword) {
+                return res.status(400).json({
+                    message: "Current password is required to set a new password",
+                });
+            }
+
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: "Current password is incorrect" });
+            }
+
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash(password, saltRounds);
             user.password = hashedPassword;
         }
 
-        // ✅ Save updated user
         await userRepo.save(user);
 
-        // ✅ Return sanitized response
         return res.status(200).json({
             message: "Profile updated successfully",
             status: "success",
