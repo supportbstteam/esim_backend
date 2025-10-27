@@ -150,6 +150,7 @@ export const postOrder = async (req: any, res: Response) => {
         totalAmount: mainOrder.totalAmount,
         status: mainOrder.status,
         activated: mainOrder.activated,
+        transaction,
         country: { id: mainOrder.country.id, name: mainOrder.country.name },
         esims: createdEsims.map((e) => ({
           id: e.id,
