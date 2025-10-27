@@ -327,7 +327,7 @@ export const getUserSimSummary = async (req: any, res: Response) => {
   console.log("=== HIT getUserSimSummary route ===");
   console.log("Request user:", req.user);
 
-  return res.status(200).json({ message: "eSIM summary fetched successfully", status: "success", data: {} });
+  // return res.status(200).json({ message: "eSIM summary fetched successfully", status: "success", data: {} });
 
   const { id, role } = req.user;
 

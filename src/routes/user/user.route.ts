@@ -10,7 +10,7 @@ import { auth } from "../../middlewares/auth.handler";
 import queryRoute from "../query.routes"
 import { deleteAccount, getUserDetails, postCreateUser, postUserLogin, postVerifyOtp, updateProfile } from "../../controllers/user/userAuth.controllers";
 import { getSocials } from "../../controllers/Social.Media.controllers";
-import { getOrderDetailsByUser, getOrderListByUser, postOrder } from "../../controllers/user/userEsimControlllers";
+import { getOrderDetailsByUser, getOrderListByUser, getUserSimSummary, postOrder } from "../../controllers/user/userEsimControlllers";
 import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handler";
 import userCartRoute from "./userCart.route"
 import userTransactionRoute from "./userTransaction.route"
@@ -35,6 +35,8 @@ router.use("/e-sim", auth, esimRoute);
 
 router.use("/cms", useContactRoute);
 router.get("/social-media", getSocials);
+
+router.get("/sim/summary", auth, getUserSimSummary);
 
 // ---- quickies -----
 router.use("/quick-links", userQuickies);
