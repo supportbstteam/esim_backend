@@ -40,7 +40,7 @@ export const postOrder = async (req: any, res: Response) => {
       return res.status(400).json({ message: `Transaction status is '${transaction.status}'` });
 
     cart = transaction.cart ?? null;
-    if (!cart || cart.isDeleted) return res.status(400).json({ message: "Cart not found or deleted" });
+    if (!cart || cart.isDeleted || cart.isCheckedOut || cart.isError) return res.status(400).json({ message: "Cart not found or deleted" });
 
     const validCartItems = cart.items.filter(item => !item.isDeleted);
     if (!validCartItems.length) return res.status(400).json({ message: "No valid cart items found" });
@@ -160,6 +160,7 @@ export const postOrder = async (req: any, res: Response) => {
       // Mark cart as error if order creation fails
       if (cart) {
         cart.isError = true;
+        cart.isCheckedOut = false;
         await cartRepo.save(cart);
       }
       throw err;
