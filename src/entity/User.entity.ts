@@ -34,6 +34,12 @@ export class User {
     @Column({ type: "boolean", default: false })
     isDeleted!: boolean;
 
+    @Column({ type: "varchar", length: 20, nullable: true })
+    phone?: string;
+
+    @Column({ type: "varchar", length: 100, nullable: true })
+    country?: string;
+
     @Column({ type: "varchar", length: 6, nullable: true })
     otp!: string | null;
 

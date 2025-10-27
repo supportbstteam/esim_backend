@@ -210,49 +210,62 @@ export const getUserDetails = async (req: any, res: Response) => {
 
 // UPDATE USER DETAILS
 export const updateProfile = async (req: any, res: Response) => {
-    try {
-        const userId = req.user?.id;
-        if (!userId) {
-            return res.status(401).json({ message: "Unauthorized access" });
-        }
-
-        const userRepo = AppDataSource.getRepository(User);
-        const user = await userRepo.findOne({ where: { id: userId } });
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        const { firstName, lastName, email } = req.body;
-
-        // Allow updating only these fields
-        if (firstName !== undefined) user.firstName = firstName.trim();
-        if (lastName !== undefined) user.lastName = lastName.trim();
-        if (email !== undefined) user.email = email.trim();
-
-        await userRepo.save(user);
-
-        return res.status(200).json({
-            message: "Profile updated successfully",
-            status: "success",
-            user: {
-                id: user.id,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                email: user.email,
-                role: user.role,
-                isBlocked: user.isBlocked,
-                isDeleted: user.isDeleted,
-                createdAt: user.createdAt,
-                updatedAt: user.updatedAt,
-            },
-        });
-    } catch (err: any) {
-        console.error("--- Error in updateProfile ---", err.message);
-        return res
-            .status(500)
-            .json({ message: "Failed to update profile", error: err.message });
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized access" });
     }
+
+    const userRepo = AppDataSource.getRepository(User);
+    const user = await userRepo.findOne({ where: { id: userId } });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { firstName, lastName, email, phone, country, password } = req.body;
+
+    // ✅ Update allowed fields only if provided
+    if (firstName !== undefined) user.firstName = firstName.trim();
+    if (lastName !== undefined) user.lastName = lastName.trim();
+    if (email !== undefined) user.email = email.trim().toLowerCase();
+    if (phone !== undefined) user.phone = phone.trim();
+    if (country !== undefined) user.country = country.trim();
+
+    // ✅ Password change (optional)
+    if (password) {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      user.password = hashedPassword;
+    }
+
+    // ✅ Save updated user
+    await userRepo.save(user);
+
+    // ✅ Return sanitized response
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      status: "success",
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        country: user.country,
+        role: user.role,
+        isBlocked: user.isBlocked,
+        isDeleted: user.isDeleted,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+    });
+  } catch (err: any) {
+    console.error("--- Error in updateProfile ---", err.message);
+    return res
+      .status(500)
+      .json({ message: "Failed to update profile", error: err.message });
+  }
 };
 
 // DELETE USER ACCOUNT
