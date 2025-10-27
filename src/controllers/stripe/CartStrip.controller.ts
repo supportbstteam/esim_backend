@@ -17,6 +17,7 @@ export const initiateTransaction = async (req: any, res: Response) => {
     try {
         const userRepo = AppDataSource.getRepository(User);
         const cartRepo = AppDataSource.getRepository(Cart);
+        const cartItem = AppDataSource.getRepository(Cart);
         const transactionRepo = AppDataSource.getRepository(Transaction);
 
         // Fetch the user
@@ -29,6 +30,7 @@ export const initiateTransaction = async (req: any, res: Response) => {
         const cart = await cartRepo.findOne({
             where: { user: { id: userId }, isCheckedOut: false, isDeleted: false, isError: false },
             relations: ["items", "items.plan"],
+            order: { createdAt: "DESC" }
         });
 
         console.log("----- cart item ---", cart);
