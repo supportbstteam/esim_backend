@@ -4,6 +4,8 @@ import { getDataSource } from "../../lib/serverless";
 import { checkAdmin } from "../../utils/checkAdmin";
 import bcrypt from "bcryptjs";
 import { Cart } from "../../entity/Carts.entity";
+import { CartItem } from "../../entity/CartItem.entity";
+import { Transaction } from "../../entity/Transactions.entity";
 
 // ----------------- CREATE USER -----------------
 export const postAdminCreateUser = async (req: Request, res: Response) => {
@@ -55,27 +57,60 @@ export const deleteAdminUser = async (req: Request, res: Response) => {
     const { userId } = req.params;
 
     try {
-        // Check if requester is admin
+        // Check admin privilege
         const isAdmin = await checkAdmin(req, res);
         if (!isAdmin) return;
 
         const dataSource = await getDataSource();
         const userRepo = dataSource.getRepository(User);
         const cartRepo = dataSource.getRepository(Cart);
+        const cartItemRepo = dataSource.getRepository(CartItem);
+        const transactionRepo = dataSource.getRepository(Transaction);
 
-        // Find the user
         const user = await userRepo.findOne({ where: { id: userId } });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Delete only carts (not orders)
-        await cartRepo.delete({ user });
+        // Start a transaction
+        await dataSource.transaction(async (manager) => {
+            // 1️⃣ Find all carts that can be safely deleted (not checked out + no transactions)
+            const cartsToDelete = await manager
+                .createQueryBuilder(Cart, "cart")
+                .leftJoin(Transaction, "t", "t.cartId = cart.id")
+                .where("cart.userId = :userId", { userId })
+                .andWhere("cart.isCheckedOut = false")
+                .andWhere("t.id IS NULL") // skip carts linked to transactions
+                .getMany();
 
-        // Now remove the user
-        await userRepo.remove(user);
+            if (cartsToDelete.length > 0) {
+                const cartIds = cartsToDelete.map((c) => c.id);
 
-        return res.status(200).json({ message: "User and their carts deleted successfully" });
+                // 2️⃣ Delete all related cart items first
+                await manager
+                    .createQueryBuilder()
+                    .delete()
+                    .from(CartItem)
+                    .where("cartId IN (:...cartIds)", { cartIds })
+                    .execute();
+
+                // 3️⃣ Delete the carts themselves
+                await manager
+                    .createQueryBuilder()
+                    .delete()
+                    .from(Cart)
+                    .where("id IN (:...cartIds)", { cartIds })
+                    .execute();
+            }
+
+            // 4️⃣ Finally delete the user (only the user, not related data)
+            await manager.delete(User, { id: userId });
+        });
+
+        return res
+            .status(200)
+            .json({ message: "User deleted successfully, orphan carts and their items cleaned up." });
+
     } catch (err: any) {
         console.error("Error hard deleting user:", err);
         return res.status(500).json({ message: "Internal server error" });
