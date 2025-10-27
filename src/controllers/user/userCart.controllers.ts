@@ -33,8 +33,8 @@ export const addToCart = async (req: any, res: Response) => {
             relations: ["items", "items.plan", "items.plan.country"],
         });
 
-        if (!cart || cart.isDeleted || cart.isError) {
-            cart = cartRepo.create({ user, items: [], isError: false });
+        if (!cart || cart.isDeleted || cart.isError || cart.isCheckedOut) {
+            cart = cartRepo.create({ user, items: [], isError: false, isCheckedOut: false, isDeleted: false });
             await cartRepo.save(cart);
         }
 
