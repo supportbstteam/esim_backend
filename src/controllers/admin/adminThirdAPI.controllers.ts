@@ -107,6 +107,8 @@ export const postImportThirdPartyPlans = async (req: any, res: Response) => {
     const { id, role } = req.user;
 
     const isAdmin = checkAdmin(req, res);
+
+    console.log("------- third party token----", req.thirdPartyToken);
     if (!isAdmin)
         return res.status(401).json({
             message: "Unauthorized, please login",
@@ -212,6 +214,8 @@ export const postImportTopUpPlans = async (req: any, res: Response) => {
     const isAdmin = checkAdmin(req, res);
     if (!isAdmin)
         return res.status(401).json({ message: "Unauthorized, please login" });
+
+    console.log("---- top up token ----", req.thirdPartyToken)
 
     try {
         // 1️⃣ Fetch top-up plans from API

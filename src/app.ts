@@ -7,7 +7,7 @@ import adminRouter from "./routes/admin/admin.route";
 import userRouter from "./routes/user/user.route";
 import { auth } from "./middlewares/auth.handler";
 import { AppDataSource } from "./data-source";
-
+import dbRouter from "./routes/db.route";
 const app = express();
 
 // ======= Third-party middleware =======
@@ -39,6 +39,7 @@ app.get("/", (req, res) => {
     res.send("Hello from Node + TypeORM + MySQL!");
 });
 
+
 app.get("/api", (req, res) => {
     res.send("Hello from Node + TypeORM + MySQL! with our Esim products");
 });
@@ -61,11 +62,12 @@ app.get("/api/entities", (req, res) => {
 
 
 // ====== Admin =======
-app.use("/api/admin",auth, adminRouter);
+app.use("/api/admin", auth, adminRouter);
 
 // ====== User =======
 app.use("/api/user", userRouter);
 
+// app.use("/db", dbRouter);
 // ======= Error handler =======
 app.use(errorHandler);
 

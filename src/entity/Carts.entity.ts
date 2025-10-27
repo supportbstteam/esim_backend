@@ -16,6 +16,9 @@ export class Cart {
     @OneToMany(() => CartItem, item => item.cart, { cascade: true })
     items!: CartItem[];
 
+    @Column({ type: "decimal", default: 0 })
+    itemLength!: number;
+
     @Column({ type: "boolean", default: false })
     isCheckedOut!: boolean;
 
