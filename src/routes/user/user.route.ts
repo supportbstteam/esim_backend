@@ -8,7 +8,7 @@ import userQuickies from "./userQuickies.route";
 import userSupport from "./userSupport.route";
 import { auth } from "../../middlewares/auth.handler";
 import queryRoute from "../query.routes"
-import { deleteAccount, getUserDetails, postCreateUser, postUserLogin, postVerifyOtp, updateProfile } from "../../controllers/user/userAuth.controllers";
+import { deleteAccount, getUserDetails, postCreateUser, postForgotPassword, postResetPassword, postUserLogin, postVerifyForgotPasswordOtp, postVerifyOtp, updateProfile } from "../../controllers/user/userAuth.controllers";
 import { getSocials } from "../../controllers/Social.Media.controllers";
 import { getOrderDetailsByUser, getOrderListByUser, getUserSimSummary, postOrder, postUserClaimRefund } from "../../controllers/user/userEsimControlllers";
 import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handler";
@@ -27,13 +27,16 @@ router.get("/details", auth, getUserDetails);
 
 router.put("/update", auth, updateProfile);
 router.delete("/delete", auth, deleteAccount);
+router.post("/auth/forget-password", postForgotPassword);
+router.post("/auth/verify-password-otp", postVerifyForgotPasswordOtp);
+router.post("/auth/temp-reset-password", postResetPassword);
 
 
 router.use("/country", countryRoute);
 router.use("/plans", planRoute);
 router.use("/top-up", auth, topUpPlanRoute);
 router.use("/e-sim", auth, esimRoute);
-router.use("/auth", userAuthRoute);
+// router.use("/auth", userAuthRoute);
 
 router.use("/cms", useContactRoute);
 router.get("/social-media", getSocials);
@@ -61,7 +64,7 @@ router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
 // router.post("/order", auth, generateFakeOrder);
 router.get("/order-list", auth, getOrderListByUser);
 router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
-router.post("/claim-refund",auth, postUserClaimRefund)
+router.post("/claim-refund", auth, postUserClaimRefund)
 
 
 router.use("/add-to-cart", auth, userCartRoute)
