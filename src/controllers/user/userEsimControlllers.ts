@@ -12,6 +12,8 @@ import { Charges } from "../../entity/Charges.entity";
 import { AppDataSource } from "../../data-source";
 import { Cart } from "../../entity/Carts.entity";
 import { CartItem } from "../../entity/CartItem.entity";
+import { Refund } from "../../entity/Refund.entity";
+import { sendOrderEmail } from "../../utils/email";
 
 export const postOrder = async (req: any, res: Response) => {
   const { transactionId } = req.body;
@@ -142,6 +144,17 @@ export const postOrder = async (req: any, res: Response) => {
     await queryRunner.manager.save(transaction);
 
     await queryRunner.commitTransaction();
+    await sendOrderEmail(
+      user.email,
+      `${user.firstName} ${user.lastName}`,
+      {
+        id: mainOrder.id,
+        totalAmount: mainOrder.totalAmount,
+        activated: mainOrder.activated,
+        esims: createdEsims,
+      },
+      "completed"
+    );
 
     return res.status(201).json({
       message: "Order completed successfully",
@@ -199,6 +212,18 @@ export const postOrder = async (req: any, res: Response) => {
       });
       await orderRepo.save(failedOrder);
     }
+
+    // 🔔 Send failure mail to user + admin
+    await sendOrderEmail(
+      user?.email || "unknown",
+      `${user?.firstName || "User"} ${user?.lastName || ""}`,
+      {
+        id: mainOrder?.id || "N/A",
+        totalAmount: mainOrder?.totalAmount || 0,
+        errorMessage: err.message || "Unknown failure",
+      },
+      "failed"
+    );
 
     return res.status(500).json({
       message: "Order process failed",
@@ -432,6 +457,110 @@ export const getUserSimSummary = async (req: any, res: Response) => {
     return res.status(500).json({
       message: "Failed to fetch eSIM summary",
       status: "error",
+      error: err.message,
+    });
+  }
+};
+
+export const postUserClaimRefund = async (req: any, res: Response) => {
+  const { id, role } = req.user;
+
+  // 🔐 Validate user identity
+  if (!id || role !== "user") {
+    return res.status(401).json({
+      message: "Unauthorized! Invalid account credentials.",
+    });
+  }
+
+  const { orderId, transactionId, message, firstName, lastName, email, phone } = req.body;
+
+  // 🧾 Basic data validation
+  if (!orderId || !transactionId) {
+    return res.status(400).json({
+      message: "Order ID and Transaction ID are required.",
+    });
+  }
+
+  try {
+    const userRepo = AppDataSource.getRepository(User);
+    const orderRepo = AppDataSource.getRepository(Order);
+    const transactionRepo = AppDataSource.getRepository(Transaction);
+    const refundRepo = AppDataSource.getRepository(Refund);
+
+    // 🔍 Fetch user
+    const user = await userRepo.findOne({
+      where: { id },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // 🔍 Fetch order
+    const order = await orderRepo.findOne({
+      where: { id: orderId },
+      relations: ["user", "transaction"],
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found." });
+    }
+
+    // 🔍 Fetch transaction
+    const transaction = await transactionRepo.findOne({
+      where: { id: transactionId },
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found." });
+    }
+
+    // 🧠 Business rule validation
+    if (
+      order.status.toLowerCase() !== "failed" &&
+      order?.user?.id !== id &&
+      order.transaction.id !== transactionId
+    ) {
+      return res.status(400).json({
+        message: "Refund cannot be claimed for this order.",
+      });
+    }
+
+    // 🛑 Check if refund already exists for this order
+    const existingRefund = await refundRepo.findOne({
+      where: { order: { id: orderId }, isDeleted: false },
+    });
+
+    if (existingRefund) {
+      return res.status(400).json({
+        message: "Refund already claimed for this order.",
+      });
+    }
+
+    // 💾 Create new refund record
+    const refund = refundRepo.create({
+      firstName: firstName || user.firstName,
+      lastName: lastName || user.lastName,
+      email: email || user.email,
+      phone: phone || user?.phone,
+      message: message || "User requested a refund.",
+      order,
+      transaction,
+      userId: user?.id,
+      isDeleted: false,
+      status: "pending",
+    });
+
+    await refundRepo.save(refund);
+
+    return res.status(201).json({
+      message: "Refund request submitted successfully.",
+      data: refund,
+    });
+  } catch (err: any) {
+    console.error("---- error in the claim refund order ------", err);
+    return res.status(500).json({
+      message: "Something went wrong while processing your refund request.",
       error: err.message,
     });
   }

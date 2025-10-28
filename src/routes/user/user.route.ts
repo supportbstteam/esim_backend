@@ -10,7 +10,7 @@ import { auth } from "../../middlewares/auth.handler";
 import queryRoute from "../query.routes"
 import { deleteAccount, getUserDetails, postCreateUser, postUserLogin, postVerifyOtp, updateProfile } from "../../controllers/user/userAuth.controllers";
 import { getSocials } from "../../controllers/Social.Media.controllers";
-import { getOrderDetailsByUser, getOrderListByUser, getUserSimSummary, postOrder } from "../../controllers/user/userEsimControlllers";
+import { getOrderDetailsByUser, getOrderListByUser, getUserSimSummary, postOrder, postUserClaimRefund } from "../../controllers/user/userEsimControlllers";
 import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handler";
 import userCartRoute from "./userCart.route"
 import userTransactionRoute from "./userTransaction.route"
@@ -59,6 +59,7 @@ router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
 // router.post("/order", auth, generateFakeOrder);
 router.get("/order-list", auth, getOrderListByUser);
 router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
+router.post("/claim-refund",auth, postUserClaimRefund)
 
 
 router.use("/add-to-cart", auth, userCartRoute)

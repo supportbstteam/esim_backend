@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { AppDataSource } from "../../data-source";
 import { User } from "../../entity/User.entity";
-import { sendOtpEmail } from "../../utils/email";
+import { sendForgotPasswordOtpEmail, sendNewUserNotification, sendOtpEmail, sendPasswordChangeEmail } from "../../utils/email";
 
 // ⚙️ Helper to generate JWT for User
 const generateToken = (user: User) => {
@@ -16,81 +16,107 @@ const generateToken = (user: User) => {
 
 // 📝 SIGNUP
 export const postCreateUser = async (req: Request, res: Response) => {
-    const { firstName, lastName, email, password } = req.body;
+    let { firstName, lastName, email, password } = req.body;
 
     if (!firstName || !lastName || !email || !password) {
-        return res.status(400).json({ message: "All fields are required" });
+        return res.status(400).json({ message: "All fields are required." });
     }
+
+    email = email.trim().toLowerCase();
 
     const userRepo = AppDataSource.getRepository(User);
 
     try {
         const existingUser = await userRepo.findOne({ where: { email } });
 
-        if (existingUser) {
-            if (existingUser.isDeleted) {
-                // Previously deleted → allow re-register
-                const hashedPassword = await bcrypt.hash(password, 10);
-                const otp = Math.floor(100000 + Math.random() * 900000).toString();
-                const otpExpires = Date.now() + 10 * 60 * 1000; // 10 mins
+        // 🔁 CASE 1: User existed but marked deleted → allow re-registration
+        if (existingUser && existingUser.isDeleted) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            const otpExpires = Date.now() + 10 * 60 * 1000;
 
-                existingUser.firstName = firstName;
-                existingUser.lastName = lastName;
-                existingUser.password = hashedPassword;
-                existingUser.otp = otp;
-                existingUser.otpExpires = otpExpires;
-                existingUser.isDeleted = false;
-                existingUser.isVerified = false;
+            existingUser.firstName = firstName;
+            existingUser.lastName = lastName;
+            existingUser.password = hashedPassword;
+            existingUser.otp = otp;
+            existingUser.otpExpires = otpExpires;
+            existingUser.isDeleted = false;
+            existingUser.isVerified = false;
 
-                await userRepo.save(existingUser);
+            await userRepo.save(existingUser);
+            await sendOtpEmail(email, otp);
 
-                await sendOtpEmail(email, otp);
+            // 🔔 Notify admin about re-registered user
+            await sendNewUserNotification(process.env.ADMIN_EMAIL!, existingUser);
 
-                return res.status(201).json({ message: "User re-registered, OTP sent to email", email });
-            }
-
-            if (existingUser.isVerified) {
-                // Already verified → cannot register again
-                return res.status(409).json({ message: "Email already registered" });
-            } else {
-                // Not verified → resend OTP
-                const otp = Math.floor(100000 + Math.random() * 900000).toString();
-                const otpExpires = Date.now() + 10 * 60 * 1000;
-
-                existingUser.otp = otp;
-                existingUser.otpExpires = otpExpires;
-
-                await userRepo.save(existingUser);
-                await sendOtpEmail(email, otp);
-
-                return res.status(200).json({ message: "OTP resent to email", email });
-            }
+            return res.status(201).json({
+                message: "User re-registered. OTP sent to email.",
+                email,
+            });
         }
 
-        // New user → create account
+        // ❌ CASE 2: Already verified → cannot register again
+        if (existingUser && existingUser.isVerified) {
+            return res.status(409).json({
+                message: "Email is already registered and verified.",
+            });
+        }
+
+        // 🔄 CASE 3: Exists but not verified → resend OTP
+        if (existingUser && !existingUser.isVerified) {
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            const otpExpires = Date.now() + 10 * 60 * 1000;
+
+            existingUser.otp = otp;
+            existingUser.otpExpires = otpExpires;
+
+            await userRepo.save(existingUser);
+            await sendOtpEmail(email, otp);
+
+            return res.status(200).json({
+                message: "OTP resent to your email.",
+                email,
+            });
+        }
+
+        // 🆕 CASE 4: Completely new user → create account
         const hashedPassword = await bcrypt.hash(password, 10);
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const otpExpires = Date.now() + 10 * 60 * 1000;
 
-        await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
-            const newUser = transactionalEntityManager.create(User, {
+        let newUser;
+        await AppDataSource.manager.transaction(async (trx) => {
+            newUser = trx.create(User, {
                 firstName,
                 lastName,
                 email,
                 password: hashedPassword,
                 otp,
                 otpExpires,
+                isVerified: false,
+                isDeleted: false,
             });
 
-            await transactionalEntityManager.save(newUser);
-            await sendOtpEmail(email, otp);
+            await trx.save(newUser);
         });
 
-        return res.status(201).json({ message: "User registered, OTP sent to email", email });
+        // 📧 Send verification OTP
+        await sendOtpEmail(email, otp);
+
+        // 🔔 Notify admin about new user
+        await sendNewUserNotification(process.env.ADMIN_EMAIL!, newUser);
+
+        return res.status(201).json({
+            message: "User registered successfully. OTP sent to email.",
+            email,
+        });
 
     } catch (err: any) {
         console.error("--- Error in postCreateUser ---", err);
-        return res.status(500).json({ message: "Signup failed", error: err.message || err });
+        return res.status(500).json({
+            message: "Signup failed. Please try again later.",
+            error: err.message || err,
+        });
     }
 };
 
@@ -258,6 +284,8 @@ export const updateProfile = async (req: any, res: Response) => {
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash(password, saltRounds);
             user.password = hashedPassword;
+            // ✅ Send confirmation mail after successful change
+            await sendPasswordChangeEmail(user.email, user.firstName);
         }
 
         await userRepo.save(user);
@@ -354,5 +382,109 @@ export const postVerifyOtp = async (req: Request, res: Response) => {
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: "OTP verification failed", error: err });
+    }
+};
+
+// Request body: { email: string }
+export const postForgotPassword = async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ message: "Email is required" });
+
+        const userRepo = AppDataSource.getRepository(User);
+        const user = await userRepo.findOne({ where: { email } });
+
+        if (!user || user.isDeleted) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.isBlocked) {
+            return res.status(403).json({ message: "Account is blocked. Contact support." });
+        }
+
+        // Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpires = Date.now() + 10 * 60 * 1000; // 10 min
+
+        user.otp = otp;
+        user.otpExpires = otpExpires;
+        await userRepo.save(user);
+
+        // Send OTP via email
+        await sendForgotPasswordOtpEmail(user.email, otp);
+
+        return res.status(200).json({
+            message: "OTP sent to your registered email address",
+            email: user.email,
+        });
+    } catch (err: any) {
+        console.error("--- Error in postForgotPassword ---", err.message);
+        return res.status(500).json({ message: "Failed to send OTP", error: err.message });
+    }
+};
+
+// Request body: { email: string, otp: string }
+export const postVerifyForgotPasswordOtp = async (req: Request, res: Response) => {
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({ message: "Email and OTP are required" });
+        }
+
+        const userRepo = AppDataSource.getRepository(User);
+        const user = await userRepo.findOne({ where: { email } });
+
+        if (!user) return res.status(404).json({ message: "User not found" });
+        if (user.otp !== otp) return res.status(400).json({ message: "Invalid OTP" });
+        if (user.otpExpires! < Date.now()) return res.status(400).json({ message: "OTP expired" });
+
+        // OTP verified → clear otp fields, mark as verified-for-reset
+        user.otp = null;
+        user.otpExpires = null;
+        user.tempResetAllowed = true; // <-- optional boolean column for security (recommended)
+        await userRepo.save(user);
+
+        return res.status(200).json({
+            message: "OTP verified successfully. You can now reset your password.",
+        });
+    } catch (err: any) {
+        console.error("--- Error in postVerifyForgotPasswordOtp ---", err.message);
+        return res.status(500).json({ message: "OTP verification failed", error: err.message });
+    }
+};
+
+// Request body: { email: string, password: string }
+export const postResetPassword = async (req: Request, res: Response) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and new password are required" });
+        }
+
+        const userRepo = AppDataSource.getRepository(User);
+        const user = await userRepo.findOne({ where: { email } });
+
+        if (!user) return res.status(404).json({ message: "User not found" });
+        if (user.isDeleted) return res.status(400).json({ message: "Account is deleted" });
+
+        // Optional: only allow if OTP was verified (if you added tempResetAllowed)
+        // if (!user.tempResetAllowed) {
+        //     return res.status(403).json({ message: "OTP verification required before reset" });
+        // }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user.password = hashedPassword;
+        user.tempResetAllowed = false;
+        await userRepo.save(user);
+
+        // Send confirmation email
+        await sendPasswordChangeEmail(user.email, user.firstName);
+
+        return res.status(200).json({
+            message: "Password reset successfully",
+        });
+    } catch (err: any) {
+        console.error("--- Error in postResetPassword ---", err.message);
+        return res.status(500).json({ message: "Failed to reset password", error: err.message });
     }
 };

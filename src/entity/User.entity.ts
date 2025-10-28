@@ -52,6 +52,9 @@ export class User {
     @Column({ type: "enum", enum: ["admin", "user"], default: "user" })
     role!: "admin" | "user";
 
+    @Column({ type: "boolean", default: false })
+    tempResetAllowed!: boolean;
+
     @CreateDateColumn()
     createdAt!: Date;
 

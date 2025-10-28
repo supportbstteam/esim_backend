@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { Cart } from "../../entity/Carts.entity";
 import { CartItem } from "../../entity/CartItem.entity";
 import { Transaction } from "../../entity/Transactions.entity";
+import { sendAccountDeletedEmail, sendUserBlockedEmail } from "../../utils/email";
 
 // ----------------- CREATE USER -----------------
 export const postAdminCreateUser = async (req: Request, res: Response) => {
@@ -103,6 +104,8 @@ export const deleteAdminUser = async (req: Request, res: Response) => {
                     .execute();
             }
 
+            await sendAccountDeletedEmail(user.email, user.firstName);
+
             // 4️⃣ Finally delete the user (only the user, not related data)
             await manager.delete(User, { id: userId });
         });
@@ -137,6 +140,9 @@ export const patchAdminToggleBlockUser = async (req: Request, res: Response) => 
 
         // ✅ toggle the value
         user.isBlocked = !user.isBlocked;
+
+        await sendUserBlockedEmail(user.email, user.firstName, "");
+
         await userRepo.save(user);
 
         return res.status(200).json({

@@ -20,6 +20,7 @@ import { Query } from "./entity/Query.entity";
 import { Notification } from "./entity/Notification.entity";
 import { Cart } from "./entity/Carts.entity";
 import { CartItem } from "./entity/CartItem.entity";
+import { Refund } from "./entity/Refund.entity";
 
 export const AppDataSource = new DataSource({
     type: "mysql",
@@ -37,6 +38,7 @@ export const AppDataSource = new DataSource({
         Esim,
         Plan,
         TopUpPlan,
+        Refund,
         Token,
         Transaction,
         Charges,
