@@ -5,12 +5,8 @@ import { getUserDetails, postCreateUser, postForgotPassword, postResetPassword, 
 // import { authMiddleware } from "../middleware/auth";
 
 const router = express.Router();
-
-// Public
-router.post("/signup", postCreateUser);
-router.post("/login", postUserLogin);
 router.post("/forget-password", postForgotPassword);
-router.post("/forget-password-otp", postVerifyForgotPasswordOtp);
+router.post("/verify-password-otp", postVerifyForgotPasswordOtp);
 router.post("/temp-reset-password", postResetPassword);
 
 export default router;

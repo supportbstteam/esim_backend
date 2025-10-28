@@ -15,6 +15,7 @@ import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handle
 import userCartRoute from "./userCart.route"
 import userTransactionRoute from "./userTransaction.route"
 import esimUsage from "./userESimUsage.route"
+import userAuthRoute from "./userAuth.route"
 
 const router = Router();
 
@@ -32,6 +33,7 @@ router.use("/country", countryRoute);
 router.use("/plans", planRoute);
 router.use("/top-up", auth, topUpPlanRoute);
 router.use("/e-sim", auth, esimRoute);
+router.use("/auth", userAuthRoute);
 
 router.use("/cms", useContactRoute);
 router.get("/social-media", getSocials);
