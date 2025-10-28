@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { AppDataSource } from "../../data-source";
 import { User } from "../../entity/User.entity";
 import { sendForgotPasswordOtpEmail, sendNewUserNotification, sendOtpEmail, sendPasswordChangeEmail } from "../../utils/email";
+import { Admin } from "../../entity/Admin.entity";
 
 // ⚙️ Helper to generate JWT for User
 const generateToken = (user: User) => {
@@ -45,9 +46,6 @@ export const postCreateUser = async (req: Request, res: Response) => {
 
             await userRepo.save(existingUser);
             await sendOtpEmail(email, otp);
-
-            // 🔔 Notify admin about re-registered user
-            await sendNewUserNotification(process.env.ADMIN_EMAIL!, existingUser);
 
             return res.status(201).json({
                 message: "User re-registered. OTP sent to email.",
@@ -103,8 +101,6 @@ export const postCreateUser = async (req: Request, res: Response) => {
         // 📧 Send verification OTP
         await sendOtpEmail(email, otp);
 
-        // 🔔 Notify admin about new user
-        await sendNewUserNotification(process.env.ADMIN_EMAIL!, newUser);
 
         return res.status(201).json({
             message: "User registered successfully. OTP sent to email.",
@@ -357,7 +353,9 @@ export const postVerifyOtp = async (req: Request, res: Response) => {
         }
 
         const userRepo = AppDataSource.getRepository(User);
+        const adminRepo = AppDataSource.getRepository(Admin);
         const user = await userRepo.findOneBy({ email });
+        // const admin = await 
 
         if (!user) return res.status(404).json({ message: "User not found" });
         if (user.otp !== otp) return res.status(400).json({ message: "Invalid OTP" });
@@ -371,6 +369,15 @@ export const postVerifyOtp = async (req: Request, res: Response) => {
 
         // Generate JWT token
         const token = generateToken(user);
+
+        const admin: any = await adminRepo.findOne({
+            select: ["notificationMail"],
+        });
+
+        if (!admin) {
+            // 🔔 Notify admin about re-registered user
+            await sendNewUserNotification(admin?.notificationMail, user);
+        }
 
         return res.status(200).json({
             message: "Email verified successfully",

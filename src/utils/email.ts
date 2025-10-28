@@ -1,13 +1,15 @@
 import nodemailer from "nodemailer";
+import { AppDataSource } from "../data-source";
+import { Admin } from "../entity/Admin.entity";
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: Number(process.env.SMTP_PORT) === 465,
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: Number(process.env.SMTP_PORT) === 465,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
 });
 
 // ---------- Helper: Base Template ----------
@@ -33,14 +35,14 @@ const baseTemplate = (title: string, content: string) => `
  * @param otp - one-time password (6-digit)
  */
 export const sendOtpEmail = async (to: string, otp: string) => {
-    try {
-        const subject = "🔑 Your eSIM Connect Verification Code";
+  try {
+    const subject = "🔑 Your eSIM Connect Verification Code";
 
-        const text = `Your OTP for eSIM Connect is: ${otp}. It expires in 10 minutes. If you did not request this, please ignore this email.`;
+    const text = `Your OTP for eSIM Connect is: ${otp}. It expires in 10 minutes. If you did not request this, please ignore this email.`;
 
-        const html = baseTemplate(
-            "Email Verification Code",
-            `
+    const html = baseTemplate(
+      "Email Verification Code",
+      `
         <p>Hi there,</p>
         <p>Use the following One-Time Password (OTP) to verify your account on <strong>eSIM Connect</strong>. It will expire in <b>10 minutes</b>.</p>
         <div style="text-align: center; margin: 20px 0;">
@@ -51,27 +53,27 @@ export const sendOtpEmail = async (to: string, otp: string) => {
         <p>If you didn’t request this OTP, please ignore this email or contact our support team immediately.</p>
         <p style="margin-top: 25px;">Thanks,<br><strong>The eSIM Connect Team</strong></p>
       `
-        );
+    );
 
-        const info = await transporter.sendMail({
-            from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
-            to,
-            subject,
-            text,
-            html,
-        });
+    const info = await transporter.sendMail({
+      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+      to,
+      subject,
+      text,
+      html,
+    });
 
-        console.log(`✅ OTP email sent to ${to} (messageId: ${info.messageId})`);
-    } catch (error: any) {
-        console.error("❌ Failed to send OTP email:", error.message);
-    }
+    console.log(`✅ OTP email sent to ${to} (messageId: ${info.messageId})`);
+  } catch (error: any) {
+    console.error("❌ Failed to send OTP email:", error.message);
+  }
 };
 
 // ---------- 1️⃣ Order Confirmation Email ----------
 export const sendOrderConfirmationEmail = async (userEmail: string, order: any) => {
-    const html = baseTemplate(
-        "Order Confirmation",
-        `
+  const html = baseTemplate(
+    "Order Confirmation",
+    `
       <p>Hi <strong>${order.user.firstName}</strong>,</p>
       <p>Thank you for your order! Your eSIM order has been successfully placed.</p>
       <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
@@ -82,46 +84,46 @@ export const sendOrderConfirmationEmail = async (userEmail: string, order: any) 
       </table>
       <p>You will receive a follow-up email once your eSIM is activated.</p>
     `
-    );
+  );
 
-    await transporter.sendMail({
-        from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
-        to: userEmail,
-        subject: `🛒 Order Confirmation - ${order.id}`,
-        html,
-    });
+  await transporter.sendMail({
+    from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+    to: userEmail,
+    subject: `🛒 Order Confirmation - ${order.id}`,
+    html,
+  });
 
-    console.log("✅ Order email sent to user:", userEmail);
+  console.log("✅ Order email sent to user:", userEmail);
 };
 
 // ---------- 1️⃣(b) Order Notification to Admin ----------
 export const sendAdminOrderNotification = async (adminEmail: string, order: any) => {
-    const html = baseTemplate(
-        "New Order Placed",
-        `
+  const html = baseTemplate(
+    "New Order Placed",
+    `
       <p>A new order has been placed by <strong>${order.user.firstName} ${order.user.lastName}</strong>.</p>
       <p><b>Order ID:</b> ${order.id}<br/>
       <b>Amount:</b> $${order.amount}<br/>
       <b>Status:</b> ${order.status}</p>
       <p><a href="${process.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View in Dashboard</a></p>
     `
-    );
+  );
 
-    await transporter.sendMail({
-        from: `"eSIM Connect Orders" <${process.env.SMTP_USER}>`,
-        to: adminEmail,
-        subject: `🧾 New Order - ${order.id}`,
-        html,
-    });
+  await transporter.sendMail({
+    from: `"eSIM Connect Orders" <${process.env.SMTP_USER}>`,
+    to: adminEmail,
+    subject: `🧾 New Order - ${order.id}`,
+    html,
+  });
 
-    console.log("✅ Order email sent to admin:", adminEmail);
+  console.log("✅ Order email sent to admin:", adminEmail);
 };
 
 // ---------- 2️⃣ New User Created (Admin Notification) ----------
 export const sendNewUserNotification = async (adminEmail: string, user: any) => {
-    const html = baseTemplate(
-        "New User Registration",
-        `
+  const html = baseTemplate(
+    "New User Registration",
+    `
       <p>A new user has created an account on eSIM Connect.</p>
       <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
         <tr><td><b>Name:</b></td><td>${user.firstName} ${user.lastName}</td></tr>
@@ -129,53 +131,53 @@ export const sendNewUserNotification = async (adminEmail: string, user: any) => 
         <tr><td><b>Country:</b></td><td>${user.country || "N/A"}</td></tr>
       </table>
     `
-    );
+  );
 
-    await transporter.sendMail({
-        from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
-        to: adminEmail,
-        subject: `👤 New User Created - ${user.firstName} ${user.lastName}`,
-        html,
-    });
+  await transporter.sendMail({
+    from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+    to: adminEmail,
+    subject: `👤 New User Created - ${user.firstName} ${user.lastName}`,
+    html,
+  });
 
-    console.log("✅ New user email sent to admin:", adminEmail);
+  console.log("✅ New user email sent to admin:", adminEmail);
 };
 
 // ---------- 3️⃣ Password Updated (User) ----------
 export const sendPasswordUpdateEmail = async (userEmail: string, userName: string) => {
-    const html = baseTemplate(
-        "Password Updated Successfully",
-        `
+  const html = baseTemplate(
+    "Password Updated Successfully",
+    `
       <p>Hi <strong>${userName}</strong>,</p>
       <p>Your password has been successfully updated. If this wasn’t you, please reset your password immediately or contact support.</p>
     `
-    );
+  );
 
-    await transporter.sendMail({
-        from: `"eSIM Connect Security" <${process.env.SMTP_USER}>`,
-        to: userEmail,
-        subject: "🔐 Password Updated Successfully",
-        html,
-    });
+  await transporter.sendMail({
+    from: `"eSIM Connect Security" <${process.env.SMTP_USER}>`,
+    to: userEmail,
+    subject: "🔐 Password Updated Successfully",
+    html,
+  });
 
-    console.log("✅ Password update email sent:", userEmail);
+  console.log("✅ Password update email sent:", userEmail);
 };
 
 // ---------- 4️⃣ Refund Notification (User + Admin) ----------
 export const sendRefundEmails = async (userEmail: string, adminEmail: string, refund: any) => {
-    const userHtml = baseTemplate(
-        "Refund Request Submitted",
-        `
+  const userHtml = baseTemplate(
+    "Refund Request Submitted",
+    `
       <p>Hi <strong>${refund.user.firstName}</strong>,</p>
       <p>Your refund request for order <b>${refund.order.id}</b> has been received and is being reviewed.</p>
       <p>Refund ID: <b>${refund.id}</b><br>Status: <b>${refund.status}</b></p>
       <p>We’ll notify you once it’s processed.</p>
     `
-    );
+  );
 
-    const adminHtml = baseTemplate(
-        "New Refund Request",
-        `
+  const adminHtml = baseTemplate(
+    "New Refund Request",
+    `
       <p>A user has requested a refund.</p>
       <table style="width:100%; border-collapse: collapse;">
         <tr><td><b>User:</b></td><td>${refund.user.firstName} ${refund.user.lastName}</td></tr>
@@ -186,23 +188,23 @@ export const sendRefundEmails = async (userEmail: string, adminEmail: string, re
       </table>
       <p><a href="${process.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View Refund</a></p>
     `
-    );
+  );
 
-    await transporter.sendMail({
-        from: `"eSIM Connect Refunds" <${process.env.SMTP_USER}>`,
-        to: userEmail,
-        subject: `💰 Refund Request Received - ${refund.id}`,
-        html: userHtml,
-    });
+  await transporter.sendMail({
+    from: `"eSIM Connect Refunds" <${process.env.SMTP_USER}>`,
+    to: userEmail,
+    subject: `💰 Refund Request Received - ${refund.id}`,
+    html: userHtml,
+  });
 
-    await transporter.sendMail({
-        from: `"eSIM Connect Refunds" <${process.env.SMTP_USER}>`,
-        to: adminEmail,
-        subject: `💰 New Refund Request - ${refund.id}`,
-        html: adminHtml,
-    });
+  await transporter.sendMail({
+    from: `"eSIM Connect Refunds" <${process.env.SMTP_USER}>`,
+    to: adminEmail,
+    subject: `💰 New Refund Request - ${refund.id}`,
+    html: adminHtml,
+  });
 
-    console.log("✅ Refund emails sent (user + admin)");
+  console.log("✅ Refund emails sent (user + admin)");
 };
 
 /**
@@ -211,14 +213,14 @@ export const sendRefundEmails = async (userEmail: string, adminEmail: string, re
  * @param name - user's first name
  */
 export const sendPasswordChangeEmail = async (to: string, name?: string) => {
-    try {
-        const subject = "🔒 Your eSIM Connect Password Was Updated";
+  try {
+    const subject = "🔒 Your eSIM Connect Password Was Updated";
 
-        const text = `Hi ${name || "User"},\n\nYour password on eSIM Connect was successfully changed. If this wasn't you, please reset your password immediately or contact our support team.\n\nStay secure,\nThe eSIM Connect Team`;
+    const text = `Hi ${name || "User"},\n\nYour password on eSIM Connect was successfully changed. If this wasn't you, please reset your password immediately or contact our support team.\n\nStay secure,\nThe eSIM Connect Team`;
 
-        const html = baseTemplate(
-            "Your Password Was Updated",
-            `
+    const html = baseTemplate(
+      "Your Password Was Updated",
+      `
         <p>Hi ${name || "there"},</p>
         <p>This is a confirmation that your <strong>eSIM Connect</strong> password has been successfully changed.</p>
         <p>If this wasn’t you, please <a href="https://esimconnect.com/reset-password" style="color:#0070f3;text-decoration:none;font-weight:bold;">reset your password</a> immediately or contact our support team.</p>
@@ -227,34 +229,34 @@ export const sendPasswordChangeEmail = async (to: string, name?: string) => {
         </div>
         <p style="margin-top:25px;">Thanks,<br><strong>The eSIM Connect Team</strong></p>
       `
-        );
+    );
 
-        await transporter.sendMail({
-            from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
-            to,
-            subject,
-            text,
-            html,
-        });
+    await transporter.sendMail({
+      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+      to,
+      subject,
+      text,
+      html,
+    });
 
-        console.log(`✅ Password change email sent to ${to}`);
-    } catch (error: any) {
-        console.error("❌ Failed to send password change email:", error.message);
-    }
+    console.log(`✅ Password change email sent to ${to}`);
+  } catch (error: any) {
+    console.error("❌ Failed to send password change email:", error.message);
+  }
 };
 
 /**
  * 🚫 Notify user that their account has been blocked by admin
  */
 export const sendUserBlockedEmail = async (to: string, name?: string, reason?: string) => {
-    try {
-        const subject = "🚫 Your eSIM Connect Account Has Been Blocked";
+  try {
+    const subject = "🚫 Your eSIM Connect Account Has Been Blocked";
 
-        const text = `Hi ${name || "User"},\n\nYour eSIM Connect account has been blocked by our team. ${reason ? `Reason: ${reason}` : ""}\nIf you believe this was a mistake, please contact support.\n\n- eSIM Connect Team`;
+    const text = `Hi ${name || "User"},\n\nYour eSIM Connect account has been blocked by our team. ${reason ? `Reason: ${reason}` : ""}\nIf you believe this was a mistake, please contact support.\n\n- eSIM Connect Team`;
 
-        const html = baseTemplate(
-            "Your Account Has Been Blocked",
-            `
+    const html = baseTemplate(
+      "Your Account Has Been Blocked",
+      `
         <p>Hi ${name || "there"},</p>
         <p>Your <strong>eSIM Connect</strong> account has been <strong>temporarily blocked</strong> by our team.</p>
         ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
@@ -263,34 +265,34 @@ export const sendUserBlockedEmail = async (to: string, name?: string, reason?: s
         <br/>
         <p>– The eSIM Connect Team</p>
       `
-        );
+    );
 
-        await transporter.sendMail({
-            from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
-            to,
-            subject,
-            text,
-            html,
-        });
+    await transporter.sendMail({
+      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+      to,
+      subject,
+      text,
+      html,
+    });
 
-        console.log(`✅ Block notification sent to ${to}`);
-    } catch (error: any) {
-        console.error("❌ Failed to send blocked user email:", error.message);
-    }
+    console.log(`✅ Block notification sent to ${to}`);
+  } catch (error: any) {
+    console.error("❌ Failed to send blocked user email:", error.message);
+  }
 };
 
 /**
  * 🗑️ Notify user that their account has been deleted
  */
 export const sendAccountDeletedEmail = async (to: string, name?: string) => {
-    try {
-        const subject = "🗑️ Your eSIM Connect Account Has Been Deleted";
+  try {
+    const subject = "🗑️ Your eSIM Connect Account Has Been Deleted";
 
-        const text = `Hi ${name || "User"},\n\nYour eSIM Connect account has been permanently deleted. All associated data has been removed from our system. You can re-register anytime if you wish to use our services again.\n\nThank you for being with us.\n\n- eSIM Connect Team`;
+    const text = `Hi ${name || "User"},\n\nYour eSIM Connect account has been permanently deleted. All associated data has been removed from our system. You can re-register anytime if you wish to use our services again.\n\nThank you for being with us.\n\n- eSIM Connect Team`;
 
-        const html = baseTemplate(
-            "Your Account Has Been Deleted",
-            `
+    const html = baseTemplate(
+      "Your Account Has Been Deleted",
+      `
         <p>Hi ${name || "there"},</p>
         <p>We wanted to let you know that your <strong>eSIM Connect</strong> account has been permanently deleted.</p>
         <p>All personal data and associated order information have been securely removed from our system.</p>
@@ -299,95 +301,101 @@ export const sendAccountDeletedEmail = async (to: string, name?: string) => {
         <p>Thanks for being part of our journey,</p>
         <p><strong>The eSIM Connect Team</strong></p>
       `
-        );
+    );
 
-        await transporter.sendMail({
-            from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
-            to,
-            subject,
-            text,
-            html,
-        });
+    await transporter.sendMail({
+      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+      to,
+      subject,
+      text,
+      html,
+    });
 
-        console.log(`✅ Account deletion email sent to ${to}`);
-    } catch (error: any) {
-        console.error("❌ Failed to send account deletion email:", error.message);
-    }
+    console.log(`✅ Account deletion email sent to ${to}`);
+  } catch (error: any) {
+    console.error("❌ Failed to send account deletion email:", error.message);
+  }
 };
 
 /**
  * 🧾 Send order success or failure email (to user + admin)
  */
 export const sendOrderEmail = async (
-    userEmail: string,
-    userName: string,
-    order: any,
-    status: "completed" | "failed"
+  userEmail: string,
+  userName: string,
+  order: any,
+  status: "completed" | "failed"
 ) => {
-    const subject =
-        status === "completed"
-            ? `✅ Order Confirmation - #${order.id}`
-            : `❌ Order Failed - #${order.id}`;
+  const subject =
+    status === "completed"
+      ? `✅ Order Confirmation - #${order.id}`
+      : `❌ Order Failed - #${order.id}`;
 
-    const html = baseTemplate(
-        status === "completed" ? "Order Completed Successfully" : "Order Failed",
-        `
+  const html = baseTemplate(
+    status === "completed" ? "Order Completed Successfully" : "Order Failed",
+    `
       <p>Hi ${userName || "there"},</p>
 
       ${status === "completed"
-            ? `
+      ? `
           <p>Your order <strong>#${order.id}</strong> has been successfully completed.</p>
           <p><strong>Total Amount:</strong> $${order.totalAmount?.toFixed(2) || "0.00"}</p>
           <p><strong>Activation:</strong> ${order.activated ? "✅ Active" : "Pending"
-            }</p>
+      }</p>
           <h3>eSIM Details:</h3>
           ${order.esims && order.esims.length
-                ? `<ul>${order.esims
-                    .map(
-                        (e: any) =>
-                            `<li><strong>${e.productName}</strong> — ${e.iccid || "No ICCID"} — ${e.validityDays} days</li>`
-                    )
-                    .join("")}</ul>`
-                : "<p>No eSIM details available.</p>"
-            }
+        ? `<ul>${order.esims
+          .map(
+            (e: any) =>
+              `<li><strong>${e.productName}</strong> — ${e.iccid || "No ICCID"} — ${e.validityDays} days</li>`
+          )
+          .join("")}</ul>`
+        : "<p>No eSIM details available.</p>"
+      }
           <p>Thank you for using eSIM Connect!</p>
         `
-            : `
+      : `
           <p>Unfortunately, your order <strong>#${order.id}</strong> could not be completed.</p>
           <p><strong>Reason:</strong> ${order.errorMessage || "Unexpected error occurred."
-            }</p>
+      }</p>
           <p>Our team has been notified and will review your transaction shortly.</p>
           <p>You may try again later or contact support.</p>
         `
-        }
+    }
 
       <hr />
       <p style="font-size: 13px; color: #777;">Order Date: ${new Date().toLocaleString()}</p>
       <p style="font-size: 13px; color: #777;">eSIM Connect © ${new Date().getFullYear()}</p>
     `
-    );
+  );
 
-    try {
-        // Send to user
-        await transporter.sendMail({
-            from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
-            to: userEmail,
-            subject,
-            html,
-        });
+  try {
+    // Send to user
+    await transporter.sendMail({
+      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+      to: userEmail,
+      subject,
+      html,
+    });
 
-        // Send to admin as well
-        await transporter.sendMail({
-            from: `"eSIM Connect System" <${process.env.SMTP_USER}>`,
-            to: process.env.ADMIN_EMAIL || "admin@esimconnect.com",
-            subject: `[Admin Copy] ${subject}`,
-            html,
-        });
+    const adminRepo = AppDataSource.getRepository(Admin);
 
-        console.log(`📩 Order ${status} email sent to ${userEmail} and admin`);
-    } catch (error: any) {
-        console.error("❌ Failed to send order email:", error.message);
-    }
+    const admin: any = await adminRepo.findOne({
+      select: ["notificationMail"],
+    });
+
+    // Send to admin as well
+    await transporter.sendMail({
+      from: `"eSIM Connect System" <${process.env.SMTP_USER}>`,
+      to: admin?.notificationMail || "admin@esimconnect.com",
+      subject: `[Admin Copy] ${subject}`,
+      html,
+    });
+
+    console.log(`📩 Order ${status} email sent to ${userEmail} and admin`);
+  } catch (error: any) {
+    console.error("❌ Failed to send order email:", error.message);
+  }
 };
 
 /**
@@ -395,12 +403,12 @@ export const sendOrderEmail = async (
  * Sends OTP email when user requests a password reset
  */
 export const sendForgotPasswordOtpEmail = async (to: string, otp: string) => {
-    try {
-        const subject = "🔒 Reset Your Password - OTP Verification";
+  try {
+    const subject = "🔒 Reset Your Password - OTP Verification";
 
-        const html = baseTemplate(
-            "Password Reset OTP",
-            `
+    const html = baseTemplate(
+      "Password Reset OTP",
+      `
             <p>We received a request to reset your password for your <strong>eSIM Connect</strong> account.</p>
             <p>Use the following One-Time Password (OTP) to verify your identity. This OTP is valid for <b>10 minutes</b>.</p>
             <div style="background:#f4f4f4; padding:15px; text-align:center; font-size:24px; letter-spacing:4px; margin:20px 0; border-radius:5px;">
@@ -409,18 +417,18 @@ export const sendForgotPasswordOtpEmail = async (to: string, otp: string) => {
             <p>If you did not request this password reset, please ignore this email or contact our support team immediately.</p>
             <p style="margin-top:25px;">Thanks,<br><strong>The eSIM Connect Team</strong></p>
             `
-        );
+    );
 
-        await transporter.sendMail({
-            from: `"eSIM Connect Security" <${process.env.SMTP_USER}>`,
-            to,
-            subject,
-            html,
-        });
+    await transporter.sendMail({
+      from: `"eSIM Connect Security" <${process.env.SMTP_USER}>`,
+      to,
+      subject,
+      html,
+    });
 
-        console.log(`✅ Forgot Password OTP email sent to ${to}`);
-    } catch (error: any) {
-        console.error("❌ Failed to send Forgot Password OTP email:", error.message);
-    }
+    console.log(`✅ Forgot Password OTP email sent to ${to}`);
+  } catch (error: any) {
+    console.error("❌ Failed to send Forgot Password OTP email:", error.message);
+  }
 };
 
