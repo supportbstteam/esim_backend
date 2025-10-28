@@ -468,9 +468,9 @@ export const postResetPassword = async (req: Request, res: Response) => {
         if (user.isDeleted) return res.status(400).json({ message: "Account is deleted" });
 
         // Optional: only allow if OTP was verified (if you added tempResetAllowed)
-        // if (!user.tempResetAllowed) {
-        //     return res.status(403).json({ message: "OTP verification required before reset" });
-        // }
+        if (!user.tempResetAllowed) {
+            return res.status(403).json({ message: "OTP verification required before reset" });
+        }
 
         const hashedPassword = await bcrypt.hash(password, 10);
         user.password = hashedPassword;
