@@ -30,14 +30,8 @@ export const postOrder = async (req: any, res: Response) => {
   const esimRepo = AppDataSource.getRepository(Esim);
   const userRepo = AppDataSource.getRepository(User);
 
-  const queryRunner = AppDataSource.createQueryRunner();
-  await queryRunner.connect();
-  await queryRunner.startTransaction();
-
   let latestCart: Cart | null = null;
   let mainOrder: Order | null = null;
-
-
 
   try {
     const transaction = await transactionRepo.findOne({
@@ -59,91 +53,83 @@ export const postOrder = async (req: any, res: Response) => {
     const validCartItems = latestCart.items.filter((i) => !i.isDeleted);
     if (!validCartItems.length) throw new Error("No valid cart items found");
 
-    // 🧾 Create main order (initially "processing")
-    mainOrder = queryRunner.manager.create(Order, {
+    // Create order
+    mainOrder = orderRepo.create({
       user: transaction.user,
       transaction,
-      name: user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "Guest User",
-      email: user ? user.email : "no-mail",
+      name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+      email: user.email,
       status: "processing",
       activated: false,
       totalAmount: 0,
       country: validCartItems[0].plan.country,
     });
-    await queryRunner.manager.save(mainOrder);
+    await orderRepo.save(mainOrder);
 
     const createdEsims: Esim[] = [];
 
     for (const item of validCartItems) {
       const plan = item.plan;
-
       for (let i = 0; i < item.quantity; i++) {
-        // Reserve eSIM
-        const reserveResponse = await axios.get(
-          `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${plan.planId}`,
-          { headers: thirdPartyToken }
-        );
+        try {
+          const reserveResponse = await axios.get(
+            `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${plan.planId}`,
+            { headers: thirdPartyToken }
+          );
 
-        if (reserveResponse.data?.status !== "success") {
-          throw new Error(reserveResponse.data?.message || "Failed to reserve eSIM");
+          if (reserveResponse.data?.status !== "success") {
+            throw new Error(reserveResponse.data?.message || "Failed to reserve eSIM");
+          }
+
+          const externalReserveId = reserveResponse.data.data?.id;
+          const createSimResponse = await axios.post(
+            `${process.env.TURISM_URL}/v2/sims/${externalReserveId}/purchase`,
+            {},
+            { headers: thirdPartyToken }
+          );
+
+          const esimData = createSimResponse.data?.data;
+          const esim = esimRepo.create({
+            externalId: esimData.id?.toString(),
+            iccid: esimData.iccid || null,
+            qrCodeUrl: esimData.qr_code_url || null,
+            networkStatus: esimData.network_status || null,
+            statusText: esimData.status_text || null,
+            productName: esimData.name || plan.name,
+            currency: esimData.currency || null,
+            price: parseFloat(esimData.price) || parseFloat(plan.price),
+            validityDays: esimData.validity_days || plan.validityDays,
+            dataAmount: esimData.data || 0,
+            callAmount: esimData.call || 0,
+            smsAmount: esimData.sms || 0,
+            isActive: esimData.network_status !== "NOT_ACTIVE",
+            startDate: new Date(),
+            endDate: new Date(
+              new Date().setDate(new Date().getDate() + (esimData.validity_days || plan.validityDays || 30))
+            ),
+            country: plan.country,
+            user: transaction.user,
+            plans: [plan],
+            order: mainOrder,
+          });
+          await esimRepo.save(esim);
+          createdEsims.push(esim);
+          mainOrder.totalAmount = parseFloat((transaction?.amount).toString() || "0");
+        } catch (innerErr: any) {
+          // If one SIM fails, continue to next but mark partial error
+          mainOrder.errorMessage = innerErr.message;
+          await orderRepo.save(mainOrder);
         }
-
-        const externalReserveId = reserveResponse.data.data?.id;
-        if (!externalReserveId) throw new Error("Invalid reservation ID");
-
-        // Purchase eSIM
-        const createSimResponse = await axios.post(
-          `${process.env.TURISM_URL}/v2/sims/${externalReserveId}/purchase`,
-          {},
-          { headers: thirdPartyToken }
-        );
-
-        const esimData = createSimResponse.data?.data;
-        if (!esimData) throw new Error("Failed to purchase eSIM");
-
-        // Save eSIM
-        const esim = queryRunner.manager.create(Esim, {
-          externalId: esimData.id?.toString(),
-          iccid: esimData.iccid || null,
-          qrCodeUrl: esimData.qr_code_url || null,
-          networkStatus: esimData.network_status || null,
-          statusText: esimData.status_text || null,
-          productName: esimData.name || plan.name,
-          currency: esimData.currency || null,
-          price: parseFloat(esimData.price) || parseFloat(plan.price),
-          validityDays: esimData.validity_days || plan.validityDays,
-          dataAmount: esimData.data || 0,
-          callAmount: esimData.call || 0,
-          smsAmount: esimData.sms || 0,
-          isActive: esimData.network_status !== "NOT_ACTIVE",
-          startDate: new Date(),
-          endDate: new Date(
-            new Date().setDate(new Date().getDate() + (esimData.validity_days || plan.validityDays || 30))
-          ),
-          country: plan.country,
-          user: transaction.user,
-          plans: [plan],
-          order: mainOrder,
-        });
-
-        await queryRunner.manager.save(esim);
-        createdEsims.push(esim);
-
-        mainOrder.totalAmount += parseFloat(plan.price);
       }
     }
 
-    mainOrder.status = "completed";
-    mainOrder.activated = true;
-    await queryRunner.manager.save(mainOrder);
+    mainOrder.status = createdEsims.length ? "completed" : "failed";
+    mainOrder.activated = createdEsims.length > 0;
+    await orderRepo.save(mainOrder);
 
     latestCart.isCheckedOut = true;
-    await queryRunner.manager.save(latestCart);
+    await cartRepo.save(latestCart);
 
-    transaction.status = "SUCCESS";
-    await queryRunner.manager.save(transaction);
-
-    await queryRunner.commitTransaction();
     await sendOrderEmail(
       user.email,
       `${user.firstName} ${user.lastName}`,
@@ -153,86 +139,24 @@ export const postOrder = async (req: any, res: Response) => {
         activated: mainOrder.activated,
         esims: createdEsims,
       },
-      "completed"
+      mainOrder.status ? "completed" : "failed"
     );
 
     return res.status(201).json({
       message: "Order completed successfully",
-      order: {
-        id: mainOrder.id,
-        totalAmount: mainOrder.totalAmount,
-        status: mainOrder.status,
-        activated: mainOrder.activated,
-        transaction,
-        country: { id: mainOrder.country.id, name: mainOrder.country.name },
-        esims: createdEsims.map((e) => ({
-          id: e.id,
-          externalId: e.externalId,
-          iccid: e.iccid,
-          qrCodeUrl: e.qrCodeUrl,
-          productName: e.productName,
-          price: e.price,
-          validityDays: e.validityDays,
-          isActive: e.isActive,
-        })),
-      },
+      order: { ...mainOrder, esims: createdEsims, transaction: transaction },
     });
   } catch (err: any) {
-    console.error("❌ postOrder error:", err.message || err);
-    const userRepo = AppDataSource.getRepository(User);
-    const user = await userRepo.findOneBy({ id: userId });
-
-    // 🧨 Rollback all in-progress DB changes
-    await queryRunner.rollbackTransaction();
-
-    // 🧩 Mark the cart as error
-    if (latestCart) {
-      latestCart.isError = true;
-      latestCart.isCheckedOut = false;
-      await cartRepo.save(latestCart);
-    }
-
-    // 🧾 Log failed order with error message (committed separately)
+    console.error("❌ postOrder error:", err);
     if (mainOrder) {
       mainOrder.status = "failed";
-      mainOrder.errorMessage = err.message || "Unknown order error";
+      mainOrder.errorMessage = err.message;
       await orderRepo.save(mainOrder);
-    } else {
-      // if order wasn’t created before crash, log a new failed record
-      const failedOrder = orderRepo.create({
-        user: { id: userId },
-        transaction: { id: transactionId },
-        status: "failed",
-        errorMessage: err.message || "Order creation failed before init",
-        activated: false,
-        totalAmount: 0,
-        name: user ? `${user.firstName} ${user.lastName}` : "N/A",
-        email: user ? user.email : "N/A",
-        country: latestCart?.items[0]?.plan.country,
-      });
-      await orderRepo.save(failedOrder);
     }
-
-    // 🔔 Send failure mail to user + admin
-    await sendOrderEmail(
-      user?.email || "unknown",
-      `${user?.firstName || "User"} ${user?.lastName || ""}`,
-      {
-        id: mainOrder?.id || "N/A",
-        totalAmount: mainOrder?.totalAmount || 0,
-        errorMessage: err.message || "Unknown failure",
-      },
-      "failed"
-    );
-
-    return res.status(500).json({
-      message: "Order process failed",
-      error: err.message || "Server error",
-    });
-  } finally {
-    await queryRunner.release();
+    return res.status(500).json({ message: "Order failed", error: err.message });
   }
 };
+
 
 export const getOrderListByUser = async (req: any, res: Response) => {
   const { id, role } = req.user;
@@ -531,11 +455,11 @@ export const postUserClaimRefund = async (req: any, res: Response) => {
       where: { order: { id: orderId }, isDeleted: false },
     });
 
-    if (existingRefund) {
-      return res.status(400).json({
-        message: "Refund already claimed for this order.",
-      });
-    }
+    // if (existingRefund) {
+    //   return res.status(400).json({
+    //     message: "Refund already claimed for this order.",
+    //   });
+    // }
 
     // 💾 Create new refund record
     const refund = refundRepo.create({

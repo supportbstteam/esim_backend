@@ -41,8 +41,9 @@ export class Esim {
   @Column({ type: "boolean", default: false })
   isDeleted!: boolean;
 
-  @ManyToOne(() => User, { nullable: true })
-  user?: User | null;
+  @ManyToOne(() => User, { nullable: true, onDelete: "SET NULL" })
+  @JoinColumn({ name: "userId" })
+  user!: User | null;
 
   @ManyToMany(() => Plan)
   @JoinTable({
@@ -60,9 +61,13 @@ export class Esim {
   })
   topUps!: TopUpPlan[];
 
-  @ManyToOne(() => Order, (order) => order.esims, { nullable: true })
+  @ManyToOne(() => Order, (order) => order.esims, {
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+    nullable: true,
+  })
   @JoinColumn({ name: "orderId" })
-  order?: Order;
+  order!: Order | null;
 
   @Column({ type: "varchar", nullable: true })
   externalId?: string;

@@ -5,17 +5,27 @@ import { AppDataSource } from "../../data-source";
 
 // Get all orders (with optional pagination)
 export const getAllOrders = async (req: Request, res: Response) => {
-    try {
-        const orderRepo = AppDataSource.getRepository(Order);
-        const orders = await orderRepo.find({
-            relations: ["user", "transaction", "esims", "country"],
-            order: { createdAt: "DESC" },
-        });
-        return res.status(200).json({ orders });
-    } catch (err: any) {
-        console.error("--- Error in getAllOrders ---", err.message);
-        return res.status(500).json({ message: "Failed to fetch orders", error: err.message });
-    }
+  try {
+    const orderRepo = AppDataSource.getRepository(Order);
+
+    const orders = await orderRepo
+      .createQueryBuilder("order")
+      .leftJoinAndSelect("order.user", "user")
+      .leftJoinAndSelect("order.transaction", "transaction")
+      .leftJoinAndSelect("order.country", "country")
+      .leftJoinAndSelect("order.esims", "esims")
+      .where("esims.id IS NOT NULL") // ✅ ensures only orders with eSIMs
+      .orderBy("order.createdAt", "DESC")
+      .getMany();
+
+    return res.status(200).json({ orders });
+  } catch (err: any) {
+    console.error("--- Error in getAllOrders ---", err);
+    return res.status(500).json({
+      message: "Failed to fetch orders",
+      error: err.message,
+    });
+  }
 };
 
 // Get order by ID

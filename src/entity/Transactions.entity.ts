@@ -39,9 +39,10 @@ export class Transaction {
     topupPlan?: TopUpPlan;
 
 
-    @ManyToOne(() => Esim, { nullable: true })
+    @ManyToOne(() => Esim, { onDelete: "CASCADE", nullable: true })
     @JoinColumn({ name: "esimId" })
-    esim?: Esim;
+    esim!: Esim;
+
 
     @Column({ type: "varchar", length: 100 })
     paymentGateway!: string;
