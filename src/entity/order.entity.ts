@@ -58,6 +58,7 @@ export class Order {
         type: "enum",
         enum: OrderType,
         nullable: true,
+        default: OrderType?.ESIM
     })
     type?: OrderType;
 

@@ -36,7 +36,14 @@ export const getAllBlogs = async (req: Request, res: Response) => {
             order: { createdAt: "DESC" },
         });
 
-        return res.status(200).json({ blogs });
+        // ✅ Proper mapping syntax
+        const bloggings = blogs.map((item) => ({
+            ...item,
+            published: item.isActive,
+        }));
+
+        // ✅ Return transformed array
+        return res.status(200).json({ blogs: bloggings });
     } catch (err: any) {
         console.error("Error fetching blogs:", err);
         return res.status(500).json({ message: "Failed to fetch blogs" });
@@ -47,10 +54,17 @@ export const getBlogById = async (req: Request, res: Response) => {
     try {
         const blogRepo = AppDataSource.getRepository(Blog);
         const { id } = req.params;
+
         const blog = await blogRepo.findOne({ where: { id } });
         if (!blog) return res.status(404).json({ message: "Blog not found" });
 
-        return res.status(200).json({ blog });
+        // ✅ Transform field
+        const transformedBlog = {
+            ...blog,
+            published: blog.isActive,
+        };
+
+        return res.status(200).json({ blog: transformedBlog });
     } catch (err: any) {
         console.error("Error fetching blog:", err);
         return res.status(500).json({ message: "Failed to fetch blog" });

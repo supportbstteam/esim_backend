@@ -14,10 +14,11 @@ export const getAllOrders = async (req: Request, res: Response) => {
             .leftJoinAndSelect("order.transaction", "transaction")
             .leftJoinAndSelect("order.country", "country")
             .leftJoinAndSelect("order.esims", "esims")
-            .where("esims.id IS NOT NULL") // ✅ ensures only orders with eSIMs
-            .where("order.type = :type", { type: "esim" }) // ✅ filter only eSIM orders
+            // .where("order.type = :type", { type: OrderType.ESIM })
+            .where("esims.id IS NOT NULL") // ✅ proper SQL syntax
             .orderBy("order.createdAt", "DESC")
             .getMany();
+
 
         return res.status(200).json({ orders });
     } catch (err: any) {
@@ -187,7 +188,7 @@ export const getTopUpOrdersByUser = async (req: Request, res: Response) => {
 
         const orderRepo = AppDataSource.getRepository(Order);
         const orders = await orderRepo.find({
-            where: { user: { id: userId }, type: OrderType.TOP_UP  },
+            where: { user: { id: userId }, type: OrderType.TOP_UP },
             relations: ["transaction", "country"],
             order: { createdAt: "DESC" },
         });
@@ -206,7 +207,7 @@ export const updateTopUpOrderStatus = async (req: Request, res: Response) => {
 
     try {
         const orderRepo = AppDataSource.getRepository(Order);
-        const order = await orderRepo.findOne({ where: { id, type: OrderType.TOP_UP  } });
+        const order = await orderRepo.findOne({ where: { id, type: OrderType.TOP_UP } });
 
         if (!order) {
             return res.status(404).json({ message: "Top-up order not found" });
@@ -231,7 +232,7 @@ export const deleteTopUpOrder = async (req: Request, res: Response) => {
 
     try {
         const orderRepo = AppDataSource.getRepository(Order);
-        const order = await orderRepo.findOne({ where: { id, type: OrderType.TOP_UP  } });
+        const order = await orderRepo.findOne({ where: { id, type: OrderType.TOP_UP } });
 
         if (!order) {
             return res.status(404).json({ message: "Top-up order not found" });
