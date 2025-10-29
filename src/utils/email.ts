@@ -119,28 +119,60 @@ export const sendAdminOrderNotification = async (adminEmail: string, order: any)
   console.log("✅ Order email sent to admin:", adminEmail);
 };
 
-// ---------- 2️⃣ New User Created (Admin Notification) ----------
-export const sendNewUserNotification = async (adminEmail: string, user: any) => {
+// ---------- 2️⃣(b) Welcome Email to New User ----------
+export const sendUserWelcomeEmail = async (userEmail: string, user: any) => {
   const html = baseTemplate(
-    "New User Registration",
+    "Welcome to eSIM Connect 🎉",
     `
-      <p>A new user has created an account on eSIM Connect.</p>
-      <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
-        <tr><td><b>Name:</b></td><td>${user.firstName} ${user.lastName}</td></tr>
-        <tr><td><b>Email:</b></td><td>${user.email}</td></tr>
-        <tr><td><b>Country:</b></td><td>${user.country || "N/A"}</td></tr>
-      </table>
+      <p>Hi <strong>${user.firstName}</strong>,</p>
+      <p>Welcome to <strong>eSIM Connect</strong>! We're excited to have you on board.</p>
+      <p>You can now explore and purchase eSIM plans that fit your travel and connectivity needs.</p>
+      <ul style="margin-top:10px;">
+        <li>🌍 Global eSIM coverage</li>
+        <li>⚡ Instant activation</li>
+        <li>💳 Secure payments</li>
+      </ul>
+      <p style="margin-top:20px;">If you have any questions, our support team is always here to help.</p>
+      <p>Cheers,<br><strong>The eSIM Connect Team</strong></p>
     `
   );
 
   await transporter.sendMail({
-    from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
-    to: adminEmail,
-    subject: `👤 New User Created - ${user.firstName} ${user.lastName}`,
+    from: `"eSIM Connect Support" <${process.env.SMTP_USER}>`, // from admin
+    to: userEmail,
+    subject: "👋 Welcome to eSIM Connect",
     html,
   });
 
-  console.log("✅ New user email sent to admin:", adminEmail);
+  console.log(`✅ Welcome email sent to user: ${userEmail}`);
+};
+
+// ---------- 2️⃣(c) Notify Admin When User Verifies OTP ----------
+export const sendAdminUserVerifiedNotification = async (adminEmail: string, user: any) => {
+  const html = baseTemplate(
+    "User Verified Account ✅",
+    `
+      <p>Hello Admin,</p>
+      <p>The following user has successfully verified their email and activated their account:</p>
+      <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+        <tr><td><b>Name:</b></td><td>${user.firstName} ${user.lastName}</td></tr>
+        <tr><td><b>Email:</b></td><td>${user.email}</td></tr>
+        <tr><td><b>Country:</b></td><td>${user.country || "N/A"}</td></tr>
+        <tr><td><b>Verified At:</b></td><td>${new Date().toLocaleString()}</td></tr>
+      </table>
+      <p>You can view the user details in the admin dashboard.</p>
+      <p style="margin-top:20px;">– The eSIM Connect System</p>
+    `
+  );
+
+  await transporter.sendMail({
+    from: `"eSIM Connect System" <${process.env.SMTP_USER}>`,
+    to: adminEmail,
+    subject: `✅ User Verified: ${user.firstName} ${user.lastName}`,
+    html,
+  });
+
+  console.log(`✅ Admin notified about verified user: ${user.email}`);
 };
 
 // ---------- 3️⃣ Password Updated (User) ----------

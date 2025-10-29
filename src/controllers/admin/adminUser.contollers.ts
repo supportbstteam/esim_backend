@@ -104,7 +104,7 @@ export const deleteAdminUser = async (req: Request, res: Response) => {
                     .execute();
             }
 
-            await sendAccountDeletedEmail(user.email, user.firstName);
+            // await sendAccountDeletedEmail(user.email, user.firstName);
 
             // 4️⃣ Finally delete the user (only the user, not related data)
             await manager.delete(User, { id: userId });

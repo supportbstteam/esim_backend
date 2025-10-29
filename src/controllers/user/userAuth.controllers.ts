@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { AppDataSource } from "../../data-source";
 import { User } from "../../entity/User.entity";
-import { sendForgotPasswordOtpEmail, sendNewUserNotification, sendOtpEmail, sendPasswordChangeEmail } from "../../utils/email";
+import { sendForgotPasswordOtpEmail, sendUserWelcomeEmail, sendOtpEmail, sendPasswordChangeEmail, sendAdminUserVerifiedNotification } from "../../utils/email";
 import { Admin } from "../../entity/Admin.entity";
 
 // ⚙️ Helper to generate JWT for User
@@ -375,9 +375,12 @@ export const postVerifyOtp = async (req: Request, res: Response) => {
             where: {}, // required, even if empty
         });
 
-        if (!admin) {
-            // 🔔 Notify admin about re-registered user
-            await sendNewUserNotification(admin?.notificationMail, user);
+        // ✅ Send welcome mail to user (from admin)
+        await sendUserWelcomeEmail(user.email, user);
+
+        // ✅ Send admin notification mail (from system)
+        if (admin?.notificationMail) {
+            await sendAdminUserVerifiedNotification(admin.notificationMail, user);
         }
 
         return res.status(200).json({
