@@ -372,6 +372,7 @@ export const postVerifyOtp = async (req: Request, res: Response) => {
 
         const admin: any = await adminRepo.findOne({
             select: ["notificationMail"],
+            where: {}, // required, even if empty
         });
 
         if (!admin) {

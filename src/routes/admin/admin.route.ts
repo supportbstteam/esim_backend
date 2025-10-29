@@ -13,6 +13,9 @@ import contentRouter from './adminContent.route'
 import queryRoute from "../query.routes"
 import adminOrderRouter from "./adminOrder.route"
 import adminBlogs from "./adminBlogs.route"
+import adminTestimonials from "./adminTestimonial.route"
+
+
 const router = express.Router();
 
 router.post("/login", loginAdmin);
@@ -37,7 +40,9 @@ router.use("/users", adminUserRouter);
 
 // order
 router.use("/orders", adminOrderRouter);
+
 router.use("/blogs", adminBlogs);
+router.use("/testimonials", adminTestimonials);
 
 // top up
 router.use("/top-up", eTopupRoute);
