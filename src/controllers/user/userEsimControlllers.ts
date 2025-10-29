@@ -175,12 +175,12 @@ export const getOrderListByUser = async (req: any, res: Response) => {
     const formattedOrders = orders.map(order => {
       const esims = Array.isArray(order.esims) ? order.esims : [];
       return {
-        id: order.id,
+        id: order?.orderCode || order.id,
         planNames: esims.map(e => e.productName || "N/A"),
         totalPlans: esims.length,
         totalData: esims.reduce((acc, e) => acc + (e.dataAmount || 0), 0),
         totalSms: esims.reduce((acc, e) => acc + (e.smsAmount || 0), 0),
-        totalAmount: esims.reduce((acc, e) => acc + (Number(e.price) || 0), 0),
+        totalAmount: order?.totalAmount,
         country: order.country?.name || "Unknown",
         isoCode: order.country?.isoCode || null,
         phoneCode: order.country?.phoneCode || null,
