@@ -12,7 +12,7 @@ import adminSocialRouter from "./adminSocial.route"
 import contentRouter from './adminContent.route'
 import queryRoute from "../query.routes"
 import adminOrderRouter from "./adminOrder.route"
-import { auth } from '../../middlewares/auth.handler';
+import adminBlogs from "./adminBlogs.route"
 const router = express.Router();
 
 router.post("/login", loginAdmin);
@@ -37,6 +37,7 @@ router.use("/users", adminUserRouter);
 
 // order
 router.use("/orders", adminOrderRouter);
+router.use("/blogs", adminBlogs);
 
 // top up
 router.use("/top-up", eTopupRoute);

@@ -21,7 +21,7 @@ import { Notification } from "./entity/Notification.entity";
 import { Cart } from "./entity/Carts.entity";
 import { CartItem } from "./entity/CartItem.entity";
 import { Refund } from "./entity/Refund.entity";
-
+import { Blog } from "./entity/Blogs.entity"
 export const AppDataSource = new DataSource({
     type: "mysql",
     host: process.env.DB_HOST,
@@ -51,7 +51,8 @@ export const AppDataSource = new DataSource({
         Query,
         Notification,
         Cart,
-        CartItem
+        CartItem,
+        Blog
     ],
     migrations: [],
     subscribers: [],
