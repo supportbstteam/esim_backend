@@ -14,6 +14,11 @@ import { Plan } from "./Plans.entity";
 import { Esim } from "./Esim.entity";
 import { Country } from "./Country.entity";
 
+export enum OrderType {
+    ESIM = "esim",
+    TOP_UP = "top up",
+}
+
 @Entity({ name: "orders" })
 export class Order {
     @PrimaryGeneratedColumn("uuid")
@@ -48,6 +53,13 @@ export class Order {
 
     @Column({ type: "varchar", length: 50 })
     name!: string;
+
+    @Column({
+        type: "enum",
+        enum: OrderType,
+        nullable: true,
+    })
+    type?: OrderType;
 
     @Column({ type: "varchar", length: 50 })
     email!: string;

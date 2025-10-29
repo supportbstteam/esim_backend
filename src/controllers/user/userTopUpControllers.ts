@@ -7,7 +7,7 @@ import { Esim } from "../../entity/Esim.entity";
 import { Transaction } from "../../entity/Transactions.entity";
 import { User } from "../../entity/User.entity";
 import axios from "axios";
-import { Order } from "../../entity/order.entity";
+import { Order, OrderType } from "../../entity/order.entity";
 
 export const postUserTopUpOrder = async (req: any, res: Response) => {
     const { id } = req.user || {}; // ✅ fixed destructuring bug
@@ -103,7 +103,8 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
             status: "PENDING",
             name: `${user?.firstName || ""} ${user?.lastName || ""}`.trim(),
             email: user.email,
-            activated: false
+            activated: false,
+            type :OrderType.TOP_UP
         });
 
         await orderRepo.save(order);

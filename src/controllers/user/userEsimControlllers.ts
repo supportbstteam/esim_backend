@@ -5,7 +5,7 @@ import axios from "axios";
 import { Reservation } from "../../entity/Reservation.entity";
 import { Country } from "../../entity/Country.entity";
 import { User } from "../../entity/User.entity";
-import { Order } from "../../entity/order.entity";
+import { Order, OrderType } from "../../entity/order.entity";
 import { Esim } from "../../entity/Esim.entity";
 import { Transaction } from "../../entity/Transactions.entity";
 import { Charges } from "../../entity/Charges.entity";
@@ -63,6 +63,7 @@ export const postOrder = async (req: any, res: Response) => {
       activated: false,
       totalAmount: 0,
       country: validCartItems[0].plan.country,
+      type: OrderType.ESIM
     });
     await orderRepo.save(mainOrder);
 
