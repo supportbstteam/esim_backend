@@ -22,6 +22,7 @@ import { Cart } from "./entity/Carts.entity";
 import { CartItem } from "./entity/CartItem.entity";
 import { Refund } from "./entity/Refund.entity";
 import { Blog } from "./entity/Blogs.entity"
+import { Testimonial } from "./entity/Testimonials.entity";
 export const AppDataSource = new DataSource({
     type: "mysql",
     host: process.env.DB_HOST,
@@ -44,6 +45,7 @@ export const AppDataSource = new DataSource({
         Charges,
         Order,
         Reservation,
+        Testimonial,
         Social,
         Contact,
         Content,

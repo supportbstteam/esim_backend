@@ -63,7 +63,8 @@ export const postOrder = async (req: any, res: Response) => {
       activated: false,
       totalAmount: 0,
       country: validCartItems[0].plan.country,
-      type: OrderType.ESIM
+      type: OrderType.ESIM,
+      // orderCode: `${OrderType.ESIM}${String(counter).padStart(4, "0")}`;
     });
     await orderRepo.save(mainOrder);
 

@@ -6,13 +6,15 @@ import {
     OneToMany,
     JoinColumn,
     CreateDateColumn,
-    UpdateDateColumn
+    UpdateDateColumn,
+    BeforeInsert,
+    DataSource,
 } from "typeorm";
 import { Transaction } from "./Transactions.entity";
 import { User } from "./User.entity";
-import { Plan } from "./Plans.entity";
 import { Esim } from "./Esim.entity";
 import { Country } from "./Country.entity";
+import { AppDataSource } from "../data-source";
 
 export enum OrderType {
     ESIM = "esim",
@@ -28,11 +30,8 @@ export class Order {
     @JoinColumn({ name: "userId" })
     user!: User | null;
 
-
-    // optional: if main order doesn't need a single plan
-    // @ManyToOne(() => Plan)
-    // @JoinColumn({ name: "planId" })
-    // plan!: Plan;
+    @Column({ type: "varchar", length: 20, unique: true, nullable: true })
+    orderCode!: string | null;
 
     @ManyToOne(() => Transaction, { nullable: false, onDelete: "CASCADE" })
     @JoinColumn({ name: "transactionId" })
@@ -58,7 +57,7 @@ export class Order {
         type: "enum",
         enum: OrderType,
         nullable: true,
-        default: OrderType?.ESIM
+        default: OrderType.ESIM,
     })
     type?: OrderType;
 
@@ -76,4 +75,29 @@ export class Order {
 
     @UpdateDateColumn()
     updatedAt!: Date;
+
+    // ⚡ Automatically generate orderCode before insert
+    @BeforeInsert()
+    async generateOrderCode() {
+        if (this.orderCode) return; // skip if already set (e.g. manual inserts)
+
+        const prefix = this.type === OrderType.TOP_UP ? "ETUP" : "ESM";
+
+        // Use current timestamp or a count-based suffix
+        // If you want sequential pattern:
+        const repo = AppDataSource.getRepository(Order);
+
+        const lastOrder = await repo
+            .createQueryBuilder("order")
+            .where("order.type = :type", { type: this.type })
+            .orderBy("order.createdAt", "DESC")
+            .getOne();
+
+        const lastNum = lastOrder?.orderCode
+            ? parseInt(lastOrder.orderCode.replace(/\D/g, "")) || 0
+            : 0;
+
+        const nextNum = lastNum + 1;
+        this.orderCode = `${prefix}${nextNum.toString().padStart(5, "0")}`;
+    }
 }
