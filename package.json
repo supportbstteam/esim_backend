@@ -26,7 +26,7 @@
     "nodemailer": "^7.0.6",
     "react-hot-toast": "^2.6.0",
     "reflect-metadata": "^0.2.2",
-    "stripe": "^19.1.0",
+    "stripe": "^19.2.0",
     "typeorm": "^0.3.27"
   },
   "devDependencies": {
