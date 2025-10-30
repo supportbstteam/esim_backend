@@ -161,49 +161,78 @@ export const patchAdminToggleBlockUser = async (req: Request, res: Response) => 
 
 // ----------------- GET ALL USERS WITH FILTERS -----------------
 export const getAdminAllUsers = async (req: Request, res: Response) => {
-    try {
-        const isAdmin = await checkAdmin(req, res);
-        if (!isAdmin) return;
+  try {
+    const isAdmin = await checkAdmin(req, res);
+    if (!isAdmin) return;
 
-        const { countryId, planId } = req.query;
+    const { countryId, planId } = req.query;
 
-        const dataSource = await getDataSource();
-        const userRepo = dataSource.getRepository(User);
+    const dataSource = await getDataSource();
+    const userRepo = dataSource.getRepository(User);
 
-        let query = userRepo
-            .createQueryBuilder("user")
-            .leftJoinAndSelect("user.simIds", "esim")
-            .leftJoinAndSelect("esim.country", "country")
-            .leftJoinAndSelect("esim.plans", "plan")
-            .leftJoinAndSelect("esim.topUps", "topUps")
-            // .where("user.isDeleted = :isDeleted", { isDeleted: false })
-            .orderBy("user.createdAt", "DESC");
+    // 🧩 Build query with all nested joins
+    let query = userRepo
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.simIds", "esim")
+      .leftJoinAndSelect("esim.country", "country")
+      .leftJoinAndSelect("esim.plans", "plan")
+      .leftJoinAndSelect("esim.topupLinks", "topupLinks")
+      .leftJoinAndSelect("topupLinks.topup", "topupPlan")
+      .orderBy("user.createdAt", "DESC");
 
-        if (countryId) {
-            query = query.andWhere("country.id = :countryId", { countryId });
-        }
-        if (planId) {
-            query = query.andWhere("plan.id = :planId", { planId });
-        }
-
-        const users = await query.getMany();
-
-        // remove password from each user
-        const safeUsers = users.map((u) => {
-            const { password, ...rest } = u;
-            return rest;
-        });
-
-        return res.status(200).json({
-            message: "Users fetched successfully",
-            filters: { countryId, planId },
-            users: safeUsers,
-        });
-    } catch (err: any) {
-        console.error("Error fetching users:", err);
-        return res.status(500).json({ message: "Internal server error" });
+    // 🧠 Optional filters
+    if (countryId) {
+      query = query.andWhere("country.id = :countryId", { countryId });
     }
+
+    if (planId) {
+      query = query.andWhere("plan.id = :planId", { planId });
+    }
+
+    // 🧾 Fetch users
+    const users = await query.getMany();
+
+    // 🛡️ Clean sensitive info & build consistent nested structure
+    const safeUsers = users.map((user) => {
+      const { password, ...safeUser } = user;
+
+      return {
+        ...safeUser,
+        simIds: (user.simIds || []).map((esim) => ({
+          ...esim,
+          country: esim.country || null,
+          plans: esim.plans || [],
+          topUps:
+            (esim.topupLinks || []).map((link) => {
+              const t = link.topup;
+              if (!t) return null;
+              return {
+                id: t.id,
+                name: (t.name || t.title || "Unknown Plan").replace(/-/g, ""),
+                title: (t.title || t.name || "Unknown Plan").replace(/-/g, ""),
+                price: t.price || 0,
+                validityDays: t.validityDays || null,
+                dataLimit: t.dataLimit || null,
+                currency: t.currency || "USD",
+              };
+            }).filter(Boolean) || [],
+        })),
+      };
+    });
+
+    return res.status(200).json({
+      message: "Users fetched successfully",
+      filters: { countryId, planId },
+      users: safeUsers,
+    });
+  } catch (err: any) {
+    console.error("Error fetching users:", err);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 };
+
 
 // ----------------- GET SINGLE USER DETAILS + STATS -----------------
 export const getAdminUserDetails = async (req: Request, res: Response) => {
