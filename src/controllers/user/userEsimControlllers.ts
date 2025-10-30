@@ -14,6 +14,7 @@ import { Cart } from "../../entity/Carts.entity";
 import { CartItem } from "../../entity/CartItem.entity";
 import { Refund } from "../../entity/Refund.entity";
 import { sendOrderEmail } from "../../utils/email";
+import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
 export const postOrder = async (req: any, res: Response) => {
   const { transactionId } = req.body;
@@ -199,29 +200,112 @@ export const getOrderListByUser = async (req: any, res: Response) => {
   }
 };
 
-
 export const getOrderDetailsByUser = async (req: any, res: Response) => {
   const { id, role } = req.user;
   const { orderId } = req.params;
 
-  if (!id || role !== "user") return res.status(401).json({ message: "Unauthorized", status: "error" });
-  if (!orderId) return res.status(400).json({ message: "Order ID is required", status: "error" });
+  if (!id || role !== "user") {
+    return res.status(401).json({ message: "Unauthorized", status: "error" });
+  }
+
+  if (!orderId) {
+    return res
+      .status(400)
+      .json({ message: "Order ID is required", status: "error" });
+  }
 
   try {
     const orderRepo = AppDataSource.getRepository(Order);
+    const esimTopupRepo = AppDataSource.getRepository(EsimTopUp);
+
     const order = await orderRepo.findOne({
       where: { id: orderId, user: { id } },
-      relations: ["esims", "transaction", "transaction.user", "transaction.charges", "country"],
+      relations: [
+        "transaction",
+        "transaction.user",
+        "transaction.charges",
+        "country",
+      ],
     });
 
-    if (!order) return res.status(404).json({ message: "Order not found", status: "error" });
+    if (!order)
+      return res
+        .status(404)
+        .json({ message: "Order not found", status: "error" });
 
-    return res.status(200).json({ message: "Order details fetched successfully", status: "success", data: order });
+    // 🧠 CASE 1: Top-up order → Fetch from EsimTopUp table
+    if (order.orderCode?.startsWith("ETUP") && order.type === "top up") {
+      const esimTopUps = await esimTopupRepo.find({
+        where: { order: { id: order.id } },
+        relations: [
+          "esim",
+          "esim.country",
+          "esim.user",
+          "topup",
+          "topup.country",
+        ],
+      });
+
+      const esims = esimTopUps.map((et) => ({
+        ...et.esim,
+        topUps: et.topup ? [et.topup] : [],
+      }));
+
+      const formattedOrder = {
+        ...order,
+        esims,
+      };
+
+      return res.status(200).json({
+        message: "Top-up order details fetched successfully",
+        status: "success",
+        data: formattedOrder,
+      });
+    }
+
+    // 🧠 CASE 2: Normal eSIM order → Fetch as before
+    const fullOrder = await orderRepo.findOne({
+      where: { id: orderId, user: { id } },
+      relations: [
+        "esims",
+        "esims.topupLinks",
+        "esims.topupLinks.topup",
+        "transaction",
+        "transaction.user",
+        "transaction.charges",
+        "country",
+      ],
+    });
+
+    if (!fullOrder) {
+      return res
+        .status(404)
+        .json({ message: "Order not found", status: "error" });
+    }
+
+    const formattedOrder = {
+      ...fullOrder,
+      esims: fullOrder.esims.map((esim) => ({
+        ...esim,
+        topUps: esim.topupLinks?.map((link) => link.topup) || [],
+      })),
+    };
+
+    return res.status(200).json({
+      message: "Order details fetched successfully",
+      status: "success",
+      data: formattedOrder,
+    });
   } catch (err: any) {
     console.error("Error fetching order details:", err);
-    return res.status(500).json({ message: "Failed to fetch order details", status: "error", error: err.message });
+    return res.status(500).json({
+      message: "Failed to fetch order details",
+      status: "error",
+      error: err.message,
+    });
   }
 };
+
 
 export const postTransaction = async (req: any, res: Response) => {
 
@@ -252,28 +336,117 @@ export const getUserAllSims = async (req: any, res: Response) => {
 }
 
 export const getUserEsimDetails = async (req: any, res: Response) => {
-  const { id, role } = req.user;
+  const { id: userId, role } = req.user;
   const { esimId } = req.params;
 
-  if (!id || role !== "user") return res.status(401).json({ message: "Unauthorized", status: "error" });
-  if (!esimId) return res.status(400).json({ message: "eSIM ID is required", status: "error" });
+  if (!userId || role !== "user") {
+    return res.status(401).json({ message: "Unauthorized", status: "error" });
+  }
+
+  if (!esimId) {
+    return res
+      .status(400)
+      .json({ message: "eSIM ID is required", status: "error" });
+  }
 
   try {
     const esimRepo = AppDataSource.getRepository(Esim);
+    const esimTopupRepo = AppDataSource.getRepository(EsimTopUp);
+    const orderRepo = AppDataSource.getRepository(Order);
+
+    // 🧠 Step 1: Find the eSIM belonging to the user
     const esim = await esimRepo.findOne({
-      where: { id: esimId, user: { id } },
-      relations: ["order", "order.transaction", "order.country", "plans", "topUps"],
+      where: { id: esimId, user: { id: userId } },
+      relations: [
+        "order",
+        "order.country",
+        "order.transaction",
+        "order.transaction.user",
+        "order.transaction.charges",
+        "country",
+      ],
     });
-    if (!esim) return res.status(404).json({ message: "eSIM not found", status: "error" });
 
-    return res.status(200).json({ message: "eSIM details fetched successfully", status: "success", data: esim });
-  }
-  catch (err: any) {
+    if (!esim)
+      return res
+        .status(404)
+        .json({ message: "eSIM not found", status: "error" });
+
+    const order = esim.order;
+    if (!order)
+      return res
+        .status(404)
+        .json({ message: "Order not found for this eSIM", status: "error" });
+
+    // 🧠 Step 2: Handle case based on order type
+    if (order.orderCode?.startsWith("ETUP") && order.type === "top up") {
+      // 🟢 CASE: Top-Up Order
+      const esimTopUps = await esimTopupRepo.find({
+        where: { esim: { id: esim.id } },
+        relations: ["topup", "topup.country", "esim.country"],
+      });
+
+      const formattedOrder = {
+        ...order,
+        esims: [
+          {
+            ...esim,
+            topUps: esimTopUps.map((et) => et.topup).filter(Boolean),
+          },
+        ],
+      };
+
+      return res.status(200).json({
+        message: "Top-up eSIM details fetched successfully",
+        status: "success",
+        data: formattedOrder,
+      });
+    }
+
+    // 🟣 CASE: Normal eSIM Order
+    const fullEsim = await esimRepo.findOne({
+      where: { id: esimId },
+      relations: [
+        "topupLinks",
+        "topupLinks.topup",
+        "country",
+        "order",
+        "order.transaction",
+        "order.transaction.user",
+        "order.transaction.charges",
+        "order.country",
+      ],
+    });
+
+    if (!fullEsim)
+      return res
+        .status(404)
+        .json({ message: "eSIM not found", status: "error" });
+
+    const formattedOrder = {
+      ...order,
+      esims: [
+        {
+          ...fullEsim,
+          topUps: fullEsim.topupLinks?.map((link) => link.topup) || [],
+        },
+      ],
+    };
+
+    return res.status(200).json({
+      message: "eSIM details fetched successfully",
+      status: "success",
+      data: formattedOrder,
+    });
+  } catch (err: any) {
     console.error("Error fetching eSIM details:", err);
-    return res.status(500).json({ message: "Failed to fetch eSIM details", status: "error", error: err.message });
+    return res.status(500).json({
+      message: "Failed to fetch eSIM details",
+      status: "error",
+      error: err.message,
+    });
   }
-
-}
+};
 
 export const getUserSimSummary = async (req: any, res: Response) => {
   console.log("=== HIT getUserSimSummary route ===");

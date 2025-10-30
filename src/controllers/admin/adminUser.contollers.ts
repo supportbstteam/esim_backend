@@ -7,6 +7,8 @@ import { Cart } from "../../entity/Carts.entity";
 import { CartItem } from "../../entity/CartItem.entity";
 import { Transaction } from "../../entity/Transactions.entity";
 import { sendAccountDeletedEmail, sendUserBlockedEmail } from "../../utils/email";
+import { Esim } from "../../entity/Esim.entity";
+import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
 // ----------------- CREATE USER -----------------
 export const postAdminCreateUser = async (req: Request, res: Response) => {
@@ -205,46 +207,79 @@ export const getAdminAllUsers = async (req: Request, res: Response) => {
 
 // ----------------- GET SINGLE USER DETAILS + STATS -----------------
 export const getAdminUserDetails = async (req: Request, res: Response) => {
-    const { userId } = req.params;
+  const { userId } = req.params;
 
-    try {
-        const isAdmin = await checkAdmin(req, res);
-        if (!isAdmin) return;
+  try {
+    const isAdmin = await checkAdmin(req, res);
+    if (!isAdmin) return;
 
-        const dataSource = await getDataSource();
-        const userRepo = dataSource.getRepository(User);
+    const dataSource = await getDataSource();
+    const userRepo = dataSource.getRepository(User);
+    const esimRepo = dataSource.getRepository(Esim);
+    const esimTopUpRepo = dataSource.getRepository(EsimTopUp);
 
-        const user = await userRepo.findOne({
-            where: { id: userId },
-            relations: ["simIds", "simIds.country", "simIds.plans", "simIds.topUps"],
-        });
+    // ✅ Fetch user with all eSIMs, their country & plans
+    const user = await userRepo.findOne({
+      where: { id: userId },
+      relations: ["simIds", "simIds.country", "simIds.plans"],
+    });
 
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // aggregate stats
-        const totalEsims = user.simIds.length;
-        const totalPlans = user.simIds.reduce((sum, esim) => sum + esim.plans.length, 0);
-        const totalTopUps = user.simIds.reduce((sum, esim) => sum + esim.topUps.length, 0);
-
-        const { password, ...safeUser } = user;
-
-        return res.status(200).json({
-            message: "User details fetched successfully",
-            user: {
-                ...safeUser,
-                stats: {
-                    totalEsims,
-                    totalPlans,
-                    totalTopUps,
-                },
-            },
-        });
-    } catch (err: any) {
-        console.error("Error fetching user details:", err);
-        return res.status(500).json({ message: "Internal server error" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    // ✅ Fetch all top-ups related to user's eSIMs (via EsimTopUp)
+    const userEsimIds = user.simIds.map((e) => e.id);
+    let esimTopUps: EsimTopUp[] = [];
+
+    if (userEsimIds.length > 0) {
+      esimTopUps = await esimTopUpRepo
+        .createQueryBuilder("et")
+        .leftJoinAndSelect("et.esim", "esim")
+        .leftJoinAndSelect("et.topup", "topup")
+        .leftJoinAndSelect("et.order", "order")
+        .where("et.esimId IN (:...ids)", { ids: userEsimIds })
+        .getMany();
+    }
+
+    // ✅ Aggregate stats
+    const totalEsims = user.simIds.length;
+    const totalPlans = user.simIds.reduce(
+      (sum, esim) => sum + (esim.plans?.length || 0),
+      0
+    );
+    const totalTopUps = esimTopUps.length;
+
+    // ✅ Attach top-ups grouped by eSIM
+    const esimWithTopUps = user.simIds.map((esim) => {
+      const relatedTopUps = esimTopUps.filter(
+        (et:any) => et?.esim?.id === esim?.id
+      );
+      return {
+        ...esim,
+        topUps: relatedTopUps.map((et) => et.topup),
+      };
+    });
+
+    // ✅ Exclude sensitive fields
+    const { password, ...safeUser } = user;
+
+    return res.status(200).json({
+      message: "User details fetched successfully",
+      user: {
+        ...safeUser,
+        simIds: esimWithTopUps,
+        stats: {
+          totalEsims,
+          totalPlans,
+          totalTopUps,
+        },
+      },
+    });
+  } catch (err: any) {
+    console.error("Error fetching user details:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 // ----------------- FILTER USERS (COUNTRY + PLAN) -----------------

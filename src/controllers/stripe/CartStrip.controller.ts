@@ -6,9 +6,11 @@ import { User } from "../../entity/User.entity";
 import { Esim } from "../../entity/Esim.entity";
 import { Transaction, TransactionStatus } from "../../entity/Transactions.entity";
 import { TopUpPlan } from "../../entity/Topup.entity";
+import { EsimTopUp } from "../../entity/EsimTopUp.entity";
+import { Order } from "../../entity/order.entity";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2025-09-30.clover" as any,
+    apiVersion: "2025-09-30.clover" as any,
 });
 
 export const initiateTransaction = async (req: any, res: Response) => {
@@ -292,67 +294,108 @@ export const handleTransactionStatus = async (req: Request, res: Response) => {
     }
 };
 
-
 export const initiateTopUpTransaction = async (req: any, res: Response) => {
-    const userId = req.user.id;
-    const { topupId, esimId, paymentGateway } = req.body;
+  const userId = req.user?.id;
+  const { topupId, esimId, paymentGateway } = req.body;
 
-    if (!topupId || !esimId || !paymentGateway) {
-        return res.status(400).json({ message: "Missing required fields" });
+  if (!userId || !topupId || !esimId || !paymentGateway) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  try {
+    const userRepo = AppDataSource.getRepository(User);
+    const esimRepo = AppDataSource.getRepository(Esim);
+    const topUpRepo = AppDataSource.getRepository(TopUpPlan);
+    const orderRepo = AppDataSource.getRepository(Order);
+    const transactionRepo = AppDataSource.getRepository(Transaction);
+    const esimTopUpRepo = AppDataSource.getRepository(EsimTopUp);
+
+    // ✅ Validate user
+    const user = await userRepo.findOne({ where: { id: userId } });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // ✅ Load eSIM with relations
+    const esim = await esimRepo.findOne({
+      where: { id: esimId, user: { id: userId } },
+      relations: ["country", "plans", "topupLinks"],
+    });
+    if (!esim) return res.status(404).json({ message: "eSIM not found for user" });
+
+    // ✅ Validate top-up plan
+    const topupPlan = await topUpRepo.findOne({
+      where: { id: topupId, isActive: true, isDeleted: false },
+      relations: ["country"],
+    });
+    if (!topupPlan) return res.status(404).json({ message: "Top-up plan not found or inactive" });
+
+    // ✅ Create transaction record
+    const transaction = transactionRepo.create({
+      user,
+      esim,
+      topupPlan,
+      paymentGateway,
+      amount: topupPlan.price || 0,
+      status:
+        paymentGateway === "cod"
+          ? TransactionStatus.SUCCESS
+          : TransactionStatus.PENDING,
+      transactionId:
+        paymentGateway === "cod" ? `cod_${Date.now()}` : "",
+    });
+
+    await transactionRepo.save(transaction);
+
+    // ✅ Handle COD top-up (instant apply)
+    if (paymentGateway === "cod") {
+      esim.dataAmount = (esim.dataAmount || 0) + (topupPlan.dataLimit || 0);
+      esim.validityDays = Math.max(
+        esim.validityDays || 0,
+        topupPlan.validityDays || 0
+      );
+
+      const esimTopUp = esimTopUpRepo.create({
+        esim,
+        topup: topupPlan, // ✅ correct property name
+        order: null,      // optional for COD
+      });
+
+      await esimTopUpRepo.save(esimTopUp);
+
+      await esimRepo.save(esim);
+
+      return res.status(201).json({
+        message: "COD Top-up successful",
+        transaction,
+        updatedEsim: esim,
+      });
     }
 
-    try {
-        const userRepo = AppDataSource.getRepository(User);
-        const esimRepo = AppDataSource.getRepository(Esim);
-        const topUpRepo = AppDataSource.getRepository(TopUpPlan);
-        const transactionRepo = AppDataSource.getRepository(Transaction);
+    // ✅ Handle Stripe top-up (deferred apply)
+    if (paymentGateway === "stripe") {
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round((topupPlan.price || 0) * 100),
+        currency: (topupPlan.currency || "USD").toLowerCase(),
+        metadata: { userId, topupId, esimId, transactionId: transaction.id },
+      });
 
-        const user = await userRepo.findOne({ where: { id: userId } });
-        if (!user) return res.status(404).json({ message: "User not found" });
+      transaction.transactionId = paymentIntent.id;
+      await transactionRepo.save(transaction);
 
-        const esim = await esimRepo.findOne({ where: { id: esimId, user: { id: userId } } });
-        if (!esim) return res.status(404).json({ message: "eSIM not found for user" });
-
-        const topupPlan = await topUpRepo.findOne({
-            where: { id: topupId, isActive: true, isDeleted: false },
-        });
-        if (!topupPlan) return res.status(404).json({ message: "TopUp plan not found or inactive" });
-
-        // ---------------- CHANGE: Correctly assign TopUpPlan type to transaction ----------------
-        const transaction = new Transaction();
-        transaction.user = user;
-        transaction.paymentGateway = paymentGateway;
-        transaction.amount = topupPlan.price;
-        transaction.status = paymentGateway === "cod" ? TransactionStatus.SUCCESS : TransactionStatus.PENDING;
-        transaction.transactionId = paymentGateway === "cod" ? `cod_${Date.now()}` : "";
-        transaction.topupPlan = topupPlan; // type-safe assignment
-        transaction.esim = esim;
-        await transactionRepo.save(transaction);
-
-        if (paymentGateway === "cod") {
-            esim.dataAmount = (esim.dataAmount || 0) + topupPlan.dataLimit;
-            esim.validityDays = Math.max(esim.validityDays || 0, topupPlan.validityDays);
-            await esimRepo.save(esim);
-
-            return res.status(201).json({ message: "COD Top-Up successful", transaction, updatedEsim: esim });
-        }
-
-        if (paymentGateway === "stripe") {
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount: Math.round(topupPlan.price * 100),
-                currency: topupPlan.currency.toLowerCase(),
-                metadata: { userId, topupId, esimId, transactionId: transaction.id },
-            });
-
-            transaction.transactionId = paymentIntent.id;
-            await transactionRepo.save(transaction);
-
-            return res.status(201).json({ message: "Stripe Top-Up initiated", transaction, clientSecret: paymentIntent.client_secret });
-        }
-
-        return res.status(400).json({ message: "Unsupported payment gateway" });
-    } catch (err: any) {
-        console.error("TopUp Transaction Error:", err);
-        return res.status(500).json({ message: "Internal server error", error: err.message });
+      return res.status(201).json({
+        message: "Stripe top-up initiated",
+        transaction,
+        clientSecret: paymentIntent.client_secret,
+      });
     }
+
+    // ❌ Unsupported gateway fallback
+    return res.status(400).json({ message: "Unsupported payment gateway" });
+
+  } catch (err: any) {
+    console.error("TopUp Transaction Error:", err);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: err.message,
+    });
+  }
 };

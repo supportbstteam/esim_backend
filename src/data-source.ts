@@ -23,6 +23,7 @@ import { CartItem } from "./entity/CartItem.entity";
 import { Refund } from "./entity/Refund.entity";
 import { Blog } from "./entity/Blogs.entity"
 import { Testimonial } from "./entity/Testimonials.entity";
+import { EsimTopUp } from "./entity/EsimTopUp.entity";
 export const AppDataSource = new DataSource({
     type: "mysql",
     host: process.env.DB_HOST,
@@ -39,6 +40,7 @@ export const AppDataSource = new DataSource({
         Esim,
         Plan,
         TopUpPlan,
+        EsimTopUp,
         Refund,
         Token,
         Transaction,

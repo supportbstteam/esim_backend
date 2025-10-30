@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
+  OneToMany,
   ManyToMany,
   JoinTable,
   CreateDateColumn,
@@ -13,27 +14,31 @@ import {
 import { User } from "./User.entity";
 import { Country } from "./Country.entity";
 import { Plan } from "./Plans.entity";
-import { TopUpPlan } from "./Topup.entity";
 import { CartItem } from "./CartItem.entity";
 import { Order } from "./order.entity";
+import { EsimTopUp } from "./EsimTopUp.entity"; 
 
 @Entity({ name: "esims" })
 export class Esim {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
+  // 🔹 Country (non-null)
   @ManyToOne(() => Country, { nullable: false })
   country!: Country;
 
+  // 🔹 Optional cart item link
   @ManyToOne(() => CartItem, (cartItem) => cartItem.esims, { nullable: true })
-  cartItem?: CartItem;
+  cartItem?: CartItem | null;
+
+  // 🔹 Optional start and end date
+  @Column({ type: "date", nullable: true })
+  startDate?: Date | null;
 
   @Column({ type: "date", nullable: true })
-  startDate?: Date;
+  endDate?: Date | null;
 
-  @Column({ type: "date", nullable: true })
-  endDate?: Date;
-
+  // 🔹 Active flags
   @Index()
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
@@ -41,26 +46,25 @@ export class Esim {
   @Column({ type: "boolean", default: false })
   isDeleted!: boolean;
 
+  // 🔹 User
   @ManyToOne(() => User, { nullable: true, onDelete: "SET NULL" })
   @JoinColumn({ name: "userId" })
   user!: User | null;
 
-  @ManyToMany(() => Plan)
+  // 🔹 eSIM plans
+  @ManyToMany(() => Plan, { nullable: true })
   @JoinTable({
     name: "esim_plans",
     joinColumn: { name: "esim_id", referencedColumnName: "id" },
     inverseJoinColumn: { name: "plan_id", referencedColumnName: "id" },
   })
-  plans!: Plan[];
+  plans?: Plan[] | null;
 
-  @ManyToMany(() => TopUpPlan)
-  @JoinTable({
-    name: "esim_topups",
-    joinColumn: { name: "esim_id", referencedColumnName: "id" },
-    inverseJoinColumn: { name: "topup_id", referencedColumnName: "id" },
-  })
-  topUps!: TopUpPlan[];
+  // 🔹 NEW: one-to-many relation with EsimTopUp (each top-up linked to an order)
+  @OneToMany(() => EsimTopUp, (et) => et.esim, { nullable: true })
+  topupLinks?: EsimTopUp[] | null;
 
+  // 🔹 Order reference (for main plan purchase)
   @ManyToOne(() => Order, (order) => order.esims, {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
@@ -69,42 +73,44 @@ export class Esim {
   @JoinColumn({ name: "orderId" })
   order!: Order | null;
 
+  // 🔹 Optional metadata
   @Column({ type: "varchar", nullable: true })
-  externalId?: string;
+  externalId?: string | null;
 
   @Column({ type: "varchar", nullable: true })
-  iccid?: string;
+  iccid?: string | null;
 
   @Column({ type: "varchar", nullable: true })
-  qrCodeUrl?: string;
+  qrCodeUrl?: string | null;
 
   @Column({ type: "varchar", nullable: true })
-  networkStatus?: string;
+  networkStatus?: string | null;
 
   @Column({ type: "varchar", nullable: true })
-  statusText?: string;
+  statusText?: string | null;
 
   @Column({ type: "varchar", nullable: true })
-  productName?: string;
+  productName?: string | null;
 
   @Column({ type: "varchar", nullable: true })
-  currency?: string;
+  currency?: string | null;
 
   @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
-  price?: number;
+  price?: number | null;
 
   @Column({ type: "int", nullable: true })
-  validityDays?: number;
+  validityDays?: number | null;
 
   @Column({ type: "float", nullable: true })
-  dataAmount?: number;
+  dataAmount?: number | null;
 
   @Column({ type: "float", nullable: true })
-  callAmount?: number;
+  callAmount?: number | null;
 
   @Column({ type: "float", nullable: true })
-  smsAmount?: number;
+  smsAmount?: number | null;
 
+  // 🔹 Audit timestamps
   @CreateDateColumn()
   createdAt!: Date;
 
