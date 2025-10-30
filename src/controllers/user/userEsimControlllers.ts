@@ -175,7 +175,8 @@ export const getOrderListByUser = async (req: any, res: Response) => {
     const formattedOrders = orders.map(order => {
       const esims = Array.isArray(order.esims) ? order.esims : [];
       return {
-        id: order?.orderCode || order.id,
+        id: order.id || order?.orderCode,
+        code: order?.orderCode || order.id,
         planNames: esims.map(e => e.productName || "N/A"),
         totalPlans: esims.length,
         totalData: esims.reduce((acc, e) => acc + (e.dataAmount || 0), 0),
