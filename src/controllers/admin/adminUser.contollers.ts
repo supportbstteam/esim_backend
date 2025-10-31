@@ -388,7 +388,7 @@ export const putAdminUpdateUser = async (req: Request, res: Response) => {
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
     if (email) user.email = email;
-    if (isActive) user.isVerified = isActive;
+    user.isVerified = isActive;
     // if (role) user.role = role;
     if (password) {
       user.password = await bcrypt.hash(password, 10);
