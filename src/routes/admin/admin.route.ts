@@ -10,7 +10,7 @@ import adminUserRouter from "./adminUser.route"
 import adminContactRouter from "./adminContact.route"
 import adminSocialRouter from "./adminSocial.route"
 import contentRouter from './adminContent.route'
-import queryRoute from "../query.routes"
+import queryRoute from "./adminQuery.route"
 import adminOrderRouter from "./adminOrder.route"
 import adminBlogs from "./adminBlogs.route"
 import adminTestimonials from "./adminTestimonial.route"

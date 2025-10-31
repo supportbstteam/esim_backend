@@ -20,6 +20,9 @@ export class Testimonial {
     @Column({ type: "text" })
     content!: string;
 
+    @Column({ default: true })
+    isActive!: boolean;
+
     @CreateDateColumn()
     createdAt!: Date;
 

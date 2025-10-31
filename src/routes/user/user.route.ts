@@ -7,7 +7,7 @@ import useContactRoute from "./userContact.route";
 import userQuickies from "./userQuickies.route";
 import userSupport from "./userSupport.route";
 import { auth } from "../../middlewares/auth.handler";
-import queryRoute from "../query.routes"
+import queryRoute from "./userQuery.routes"
 import { deleteAccount, getUserDetails, postCreateUser, postForgotPassword, postResetPassword, postUserLogin, postVerifyForgotPasswordOtp, postVerifyOtp, updateProfile } from "../../controllers/user/userAuth.controllers";
 import { getSocials } from "../../controllers/Social.Media.controllers";
 import { getOrderDetailsByUser, getOrderListByUser, getUserSimSummary, postOrder, postUserClaimRefund } from "../../controllers/user/userEsimControlllers";
