@@ -92,6 +92,7 @@ export const postCreateUser = async (req: Request, res: Response) => {
                 password: hashedPassword,
                 otp,
                 otpExpires,
+                isBlocked:true,
                 isVerified: false,
                 isDeleted: false,
             });
