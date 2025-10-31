@@ -38,6 +38,7 @@ export const postAdminCreateUser = async (req: Request, res: Response) => {
       email,
       password: hashedPassword,
       isBlocked: isActive,
+      isVerified:true,
       role: role || "user",
     });
 
