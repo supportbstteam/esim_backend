@@ -14,6 +14,7 @@ import queryRoute from "./adminQuery.route"
 import adminOrderRouter from "./adminOrder.route"
 import adminBlogs from "./adminBlogs.route"
 import adminTestimonials from "./adminTestimonial.route"
+import adminFaq from "./adminFaq.route"
 import { deleteTopUpOrder, getAllTopUpOrders, getTopUpOrderById, getTopUpOrdersByUser, updateTopUpOrderStatus } from '../../controllers/admin/adminTopUpOrderControllers';
 
 
@@ -57,6 +58,7 @@ router.use("/testimonials", adminTestimonials);
 
 // top up
 router.use("/top-up", eTopupRoute);
+router.use("/faq", adminFaq);
 
 //e-sim
 router.use("/e-sim", eSimRoute);
