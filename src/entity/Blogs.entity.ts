@@ -21,7 +21,7 @@ export class Blog {
     content!: string;
 
     // HTML content
-    @Column({ type: "text" })
+    @Column({ type: "text", nullable:true })
     summary!: string;
 
     // Optional cover image (URL)

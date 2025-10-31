@@ -6,9 +6,9 @@ export const createBlog = async (req: Request, res: Response) => {
     try {
         const blogRepo = AppDataSource.getRepository(Blog);
 
-        const { title, content, category, coverImage, published } = req.body;
+        const { title, content, category, coverImage, published, summary } = req.body;
 
-        if (!title || !content) {
+        if (!title) {
             return res.status(400).json({ message: "Title and content are required" });
         }
 
