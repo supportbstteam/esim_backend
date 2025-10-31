@@ -50,6 +50,7 @@ export const getUserPlans = async (req: Request, res: Response) => {
       country: {
         id: plan.country.id,
         name: plan.country.name,
+        description:plan?.country?.description
       },
       createdAt: plan.createdAt,
       updatedAt: plan.updatedAt,
