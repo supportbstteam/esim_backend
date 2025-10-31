@@ -107,8 +107,6 @@ export const deleteAdminUser = async (req: Request, res: Response) => {
           .execute();
       }
 
-      // await sendAccountDeletedEmail(user.email, user.firstName);
-
       // 4️⃣ Finally delete the user (only the user, not related data)
       await manager.delete(User, { id: userId });
     });
@@ -143,9 +141,6 @@ export const patchAdminToggleBlockUser = async (req: Request, res: Response) => 
 
     // ✅ toggle the value
     user.isBlocked = !user.isBlocked;
-
-    await sendUserBlockedEmail(user.email, user.firstName, "");
-
     await userRepo.save(user);
 
     return res.status(200).json({
