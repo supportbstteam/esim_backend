@@ -149,7 +149,7 @@ export const patchAdminToggleBlockUser = async (req: Request, res: Response) => 
     await userRepo.save(user);
 
     return res.status(200).json({
-      message: `User ${user.isBlocked ? "blocked" : "unblocked"} successfully`,
+      message: `User ${user.isBlocked ? "Active" : "InActive"} successfully`,
       userId: user.id,
       isBlocked: user.isBlocked,
     });
