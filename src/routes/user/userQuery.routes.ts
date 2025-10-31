@@ -8,7 +8,7 @@ import {
 
 const router = Router();
 
-/* ===== USER ROUTES ===== */
+/* ===== USER ROUTES ===== 1 */
 router.post("/create-query", createQuery); // Create query
 router.get("/:email", getQueryByEmail);
 

@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// ---------- Helper: Base Template ----------
+// ---------- Helper: Base Template 1----------
 export const baseTemplate = (title: string, content: string) => `
   <div style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px;">
     <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
