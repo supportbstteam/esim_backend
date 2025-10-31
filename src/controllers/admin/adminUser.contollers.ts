@@ -12,150 +12,154 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
 // ----------------- CREATE USER -----------------
 export const postAdminCreateUser = async (req: Request, res: Response) => {
-    const { firstName, lastName, email, password, role } = req.body;
+  const { firstName, lastName, email, password, role, isActive } = req.body;
 
-    try {
-        const isAdmin = await checkAdmin(req, res);
-        if (!isAdmin) return;
+  try {
+    const isAdmin = await checkAdmin(req, res);
+    if (!isAdmin) return;
 
-        if (!firstName || !lastName || !email || !password) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
+    console.log('====================================');
+    console.log(isActive);
+    console.log('====================================');
 
-        const dataSource = await getDataSource();
-        const userRepo = dataSource.getRepository(User);
-
-        const existingUser = await userRepo.findOne({ where: { email } });
-        if (existingUser) {
-            return res.status(400).json({ message: "User already exists with this email" });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newUser = userRepo.create({
-            firstName,
-            lastName,
-            email,
-            password: hashedPassword,
-            isVerified: true,
-            role: role || "user",
-        });
-
-        await userRepo.save(newUser);
-
-        // exclude password
-        const { password: _, ...safeUser } = newUser;
-
-        return res.status(201).json({
-            message: "User created successfully",
-            user: safeUser,
-        });
-    } catch (err: any) {
-        console.error("Error creating user by admin:", err);
-        return res.status(500).json({ message: "Internal server error" });
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
     }
+
+    const dataSource = await getDataSource();
+    const userRepo = dataSource.getRepository(User);
+
+    const existingUser = await userRepo.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists with this email" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = userRepo.create({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      isVerified: isActive,
+      role: role || "user",
+    });
+
+    await userRepo.save(newUser);
+
+    // exclude password
+    const { password: _, ...safeUser } = newUser;
+
+    return res.status(201).json({
+      message: "User created successfully",
+      user: safeUser,
+    });
+  } catch (err: any) {
+    console.error("Error creating user by admin:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 export const deleteAdminUser = async (req: Request, res: Response) => {
-    const { userId } = req.params;
+  const { userId } = req.params;
 
-    try {
-        // Check admin privilege
-        const isAdmin = await checkAdmin(req, res);
-        if (!isAdmin) return;
+  try {
+    // Check admin privilege
+    const isAdmin = await checkAdmin(req, res);
+    if (!isAdmin) return;
 
-        const dataSource = await getDataSource();
-        const userRepo = dataSource.getRepository(User);
-        const cartRepo = dataSource.getRepository(Cart);
-        const cartItemRepo = dataSource.getRepository(CartItem);
-        const transactionRepo = dataSource.getRepository(Transaction);
+    const dataSource = await getDataSource();
+    const userRepo = dataSource.getRepository(User);
+    const cartRepo = dataSource.getRepository(Cart);
+    const cartItemRepo = dataSource.getRepository(CartItem);
+    const transactionRepo = dataSource.getRepository(Transaction);
 
-        const user = await userRepo.findOne({ where: { id: userId } });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // Start a transaction
-        await dataSource.transaction(async (manager) => {
-            // 1️⃣ Find all carts that can be safely deleted (not checked out + no transactions)
-            const cartsToDelete = await manager
-                .createQueryBuilder(Cart, "cart")
-                .leftJoin(Transaction, "t", "t.cartId = cart.id")
-                .where("cart.userId = :userId", { userId })
-                .andWhere("cart.isCheckedOut = false")
-                .andWhere("t.id IS NULL") // skip carts linked to transactions
-                .getMany();
-
-            if (cartsToDelete.length > 0) {
-                const cartIds = cartsToDelete.map((c) => c.id);
-
-                // 2️⃣ Delete all related cart items first
-                await manager
-                    .createQueryBuilder()
-                    .delete()
-                    .from(CartItem)
-                    .where("cartId IN (:...cartIds)", { cartIds })
-                    .execute();
-
-                // 3️⃣ Delete the carts themselves
-                await manager
-                    .createQueryBuilder()
-                    .delete()
-                    .from(Cart)
-                    .where("id IN (:...cartIds)", { cartIds })
-                    .execute();
-            }
-
-            // await sendAccountDeletedEmail(user.email, user.firstName);
-
-            // 4️⃣ Finally delete the user (only the user, not related data)
-            await manager.delete(User, { id: userId });
-        });
-
-        return res
-            .status(200)
-            .json({ message: "User deleted successfully, orphan carts and their items cleaned up." });
-
-    } catch (err: any) {
-        console.error("Error hard deleting user:", err);
-        return res.status(500).json({ message: "Internal server error" });
+    const user = await userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    // Start a transaction
+    await dataSource.transaction(async (manager) => {
+      // 1️⃣ Find all carts that can be safely deleted (not checked out + no transactions)
+      const cartsToDelete = await manager
+        .createQueryBuilder(Cart, "cart")
+        .leftJoin(Transaction, "t", "t.cartId = cart.id")
+        .where("cart.userId = :userId", { userId })
+        .andWhere("cart.isCheckedOut = false")
+        .andWhere("t.id IS NULL") // skip carts linked to transactions
+        .getMany();
+
+      if (cartsToDelete.length > 0) {
+        const cartIds = cartsToDelete.map((c) => c.id);
+
+        // 2️⃣ Delete all related cart items first
+        await manager
+          .createQueryBuilder()
+          .delete()
+          .from(CartItem)
+          .where("cartId IN (:...cartIds)", { cartIds })
+          .execute();
+
+        // 3️⃣ Delete the carts themselves
+        await manager
+          .createQueryBuilder()
+          .delete()
+          .from(Cart)
+          .where("id IN (:...cartIds)", { cartIds })
+          .execute();
+      }
+
+      // await sendAccountDeletedEmail(user.email, user.firstName);
+
+      // 4️⃣ Finally delete the user (only the user, not related data)
+      await manager.delete(User, { id: userId });
+    });
+
+    return res
+      .status(200)
+      .json({ message: "User deleted successfully, orphan carts and their items cleaned up." });
+
+  } catch (err: any) {
+    console.error("Error hard deleting user:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 
 
 // ----------------- TOGGLE BLOCK/UNBLOCK USER -----------------
 export const patchAdminToggleBlockUser = async (req: Request, res: Response) => {
-    const { userId } = req.params;
+  const { userId } = req.params;
 
-    try {
-        const isAdmin = await checkAdmin(req, res);
-        if (!isAdmin) return;
+  try {
+    const isAdmin = await checkAdmin(req, res);
+    if (!isAdmin) return;
 
-        const dataSource = await getDataSource();
-        const userRepo = dataSource.getRepository(User);
+    const dataSource = await getDataSource();
+    const userRepo = dataSource.getRepository(User);
 
-        const user = await userRepo.findOne({ where: { id: userId } });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // ✅ toggle the value
-        user.isBlocked = !user.isBlocked;
-
-        await sendUserBlockedEmail(user.email, user.firstName, "");
-
-        await userRepo.save(user);
-
-        return res.status(200).json({
-            message: `User ${user.isBlocked ? "blocked" : "unblocked"} successfully`,
-            userId: user.id,
-            isBlocked: user.isBlocked,
-        });
-    } catch (err: any) {
-        console.error("Error toggling block/unblock user:", err);
-        return res.status(500).json({ message: "Internal server error" });
+    const user = await userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    // ✅ toggle the value
+    user.isBlocked = !user.isBlocked;
+
+    await sendUserBlockedEmail(user.email, user.firstName, "");
+
+    await userRepo.save(user);
+
+    return res.status(200).json({
+      message: `User ${user.isBlocked ? "blocked" : "unblocked"} successfully`,
+      userId: user.id,
+      isBlocked: user.isBlocked,
+    });
+  } catch (err: any) {
+    console.error("Error toggling block/unblock user:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 
@@ -282,7 +286,7 @@ export const getAdminUserDetails = async (req: Request, res: Response) => {
     // ✅ Attach top-ups grouped by eSIM
     const esimWithTopUps = user.simIds.map((esim) => {
       const relatedTopUps = esimTopUps.filter(
-        (et:any) => et?.esim?.id === esim?.id
+        (et: any) => et?.esim?.id === esim?.id
       );
       return {
         ...esim,
@@ -313,93 +317,94 @@ export const getAdminUserDetails = async (req: Request, res: Response) => {
 
 // ----------------- FILTER USERS (COUNTRY + PLAN) -----------------
 export const getFilteredUsers = async (req: Request, res: Response) => {
-    try {
-        const isAdmin = await checkAdmin(req, res);
-        if (!isAdmin) {
-            return res.status(403).json({ message: "Unauthorized - Admins only" });
-        }
-
-        const { countryId, planId } = req.query;
-        const ds = await getDataSource();
-        const userRepo = ds.getRepository(User);
-
-        let query = userRepo
-            .createQueryBuilder("user")
-            .leftJoinAndSelect("user.simIds", "esim")
-            .leftJoinAndSelect("esim.country", "country")
-            .leftJoinAndSelect("esim.plans", "plan")
-            .where("user.isDeleted = :isDeleted", { isDeleted: false });
-
-        if (countryId) {
-            query = query.andWhere("country.id = :countryId", { countryId });
-        }
-        if (planId) {
-            query = query.andWhere("plan.id = :planId", { planId });
-        }
-
-        const users = await query.getMany();
-
-        // remove password
-        const safeUsers = users.map((u) => {
-            const { password, ...rest } = u;
-            return rest;
-        });
-
-        return res.status(200).json({
-            status: "success",
-            message: "Users fetched successfully",
-            data: safeUsers,
-        });
-    } catch (err) {
-        console.error("❌ Error in getFilteredUsers:", err);
-        return res.status(500).json({ status: "error", message: "Internal Server Error" });
+  try {
+    const isAdmin = await checkAdmin(req, res);
+    if (!isAdmin) {
+      return res.status(403).json({ message: "Unauthorized - Admins only" });
     }
+
+    const { countryId, planId } = req.query;
+    const ds = await getDataSource();
+    const userRepo = ds.getRepository(User);
+
+    let query = userRepo
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.simIds", "esim")
+      .leftJoinAndSelect("esim.country", "country")
+      .leftJoinAndSelect("esim.plans", "plan")
+      .where("user.isDeleted = :isDeleted", { isDeleted: false });
+
+    if (countryId) {
+      query = query.andWhere("country.id = :countryId", { countryId });
+    }
+    if (planId) {
+      query = query.andWhere("plan.id = :planId", { planId });
+    }
+
+    const users = await query.getMany();
+
+    // remove password
+    const safeUsers = users.map((u) => {
+      const { password, ...rest } = u;
+      return rest;
+    });
+
+    return res.status(200).json({
+      status: "success",
+      message: "Users fetched successfully",
+      data: safeUsers,
+    });
+  } catch (err) {
+    console.error("❌ Error in getFilteredUsers:", err);
+    return res.status(500).json({ status: "error", message: "Internal Server Error" });
+  }
 };
 
 export const putAdminUpdateUser = async (req: Request, res: Response) => {
-    const { userId } = req.params;
-    const { firstName, lastName, email, password } = req.body;
+  const { userId } = req.params;
+  const { firstName, lastName, email, password, isActive } = req.body;
 
-    try {
-        const isAdmin = await checkAdmin(req, res);
-        if (!isAdmin) return;
+  try {
+    const isAdmin = await checkAdmin(req, res);
+    if (!isAdmin) return;
 
-        const dataSource = await getDataSource();
-        const userRepo = dataSource.getRepository(User);
+    const dataSource = await getDataSource();
+    const userRepo = dataSource.getRepository(User);
 
-        const user = await userRepo.findOne({ where: { id: userId } });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // Check if email is being updated and is already taken
-        if (email && email !== user.email) {
-            const existingUser = await userRepo.findOne({ where: { email } });
-            if (existingUser) {
-                return res.status(400).json({ message: "Email is already in use" });
-            }
-        }
-
-        // Update fields if provided
-        if (firstName) user.firstName = firstName;
-        if (lastName) user.lastName = lastName;
-        if (email) user.email = email;
-        // if (role) user.role = role;
-        if (password) {
-            user.password = await bcrypt.hash(password, 10);
-        }
-
-        await userRepo.save(user);
-
-        // exclude password in response
-        const { password: _, ...safeUser } = user;
-
-        return res.status(200).json({
-            message: "User updated successfully",
-            user: safeUser,
-        });
-    } catch (err: any) {
-        console.error("Error updating user by admin:", err);
-        return res.status(500).json({ message: "Internal server error" });
+    const user = await userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    // Check if email is being updated and is already taken
+    if (email && email !== user.email) {
+      const existingUser = await userRepo.findOne({ where: { email } });
+      if (existingUser) {
+        return res.status(400).json({ message: "Email is already in use" });
+      }
+    }
+
+    // Update fields if provided
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (email) user.email = email;
+    if (isActive) user.isVerified = isActive;
+    // if (role) user.role = role;
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    await userRepo.save(user);
+
+    // exclude password in response
+    const { password: _, ...safeUser } = user;
+
+    return res.status(200).json({
+      message: "User updated successfully",
+      user: safeUser,
+    });
+  } catch (err: any) {
+    console.error("Error updating user by admin:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
