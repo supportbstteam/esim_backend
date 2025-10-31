@@ -18,10 +18,6 @@ export const postAdminCreateUser = async (req: Request, res: Response) => {
     const isAdmin = await checkAdmin(req, res);
     if (!isAdmin) return;
 
-    console.log('====================================');
-    console.log(isActive);
-    console.log('====================================');
-
     if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -41,7 +37,7 @@ export const postAdminCreateUser = async (req: Request, res: Response) => {
       lastName,
       email,
       password: hashedPassword,
-      isVerified: isActive,
+      isBlocked: isActive,
       role: role || "user",
     });
 
@@ -389,7 +385,7 @@ export const putAdminUpdateUser = async (req: Request, res: Response) => {
     if (lastName) user.lastName = lastName;
     if (email) user.email = email;
     // must not be empty
-    user.isVerified = isActive;
+    user.isBlocked = isActive;
     // if (role) user.role = role;
     if (password) {
       user.password = await bcrypt.hash(password, 10);
