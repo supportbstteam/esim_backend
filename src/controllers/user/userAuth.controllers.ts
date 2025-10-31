@@ -43,6 +43,7 @@ export const postCreateUser = async (req: Request, res: Response) => {
             existingUser.otpExpires = otpExpires;
             existingUser.isDeleted = false;
             existingUser.isVerified = false;
+            existingUser.isBlocked = true;
 
             await userRepo.save(existingUser);
             await sendOtpEmail(email, otp);
@@ -364,6 +365,7 @@ export const postVerifyOtp = async (req: Request, res: Response) => {
         // OTP verified → clear OTP fields and mark user as verified
         user.isVerified = true;
         user.otp = null;
+        user.isBlocked = false;
         user.otpExpires = null;
         await userRepo.save(user);
 
