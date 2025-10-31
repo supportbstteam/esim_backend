@@ -14,6 +14,7 @@ import queryRoute from "./adminQuery.route"
 import adminOrderRouter from "./adminOrder.route"
 import adminBlogs from "./adminBlogs.route"
 import adminTestimonials from "./adminTestimonial.route"
+import { deleteTopUpOrder, getAllTopUpOrders, getTopUpOrderById, getTopUpOrdersByUser, updateTopUpOrderStatus } from '../../controllers/admin/adminTopUpOrderControllers';
 
 
 const router = express.Router();
@@ -38,8 +39,18 @@ router.use("/plans", eSimPlanRoute);
 // users
 router.use("/users", adminUserRouter);
 
+
+router.get("/orders/top-up", getAllTopUpOrders);
+router.get("/orders/top-up/:id", getTopUpOrderById);
+router.get("/orders/top-up/:userId", getTopUpOrdersByUser);
+router.patch("/orders/top-up/:id", updateTopUpOrderStatus);
+router.delete("/orders/top-up/:id", deleteTopUpOrder);
+
+
 // order
 router.use("/orders", adminOrderRouter);
+
+// --------------------------------------
 
 router.use("/blogs", adminBlogs);
 router.use("/testimonials", adminTestimonials);
