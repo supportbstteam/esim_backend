@@ -16,6 +16,7 @@ import userCartRoute from "./userCart.route"
 import userTransactionRoute from "./userTransaction.route"
 import esimUsage from "./userESimUsage.route"
 import userAuthRoute from "./userAuth.route"
+import { getAllTestimonials } from "../../controllers/admin/adminTestimonials.controllers";
 
 const router = Router();
 
@@ -57,6 +58,8 @@ router.use("/query", queryRoute);
 
 // ---- e sim usage ----
 router.use("/usage", esimUsage);
+
+router.get("/testimonials",getAllTestimonials);
 
 
 // -------- order ------------

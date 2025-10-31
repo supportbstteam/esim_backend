@@ -20,6 +20,10 @@ export class Blog {
     @Column({ type: "text" })
     content!: string;
 
+    // HTML content
+    @Column({ type: "text" })
+    summary!: string;
+
     // Optional cover image (URL)
     @Column({ type: "varchar", length: 500, nullable: true })
     coverImage?: string | null;

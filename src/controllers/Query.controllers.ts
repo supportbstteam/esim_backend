@@ -2,20 +2,25 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Query, QueryStatus } from "../entity/Query.entity";
 import { checkAdmin } from "../utils/checkAdmin";
+import { baseTemplate } from "../utils/email";
+import nodemailer from "nodemailer";
+import { Admin } from "../entity/Admin.entity";
 
 const queryRepository = AppDataSource.getRepository(Query);
 
 /* ================= USER ROUTES ================= */
 
-// Create a new query (user)
+// 🧩 Create Query + Notify Admin
 export const createQuery = async (req: Request, res: Response) => {
     try {
         const { firstName, lastName, email, phone, message } = req.body;
 
+        // ✅ Validation
         if (!firstName || !lastName || !email || !phone || !message) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
+        // ✅ Create new query
         const newQuery = queryRepository.create({
             firstName,
             lastName,
@@ -23,17 +28,61 @@ export const createQuery = async (req: Request, res: Response) => {
             phone,
             message,
         });
-
         await queryRepository.save(newQuery);
+        const adminRepo = await AppDataSource.getRepository(Admin);
 
+        // ✅ Get admin notification email
+        const admin: any = await adminRepo.findOne({
+            select: ["notificationMail"],
+            where: {}, // required even if empty
+        });
+
+        if (admin?.notificationMail) {
+            // ✅ Send email to admin
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: Number(process.env.SMTP_PORT),
+                secure: Number(process.env.SMTP_PORT) === 465,
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS,
+                },
+            });
+
+            const html = baseTemplate(
+                "🆕 New Customer Query Received",
+                `
+          <p><strong>Name:</strong> ${firstName} ${lastName}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Phone:</strong> ${phone}</p>
+          <p><strong>Message:</strong></p>
+          <blockquote style="border-left: 3px solid #0070f3; margin: 10px 0; padding-left: 10px;">
+            ${message}
+          </blockquote>
+          <p style="margin-top: 20px;">Please respond to this query from your admin panel.</p>
+        `
+            );
+
+            await transporter.sendMail({
+                from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+                to: admin.notificationMail,
+                subject: "📩 New Customer Query Submitted",
+                html,
+            });
+        }
+
+        // ✅ Return response
         return res.status(201).json({
             status: true,
             message: "Thank you, our expert will contact you soon.",
             data: newQuery,
         });
     } catch (error: any) {
-        console.error(error);
-        return res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("❌ Error creating query:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error.message,
+        });
     }
 };
 
