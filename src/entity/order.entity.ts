@@ -64,6 +64,10 @@ export class Order {
     @Column({ type: "varchar", length: 50 })
     email!: string;
 
+    @Column({ type: "varchar", length: 20, nullable: true })
+    phone?: string;
+
+
     @Column({ type: "boolean", default: false })
     activated!: boolean;
 

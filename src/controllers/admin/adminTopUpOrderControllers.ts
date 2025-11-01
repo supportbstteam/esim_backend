@@ -8,34 +8,46 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
 // ✅ Get all Top-Up orders
 export const getAllTopUpOrders = async (req: Request, res: Response) => {
+  try {
+    const orderRepo = AppDataSource.getRepository(Order);
 
-    try {
-        const orderRepo = AppDataSource.getRepository(Order);
+    const orders = await orderRepo
+      .createQueryBuilder("order")
+      .leftJoinAndSelect("order.transaction", "transaction")
+      .leftJoinAndSelect("order.country", "country")
+      .leftJoinAndSelect("order.esims", "esims")
+      .leftJoinAndSelect("esims.topupLinks", "topupLinks")
+      .leftJoinAndSelect("topupLinks.topup", "topupPlan")
+      .where("order.type = :type", { type: OrderType.TOP_UP })
+      .andWhere("order.orderCode LIKE :prefix", { prefix: "ETUP%" })
+      .orderBy("order.createdAt", "DESC")
+      .getMany();
 
-        const orders = await orderRepo
-            .createQueryBuilder("order")
-            .leftJoinAndSelect("order.user", "user")
-            .leftJoinAndSelect("order.transaction", "transaction")
-            .leftJoinAndSelect("order.country", "country")
-            .leftJoinAndSelect("order.esims", "esims")
-            .leftJoinAndSelect("esims.topupLinks", "topupLinks")
-            .leftJoinAndSelect("topupLinks.topup", "topupPlan")
-            .where("order.type = :type", { type: OrderType.TOP_UP })
-            .andWhere("order.orderCode LIKE :prefix", { prefix: "ETUP%" })
-            .orderBy("order.createdAt", "DESC")
-            .getMany();
+    // ✅ Inject a consistent "user" object (for backward compatibility)
+    const formattedOrders = orders.map((order) => ({
+      ...order,
+      user: {
+        id: null, // since actual user relation isn’t being joined
+        firstName: (order.name).split(" ")[0] || "",
+        lastName: (order.name).split(" ")[1] || "",
+        email: order.email || null,
+        phone: order.phone || null,
+      },
+    }));
 
-
-        // console.log("---- orders -----", orders);
-
-        return res.status(200).json({ message: "Top up Order Fetched", orders });
-    } catch (err: any) {
-        console.error(err);
-        return res.status(500).json({
-            message: "Failed to fetch top-up orders",
-            error: err.message,
-        });
-    }
+    return res.status(200).json({
+      message: "Top-up orders fetched successfully",
+      status: "success",
+      orders: formattedOrders,
+    });
+  } catch (err: any) {
+    console.error("Error fetching top-up orders:", err);
+    return res.status(500).json({
+      message: "Failed to fetch top-up orders",
+      status: "error",
+      error: err.message,
+    });
+  }
 };
 
 // ✅ Get Top-Up order by ID (same response as adminUserAllESimById)
@@ -62,7 +74,7 @@ export const getTopUpOrderById = async (req: Request, res: Response) => {
       relations: [
         "user",
         "transaction",
-        "transaction.user",
+        // "transaction.user",
         "transaction.charges",
         "country",
       ],
@@ -83,7 +95,7 @@ export const getTopUpOrderById = async (req: Request, res: Response) => {
         "esim.country",
         "esim.order",
         "esim.order.transaction",
-        "esim.order.transaction.user",
+        // "esim.order.transaction.user",
         "esim.order.transaction.charges",
         "topup",
       ],

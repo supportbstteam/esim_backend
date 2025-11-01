@@ -7,31 +7,47 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 import { Order } from "../../entity/order.entity";
 
 /**
- * ✅ 1. Get all eSIMs across all users
+ * ✅ 1. Get all eSIMs across all users (Admin)
+ * Now pulls user details from the Order entity fields
  */
 export const adminUserAllESims = async (req: Request, res: Response) => {
-    try {
-        const esimRepo = AppDataSource.getRepository(Esim);
+  try {
+    const esimRepo = AppDataSource.getRepository(Esim);
 
-        const allEsims = await esimRepo.find({
-            relations: ["user", "order"], // include user + order info
-            order: { createdAt: "DESC" },
-        });
+    const allEsims = await esimRepo.find({
+      relations: ["order", "order.transaction", "order.country"],
+      order: { createdAt: "DESC" },
+    });
 
-        return res.status(200).json({
-            success: true,
-            message: "All eSIMs fetched successfully.",
-            data: allEsims,
-        });
-    } catch (error) {
-        console.error("Error fetching all eSIMs:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Failed to fetch eSIMs.",
-            error: error instanceof Error ? error.message : error,
-        });
-    }
+    // ✅ Inject "user" details from order entity (preserve structure)
+    const formattedEsims = allEsims.map((esim) => ({
+      ...esim,
+      user: esim.order
+        ? {
+            id: null, // no actual user relation here
+            firstName: (esim.order.name).split(" ")[0],
+            lastName: (esim.order.name).split(" ")[1],
+            email: esim.order.email || null,
+            phone: esim.order.phone || null,
+          }
+        : null,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      message: "All eSIMs fetched successfully.",
+      data: formattedEsims,
+    });
+  } catch (error) {
+    console.error("Error fetching all eSIMs:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch eSIMs.",
+      error: error instanceof Error ? error.message : error,
+    });
+  }
 };
+
 
 /**
  * ✅ 2. Get all eSIMs for a specific user (by userId)

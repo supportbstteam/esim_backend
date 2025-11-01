@@ -74,7 +74,8 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
             totalAmount: Number(transaction?.amount || 0),
             status: "PENDING",
             name: `${user?.firstName || ""} ${user?.lastName || ""}`.trim(),
-            email: user.email,
+            email: user?.email || "",
+            phone: user?.phone || "",
             activated: false,
             type: OrderType.TOP_UP,
         });

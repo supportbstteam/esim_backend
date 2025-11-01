@@ -5,37 +5,57 @@ import { AppDataSource } from "../../data-source";
 
 // Get all orders (with optional pagination)
 export const getAllOrders = async (req: Request, res: Response) => {
-    try {
-        const orderRepo = AppDataSource.getRepository(Order);
+  try {
+    const orderRepo = AppDataSource.getRepository(Order);
 
-        const orders = await orderRepo
-            .createQueryBuilder("order")
-            .leftJoinAndSelect("order.user", "user")
-            .leftJoinAndSelect("order.transaction", "transaction")
-            .leftJoinAndSelect("order.country", "country")
-            .leftJoinAndSelect("order.esims", "esims")
-            // .where("order.type = :type", { type: OrderType.ESIM })
-            .where("esims.id IS NOT NULL") // ✅ proper SQL syntax
-            .orderBy("order.createdAt", "DESC")
-            .getMany();
+    const orders = await orderRepo
+      .createQueryBuilder("order")
+      .leftJoinAndSelect("order.transaction", "transaction")
+      .leftJoinAndSelect("order.country", "country")
+      .leftJoinAndSelect("order.esims", "esims")
+      .where("esims.id IS NOT NULL")
+      .orderBy("order.createdAt", "DESC")
+      .getMany();
 
+    // ✅ Response structure focusing on Order-level customer info
+    const formattedOrders = orders.map((order) => ({
+      id: order.id,
+      orderCode: order.orderCode,
+      totalAmount: order.totalAmount,
+      status: order.status,
+      name: order.name,
+      email: order.email,
+      phone: order.phone ?? null, // newly added field
+      type: order.type,
+      activated: order.activated,
+      errorMessage: order.errorMessage,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      transaction: order.transaction,
+      country: order.country,
+      esims: order.esims,
+    }));
 
-        return res.status(200).json({ orders });
-    } catch (err: any) {
-        console.error("--- Error in getAllOrders ---", err);
-        return res.status(500).json({
-            message: "Failed to fetch orders",
-            error: err.message,
-        });
-    }
+    return res.status(200).json({
+      message: "Orders fetched successfully",
+      status: "success",
+      data: formattedOrders,
+    });
+  } catch (err: any) {
+    console.error("--- Error in getAllOrders ---", err);
+    return res.status(500).json({
+      message: "Failed to fetch orders",
+      status: "error",
+      error: err.message,
+    });
+  }
 };
 
-// Get order by ID
 // Get order by ID
 export const getOrderById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    console.log("---- hello -----")
+    // console.log("---- hello -----")
     try {
         const orderRepo = AppDataSource.getRepository(Order);
 
