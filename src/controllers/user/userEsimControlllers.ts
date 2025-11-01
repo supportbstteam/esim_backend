@@ -5,7 +5,7 @@ import axios from "axios";
 import { Reservation } from "../../entity/Reservation.entity";
 import { Country } from "../../entity/Country.entity";
 import { User } from "../../entity/User.entity";
-import { Order, OrderType } from "../../entity/order.entity";
+import { Order, ORDER_STATUS, OrderType } from "../../entity/order.entity";
 import { Esim } from "../../entity/Esim.entity";
 import { Transaction } from "../../entity/Transactions.entity";
 import { Charges } from "../../entity/Charges.entity";
@@ -63,7 +63,7 @@ export const postOrder = async (req: any, res: Response) => {
       phone: user?.phone || "",
       status: "processing",
       activated: false,
-      totalAmount: 0,
+      totalAmount: transaction?.amount,
       country: validCartItems[0].plan.country,
       type: OrderType.ESIM,
       // orderCode: `${OrderType.ESIM}${String(counter).padStart(4, "0")}`;
@@ -118,38 +118,100 @@ export const postOrder = async (req: any, res: Response) => {
           });
           await esimRepo.save(esim);
           createdEsims.push(esim);
-          mainOrder.totalAmount = parseFloat((transaction?.amount).toString() || "0");
+          const transactionAmount = Number(transaction?.amount) || 0;
+          mainOrder.totalAmount = isFinite(transactionAmount) ? transactionAmount : 0;
+
         } catch (innerErr: any) {
-          // If one SIM fails, continue to next but mark partial error
-          mainOrder.errorMessage = innerErr.message;
+          mainOrder.errorMessage = `${mainOrder.errorMessage || ""}\n${innerErr.message}`;
           await orderRepo.save(mainOrder);
         }
       }
     }
 
-    mainOrder.status = createdEsims.length ? "completed" : "failed";
-    mainOrder.activated = createdEsims.length > 0;
+    const totalEsimsInCart = validCartItems.reduce((acc, item) => acc + item.quantity, 0);
+
+    if (createdEsims.length === 0) {
+      mainOrder.status = ORDER_STATUS.FAILED;
+      mainOrder.activated = false;
+    } else if (createdEsims.length < totalEsimsInCart) {
+      mainOrder.status = ORDER_STATUS.PARTIAL;
+      mainOrder.activated = true;
+    } else {
+      mainOrder.status = ORDER_STATUS.COMPLETED;
+      mainOrder.activated = true;
+    }
+
     await orderRepo.save(mainOrder);
 
     latestCart.isCheckedOut = true;
     await cartRepo.save(latestCart);
 
+    console.log("🧾 Email payload:", {
+      totalAmount: mainOrder.totalAmount,
+      esims: createdEsims.map(e => ({
+        id: e.id,
+        price: e.price,
+        currency: e.currency,
+      })),
+    });
+
+    // 🧾 Send order confirmation email
     await sendOrderEmail(
       user.email,
       `${user.firstName} ${user.lastName}`,
       {
         id: mainOrder.id,
-        totalAmount: mainOrder.totalAmount,
+        totalAmount: Number(mainOrder.totalAmount) || 0,
         activated: mainOrder.activated,
         esims: createdEsims,
+        orderCode:mainOrder?.orderCode
       },
-      mainOrder.status ? "completed" : "failed"
+      (mainOrder?.status === "COMPLETED") ? "COMPLETED" : (mainOrder?.status === "FAILED") ? "FAILED" : "PARTIAL"
     );
 
-    return res.status(201).json({
-      message: "Order completed successfully",
-      order: { ...mainOrder, esims: createdEsims, transaction: transaction },
+    // 🧠 Determine message and status code automatically
+    let message = "";
+    let statusCode = 200;
+
+    switch (mainOrder.status) {
+      case "completed":
+        message = "Order completed successfully";
+        statusCode = 201;
+        break;
+
+      case "partial":
+        message = "Order partially completed. Some eSIMs could not be created.";
+        statusCode = 207; // Multi-Status: partial success
+        break;
+
+      case "failed":
+      default:
+        message = "Order failed. No eSIMs could be created.";
+        statusCode = 500;
+        break;
+    }
+
+    // 📦 Return consistent structured response
+    return res.status(statusCode).json({
+      message,
+      order: {
+        ...mainOrder,
+        esims: createdEsims,
+        transaction,
+      },
+      summary: {
+        totalEsims: validCartItems.reduce((sum, item) => sum + item.quantity, 0),
+        successCount: createdEsims.length,
+        failedCount:
+          validCartItems.reduce((sum, item) => sum + item.quantity, 0) -
+          createdEsims.length,
+      },
+      error:
+        mainOrder.status === "failed" || mainOrder.status === "partial"
+          ? mainOrder.errorMessage || "Some eSIMs failed to process."
+          : null,
     });
+
   } catch (err: any) {
     console.error("❌ postOrder error:", err);
     if (mainOrder) {

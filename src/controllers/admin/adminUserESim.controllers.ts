@@ -107,7 +107,8 @@ export const adminUserAllESimById = async (req: Request, res: Response) => {
       updatedAt: esim.order?.updatedAt || esim.updatedAt,
       transaction: esim.order?.transaction || null,
       country: esim.country || null,
-      email: esim.order?.transaction?.user?.email || null,
+      email: esim.order?.email|| null,
+      phone: esim.order?.phone|| null,
       esims: [
         {
           id: esim.id,

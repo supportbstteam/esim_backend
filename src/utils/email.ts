@@ -356,22 +356,22 @@ export const sendOrderEmail = async (
   userEmail: string,
   userName: string,
   order: any,
-  status: "completed" | "failed"
+  status: "COMPLETED" | "FAILED" | "PARTIAL"
 ) => {
   const subject =
-    status === "completed"
-      ? `✅ Order Confirmation - #${order.id}`
-      : `❌ Order Failed - #${order.id}`;
+    status.toLowerCase() === "completed"
+      ? `✅ Order Confirmation - #${order.orderCode}`
+      : `❌ Order Failed - #${order.orderCode}`;
 
   const html = baseTemplate(
-    status === "completed" ? "Order Completed Successfully" : "Order Failed",
+    status.toLowerCase() === "completed" ? "Order Completed Successfully" : "Order Failed",
     `
       <p>Hi ${userName || "there"},</p>
 
-      ${status === "completed"
+      ${status.toLowerCase() === "completed"
       ? `
-          <p>Your order <strong>#${order.id}</strong> has been successfully completed.</p>
-          <p><strong>Total Amount:</strong> $${order.totalAmount?.toFixed(2) || "0.00"}</p>
+          <p>Your order <strong>#${order.orderCode}</strong> has been successfully completed.</p>
+          <p><strong>Total Amount:</strong> $${order.totalAmount || "0.00"}</p>
           <p><strong>Activation:</strong> ${order.activated ? "✅ Active" : "Pending"
       }</p>
           <h3>eSIM Details:</h3>
@@ -387,7 +387,7 @@ export const sendOrderEmail = async (
           <p>Thank you for using eSIM Connect!</p>
         `
       : `
-          <p>Unfortunately, your order <strong>#${order.id}</strong> could not be completed.</p>
+          <p>Unfortunately, your order <strong>#${order.orderCode}</strong> could not be completed.</p>
           <p><strong>Reason:</strong> ${order.errorMessage || "Unexpected error occurred."
       }</p>
           <p>Our team has been notified and will review your transaction shortly.</p>

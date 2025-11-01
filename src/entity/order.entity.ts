@@ -21,6 +21,16 @@ export enum OrderType {
     TOP_UP = "top up",
 }
 
+export const ORDER_STATUS = {
+    COMPLETED: "COMPLETED",
+    FAILED: "FAILED",
+    PARTIAL: "PARTIAL",
+    PROCESSING: "PROCESSING",
+} as const;
+
+export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
+
+
 @Entity({ name: "orders" })
 export class Order {
     @PrimaryGeneratedColumn("uuid")

@@ -119,6 +119,7 @@ export const getTopUpOrderById = async (req: Request, res: Response) => {
       totalAmount: order.totalAmount || "",
       type: order.type || "top up",
       createdAt: order.createdAt,
+      errorMessage:order?.errorMessage,
       updatedAt: order.updatedAt,
       transaction: order.transaction || null,
       country: order.country || null,
