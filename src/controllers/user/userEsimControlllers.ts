@@ -314,30 +314,95 @@ export const postTransaction = async (req: any, res: Response) => {
 
 // -------------------- plan -------------
 export const getUserAllSims = async (req: any, res: Response) => {
-  const { id, role } = req.user;
+  const { id: userId, role } = req.user;
+  const thirdPartyToken = { Authorization: `Bearer ${req.thirdPartyToken}` };
 
-  if (!id || role !== "user") return res.status(401).json({ message: "Unauthorized", status: "error" });
+  if (!userId || role !== "user")
+    return res.status(401).json({ message: "Unauthorized", status: "error" });
 
   try {
     const esimRepo = AppDataSource.getRepository(Esim);
+
+    // 🔹 Fetch all user's eSIMs
     const esims = await esimRepo.find({
-      where: { user: { id } },
-      relations: ["order", "order.transaction", "order.country"],
-      order: {
-        createdAt: "DESC"
-      }
+      where: { user: { id: userId } },
+      relations: ["order", "order.transaction", "order.country", "country"],
+      order: { createdAt: "DESC" },
     });
 
-    return res.status(200).json({ message: "All eSIMs fetched successfully", status: "success", data: esims });
+    if (!esims.length)
+      return res
+        .status(404)
+        .json({ message: "No eSIMs found for this user", status: "error" });
+
+    const updatedEsims: any[] = [];
+
+    // 🔁 For each eSIM, fetch live status and update DB
+    for (const esim of esims) {
+      if (!esim.iccid) {
+        updatedEsims.push(esim);
+        continue;
+      }
+
+      try {
+        const { data: simResponse } = await axios.get(
+          `${process.env.TURISM_URL}/v2/sims/${esim.iccid}/usage`,
+          { headers: thirdPartyToken }
+        );
+
+        const simData = simResponse?.data?.data;
+        if (!simData) {
+          updatedEsims.push(esim);
+          continue;
+        }
+
+        // 🔹 Extract live data
+        const {
+          remaining_days,
+          total_data,
+          status,
+          status_text,
+          is_unlimited,
+          remaining_data,
+        } = simData;
+
+        // 🔹 Update DB values
+        esim.networkStatus = status || esim.networkStatus;
+        esim.statusText = status_text || esim.statusText;
+        esim.isActive = status_text?.toLowerCase() === "active";
+
+        esim.validityDays = remaining_days ?? esim.validityDays;
+        esim.dataAmount = total_data ? total_data / 1024 : esim.dataAmount; // MB → GB (adjust if needed)
+
+        await esimRepo.save(esim);
+
+        updatedEsims.push(esim);
+      } catch (apiErr: any) {
+        console.error(`Failed to update eSIM ${esim.iccid}:`, apiErr.message);
+        updatedEsims.push(esim); // still include old data if API fails
+      }
+    }
+
+    // 🟢 Return final response
+    return res.status(200).json({
+      message: "All eSIMs fetched and updated successfully",
+      status: "success",
+      data: updatedEsims,
+    });
   } catch (err: any) {
     console.error("Error fetching all eSIMs:", err);
-    return res.status(500).json({ message: "Failed to fetch all eSIMs", status: "error", error: err.message });
+    return res.status(500).json({
+      message: "Failed to fetch all eSIMs",
+      status: "error",
+      error: err.message,
+    });
   }
-}
+};
 
 export const getUserEsimDetails = async (req: any, res: Response) => {
   const { id: userId, role } = req.user;
   const { esimId } = req.params;
+  const thirdPartyToken = { Authorization: `Bearer ${req.thirdPartyToken}` };
 
   if (!userId || role !== "user") {
     return res.status(401).json({ message: "Unauthorized", status: "error" });
@@ -351,10 +416,9 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
 
   try {
     const esimRepo = AppDataSource.getRepository(Esim);
-    const esimTopupRepo = AppDataSource.getRepository(EsimTopUp);
     const orderRepo = AppDataSource.getRepository(Order);
 
-    // 🧠 Step 1: Find the eSIM belonging to the user
+    // 🔹 Find eSIM that belongs to the current user
     const esim = await esimRepo.findOne({
       where: { id: esimId, user: { id: userId } },
       relations: [
@@ -367,68 +431,87 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
       ],
     });
 
-    if (!esim)
+    if (!esim) {
       return res
         .status(404)
         .json({ message: "eSIM not found", status: "error" });
+    }
 
-    const order = esim.order;
-    if (!order)
+    if (!esim.iccid) {
       return res
         .status(404)
-        .json({ message: "Order not found for this eSIM", status: "error" });
+        .json({ message: "ICCID not found", status: "error" });
+    }
 
-    // 🧠 Step 2: Handle case based on order type
-    if (order.orderCode?.startsWith("ETUP") && order.type === "top up") {
-      // 🟢 CASE: Top-Up Order
-      const esimTopUps = await esimTopupRepo.find({
-        where: { esim: { id: esim.id } },
-        relations: ["topup", "topup.country", "esim.country"],
-      });
+    // 🔹 Fetch live eSIM data from external API
+    const { data: simResponse } = await axios.get(
+      `${process.env.TURISM_URL}/v2/sims/${esim.iccid}/usage`,
+      { headers: thirdPartyToken }
+    );
 
-      const formattedOrder = {
-        ...order,
-        esims: [
-          {
-            ...esim,
-            topUps: esimTopUps.map((et) => et.topup).filter(Boolean),
-          },
-        ],
-      };
-
-      return res.status(200).json({
-        message: "Top-up eSIM details fetched successfully",
-        status: "success",
-        data: formattedOrder,
+    const simData = simResponse?.data?.data;
+    if (!simData) {
+      return res.status(404).json({
+        message: "Invalid response from SIM provider",
+        status: "error",
       });
     }
 
-    // 🟣 CASE: Normal eSIM Order
-    const fullEsim = await esimRepo.findOne({
-      where: { id: esimId },
-      relations: [
-        "topupLinks",
-        "topupLinks.topup",
-        "country",
-        "order",
-        "order.transaction",
-        "order.transaction.user",
-        "order.transaction.charges",
-        "order.country",
-      ],
-    });
+    // 🔹 Extract values to update
+    const {
+      remaining_days,
+      total_data,
+      status,
+      status_text,
+      is_unlimited,
+      expired_at,
+      product_plan_id,
+      remaining_data,
+      product_status,
+    } = simData;
 
-    if (!fullEsim)
-      return res
-        .status(404)
-        .json({ message: "eSIM not found", status: "error" });
+    // 🔹 Update eSIM details in the DB (network + stats)
+    esim.networkStatus = status || esim.networkStatus;
+    esim.statusText = status_text || esim.statusText;
 
+    // Example logic: set active if status is active
+    esim.isActive = status_text?.toLowerCase() === "active";
+
+    // 🔹 Update plan details
+    // Use fallback values from DB if missing in API response
+    esim.validityDays = remaining_days ?? esim.validityDays;
+    esim.dataAmount = total_data ? total_data / 1024 : esim.dataAmount; // convert MB->GB if needed
+    esim.callAmount = 0;
+    esim.smsAmount = 0;
+
+    await esimRepo.save(esim);
+
+    // 🔹 Format and return clean eSIM details
     const formattedOrder = {
-      ...order,
+      ...esim.order,
       esims: [
         {
-          ...fullEsim,
-          topUps: fullEsim.topupLinks?.map((link) => link.topup) || [],
+          id: esim.id,
+          startDate: esim.startDate,
+          endDate: esim.endDate,
+          isActive: esim.isActive,
+          isDeleted: esim.isDeleted,
+          externalId: esim.externalId,
+          iccid: esim.iccid,
+          qrCodeUrl: esim.qrCodeUrl,
+          networkStatus: esim.networkStatus,
+          statusText: esim.statusText,
+          productName: esim.productName,
+          currency: esim.currency,
+          price: esim.price,
+          validityDays: esim.validityDays,
+          dataAmount: esim.dataAmount,
+          callAmount: esim.callAmount,
+          smsAmount: esim.smsAmount,
+          createdAt: esim.createdAt,
+          updatedAt: esim.updatedAt,
+          country: esim.country,
+          order: esim.order,
         },
       ],
     };
