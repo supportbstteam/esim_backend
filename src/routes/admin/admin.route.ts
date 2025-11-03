@@ -45,7 +45,7 @@ router.get("/orders/top-up", getAllTopUpOrders);
 router.get("/orders/top-up/:id", getTopUpOrderById);
 router.get("/orders/top-up/:userId", getTopUpOrdersByUser);
 router.patch("/orders/top-up/:id", updateTopUpOrderStatus);
-router.delete("/orders/top-up/:id", deleteTopUpOrder);
+router.delete("/orders/top-up/delete/:id", deleteTopUpOrder);
 
 
 // order
