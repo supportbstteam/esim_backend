@@ -68,11 +68,13 @@ export const getOrderById = async (req: Request, res: Response) => {
             relations: [
                 "user",
                 "transaction",
+                "transaction.cart.items",
                 "country",
                 "esims",
                 "esims.country",
                 "esims.topupLinks",
                 "esims.topupLinks.topup",
+                "esims.cartItem"
             ],
         });
 

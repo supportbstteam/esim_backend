@@ -1,20 +1,16 @@
 import { Response } from "express";
-import { Plan } from "../../entity/Plans.entity";
-import { getDataSource } from "../../lib/serverless";
 import axios from "axios";
-import { Reservation } from "../../entity/Reservation.entity";
-import { Country } from "../../entity/Country.entity";
 import { User } from "../../entity/User.entity";
 import { Order, ORDER_STATUS, OrderType } from "../../entity/order.entity";
 import { Esim } from "../../entity/Esim.entity";
 import { Transaction } from "../../entity/Transactions.entity";
-import { Charges } from "../../entity/Charges.entity";
 import { AppDataSource } from "../../data-source";
 import { Cart } from "../../entity/Carts.entity";
 import { CartItem } from "../../entity/CartItem.entity";
 import { Refund } from "../../entity/Refund.entity";
 import { sendOrderEmail } from "../../utils/email";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
+
 export const postOrder = async (req: any, res: Response) => {
   const { transactionId } = req.body;
   const userId = req.user?.id;
@@ -26,6 +22,7 @@ export const postOrder = async (req: any, res: Response) => {
 
   const transactionRepo = AppDataSource.getRepository(Transaction);
   const cartRepo = AppDataSource.getRepository(Cart);
+  const cartItemRepo = AppDataSource.getRepository(CartItem);
   const orderRepo = AppDataSource.getRepository(Order);
   const esimRepo = AppDataSource.getRepository(Esim);
   const userRepo = AppDataSource.getRepository(User);
@@ -65,6 +62,7 @@ export const postOrder = async (req: any, res: Response) => {
       totalAmount: transaction?.amount,
       country: validCartItems[0].plan.country,
       type: OrderType.ESIM,
+      
     });
 
     await orderRepo.save(mainOrder);
@@ -123,6 +121,7 @@ export const postOrder = async (req: any, res: Response) => {
             user: transaction.user,
             plans: [plan],
             order: mainOrder,
+            cartItem: item,
           });
 
           // Save eSIM synchronously
