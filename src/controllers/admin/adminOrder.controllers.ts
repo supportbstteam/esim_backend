@@ -14,9 +14,10 @@ export const getAllOrders = async (req: Request, res: Response) => {
             .leftJoinAndSelect("order.country", "country")
             .leftJoinAndSelect("order.esims", "esims")
             .where("order.type = :type", { type: "esim" })
-            .andWhere("order.code LIKE :codePrefix", { codePrefix: "ESM%" })
+            .andWhere("order.orderCode LIKE :codePrefix", { codePrefix: "ESM%" })
             .orderBy("order.createdAt", "DESC")
             .getMany();
+
 
         // console.log("-----  ")
 
