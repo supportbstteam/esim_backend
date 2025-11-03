@@ -358,43 +358,72 @@ export const sendOrderEmail = async (
   order: any,
   status: "COMPLETED" | "FAILED" | "PARTIAL"
 ) => {
-  const subject =
-    status.toLowerCase() === "completed"
-      ? `✅ Order Confirmation - #${order.orderCode}`
-      : `❌ Order Failed - #${order.orderCode}`;
+  const orderCode = order?.orderCode || "N/A";
+  const totalAmount = Number(order?.totalAmount || 0).toFixed(2);
+  const activationStatus = order?.activated ? "✅ Active" : "⏳ Pending";
 
-  const html = baseTemplate(
-    status.toLowerCase() === "completed" ? "Order Completed Successfully" : "Order Failed",
-    `
-      <p>Hi ${userName || "there"},</p>
+  // ✉️ Dynamic subject line
+  const subjectMap = {
+    COMPLETED: `✅ Order Confirmation - #${orderCode}`,
+    FAILED: `❌ Order Failed - #${orderCode}`,
+    PARTIAL: `⚠️ Partial Order - #${orderCode}`,
+  };
+  const subject = subjectMap[status];
 
-      ${status.toLowerCase() === "completed"
-      ? `
-          <p>Your order <strong>#${order.orderCode}</strong> has been successfully completed.</p>
-          <p><strong>Total Amount:</strong> $${order.totalAmount || "0.00"}</p>
-          <p><strong>Activation:</strong> ${order.activated ? "✅ Active" : "Pending"
-      }</p>
-          <h3>eSIM Details:</h3>
-          ${order.esims && order.esims.length
-        ? `<ul>${order.esims
+  // 🧠 Build eSIM List HTML
+  const esimListHTML = order.esims?.length
+    ? `
+      <ul>
+        ${order.esims
           .map(
-            (e: any) =>
-              `<li><strong>${e.productName}</strong> — ${e.iccid || "No ICCID"} — ${e.validityDays} days</li>`
+            (e: any) => `
+              <li>
+                <strong>${e.productName || "Unnamed Plan"}</strong><br/>
+                ICCID: ${e.iccid || "N/A"}<br/>
+                Validity: ${e.validityDays || 0} days<br/>
+                Price: ${e.currency || "$"} ${e.price || "0.00"}
+              </li><br/>
+            `
           )
-          .join("")}</ul>`
-        : "<p>No eSIM details available.</p>"
-      }
-          <p>Thank you for using eSIM Connect!</p>
-        `
-      : `
-          <p>Unfortunately, your order <strong>#${order.orderCode}</strong> could not be completed.</p>
-          <p><strong>Reason:</strong> ${order.errorMessage || "Unexpected error occurred."
-      }</p>
-          <p>Our team has been notified and will review your transaction shortly.</p>
-          <p>You may try again later or contact support.</p>
-        `
-    }
+          .join("")}
+      </ul>
+    `
+    : "<p>No eSIM details available for this order.</p>";
 
+  // 💬 Define message blocks for each status
+  const contentMap: Record<typeof status, string> = {
+    COMPLETED: `
+      <p>Hi ${userName || "there"},</p>
+      <p>Your order <strong>#${orderCode}</strong> has been successfully completed.</p>
+      <p><strong>Total Amount:</strong> $${totalAmount}</p>
+      <p><strong>Activation:</strong> ${activationStatus}</p>
+      <h3>eSIM Details:</h3>
+      ${esimListHTML}
+      <p>Thank you for using <strong>eSIM Connect</strong>!</p>
+    `,
+    FAILED: `
+      <p>Hi ${userName || "there"},</p>
+      <p>Unfortunately, your order <strong>#${orderCode}</strong> could not be completed.</p>
+      <p><strong>Reason:</strong> ${order.errorMessage || "An unexpected issue occurred."}</p>
+      <p>Our team has been notified and will review your transaction shortly.</p>
+      <p>You may try again later or contact support.</p>
+    `,
+    PARTIAL: `
+      <p>Hi ${userName || "there"},</p>
+      <p>Your order <strong>#${orderCode}</strong> was <strong>partially completed</strong>.</p>
+      <p>Some eSIMs were successfully created, while a few failed during processing.</p>
+      <p><strong>Total Amount:</strong> $${totalAmount}</p>
+      <h3>Successful eSIMs:</h3>
+      ${esimListHTML}
+      <p>Our team will investigate the failed items and reach out if needed.</p>
+    `,
+  };
+
+  // 🧱 Wrap in baseTemplate
+  const html = baseTemplate(
+    subject,
+    `
+      ${contentMap[status]}
       <hr />
       <p style="font-size: 13px; color: #777;">Order Date: ${new Date().toLocaleString()}</p>
       <p style="font-size: 13px; color: #777;">eSIM Connect © ${new Date().getFullYear()}</p>
@@ -402,7 +431,7 @@ export const sendOrderEmail = async (
   );
 
   try {
-    // Send to user
+    // Send to User
     await transporter.sendMail({
       from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
       to: userEmail,
@@ -410,13 +439,10 @@ export const sendOrderEmail = async (
       html,
     });
 
+    // Send Copy to Admin
     const adminRepo = AppDataSource.getRepository(Admin);
+    const admin = await adminRepo.findOne({ select: ["notificationMail"] });
 
-    const admin: any = await adminRepo.findOne({
-      select: ["notificationMail"],
-    });
-
-    // Send to admin as well
     await transporter.sendMail({
       from: `"eSIM Connect System" <${process.env.SMTP_USER}>`,
       to: admin?.notificationMail || "admin@esimconnect.com",
@@ -429,6 +455,7 @@ export const sendOrderEmail = async (
     console.error("❌ Failed to send order email:", error.message);
   }
 };
+
 
 /**
  * 🔒 Forgot Password OTP Mail
