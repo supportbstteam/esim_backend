@@ -15,7 +15,6 @@ import { CartItem } from "../../entity/CartItem.entity";
 import { Refund } from "../../entity/Refund.entity";
 import { sendOrderEmail } from "../../utils/email";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
-
 export const postOrder = async (req: any, res: Response) => {
   const { transactionId } = req.body;
   const userId = req.user?.id;
@@ -35,6 +34,7 @@ export const postOrder = async (req: any, res: Response) => {
   let mainOrder: Order | null = null;
 
   try {
+    // 🔹 Step 1: Validate transaction + user
     const transaction = await transactionRepo.findOne({
       where: { id: transactionId },
       relations: ["user", "cart", "cart.items", "cart.items.plan", "cart.items.plan.country"],
@@ -42,7 +42,6 @@ export const postOrder = async (req: any, res: Response) => {
 
     const user = await userRepo.findOneBy({ id: userId });
     if (!user) throw new Error("User not found");
-
     if (!transaction) throw new Error("Transaction not found");
     if (transaction.status !== "SUCCESS") throw new Error(`Invalid transaction status: ${transaction.status}`);
 
@@ -54,7 +53,7 @@ export const postOrder = async (req: any, res: Response) => {
     const validCartItems = latestCart.items.filter((i) => !i.isDeleted);
     if (!validCartItems.length) throw new Error("No valid cart items found");
 
-    // Create order
+    // 🔹 Step 2: Create new order
     mainOrder = orderRepo.create({
       user: transaction.user,
       transaction,
@@ -66,16 +65,21 @@ export const postOrder = async (req: any, res: Response) => {
       totalAmount: transaction?.amount,
       country: validCartItems[0].plan.country,
       type: OrderType.ESIM,
-      // orderCode: `${OrderType.ESIM}${String(counter).padStart(4, "0")}`;
     });
+
     await orderRepo.save(mainOrder);
 
     const createdEsims: Esim[] = [];
+    const totalEsimsInCart = validCartItems.reduce((acc, item) => acc + item.quantity, 0);
 
+    // 🔹 Step 3: Sequentially process each cart item
     for (const item of validCartItems) {
       const plan = item.plan;
+
+      // Create eSIMs one by one — sequential inside quantity loop
       for (let i = 0; i < item.quantity; i++) {
         try {
+          // Reserve SIM from third-party
           const reserveResponse = await axios.get(
             `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${plan.planId}`,
             { headers: thirdPartyToken }
@@ -86,6 +90,8 @@ export const postOrder = async (req: any, res: Response) => {
           }
 
           const externalReserveId = reserveResponse.data.data?.id;
+
+          // Purchase SIM (this must finish before next starts)
           const createSimResponse = await axios.post(
             `${process.env.TURISM_URL}/v2/sims/${externalReserveId}/purchase`,
             {},
@@ -93,6 +99,8 @@ export const postOrder = async (req: any, res: Response) => {
           );
 
           const esimData = createSimResponse.data?.data;
+
+          // Create eSIM entity
           const esim = esimRepo.create({
             externalId: esimData.id?.toString(),
             iccid: esimData.iccid || null,
@@ -116,20 +124,24 @@ export const postOrder = async (req: any, res: Response) => {
             plans: [plan],
             order: mainOrder,
           });
-          await esimRepo.save(esim);
-          createdEsims.push(esim);
+
+          // Save eSIM synchronously
+          const savedEsim = await esimRepo.save(esim);
+          createdEsims.push(savedEsim);
+
+          // Update running order total
           const transactionAmount = Number(transaction?.amount) || 0;
           mainOrder.totalAmount = isFinite(transactionAmount) ? transactionAmount : 0;
 
         } catch (innerErr: any) {
+          // Capture individual failure but continue processing next one
           mainOrder.errorMessage = `${mainOrder.errorMessage || ""}\n${innerErr.message}`;
           await orderRepo.save(mainOrder);
         }
       }
     }
 
-    const totalEsimsInCart = validCartItems.reduce((acc, item) => acc + item.quantity, 0);
-
+    // 🔹 Step 4: Final order status resolution
     if (createdEsims.length === 0) {
       mainOrder.status = ORDER_STATUS.FAILED;
       mainOrder.activated = false;
@@ -142,20 +154,10 @@ export const postOrder = async (req: any, res: Response) => {
     }
 
     await orderRepo.save(mainOrder);
-
     latestCart.isCheckedOut = true;
     await cartRepo.save(latestCart);
 
-    console.log("🧾 Email payload:", {
-      totalAmount: mainOrder.totalAmount,
-      esims: createdEsims.map(e => ({
-        id: e.id,
-        price: e.price,
-        currency: e.currency,
-      })),
-    });
-
-    // 🧾 Send order confirmation email
+    // 🔹 Step 5: Send confirmation email
     await sendOrderEmail(
       user.email,
       `${user.firstName} ${user.lastName}`,
@@ -164,48 +166,30 @@ export const postOrder = async (req: any, res: Response) => {
         totalAmount: Number(mainOrder.totalAmount) || 0,
         activated: mainOrder.activated,
         esims: createdEsims,
-        orderCode:mainOrder?.orderCode
+        orderCode: mainOrder?.orderCode,
       },
       (mainOrder?.status === "COMPLETED") ? "COMPLETED" : (mainOrder?.status === "FAILED") ? "FAILED" : "PARTIAL"
     );
 
-    // 🧠 Determine message and status code automatically
-    let message = "";
-    let statusCode = 200;
+    // 🔹 Step 6: Dynamic response based on final state
+    const responseSummary = {
+      totalEsims: totalEsimsInCart,
+      successCount: createdEsims.length,
+      failedCount: totalEsimsInCart - createdEsims.length,
+    };
 
-    switch (mainOrder.status) {
-      case "completed":
-        message = "Order completed successfully";
-        statusCode = 201;
-        break;
+    const statusMapping: Record<string, { code: number; msg: string }> = {
+      completed: { code: 201, msg: "Order completed successfully" },
+      partial: { code: 207, msg: "Order partially completed. Some eSIMs failed." },
+      failed: { code: 500, msg: "Order failed. No eSIMs could be created." },
+    };
 
-      case "partial":
-        message = "Order partially completed. Some eSIMs could not be created.";
-        statusCode = 207; // Multi-Status: partial success
-        break;
+    const { code, msg } = statusMapping[mainOrder.status.toLowerCase()] || statusMapping.failed;
 
-      case "failed":
-      default:
-        message = "Order failed. No eSIMs could be created.";
-        statusCode = 500;
-        break;
-    }
-
-    // 📦 Return consistent structured response
-    return res.status(statusCode).json({
-      message,
-      order: {
-        ...mainOrder,
-        esims: createdEsims,
-        transaction,
-      },
-      summary: {
-        totalEsims: validCartItems.reduce((sum, item) => sum + item.quantity, 0),
-        successCount: createdEsims.length,
-        failedCount:
-          validCartItems.reduce((sum, item) => sum + item.quantity, 0) -
-          createdEsims.length,
-      },
+    return res.status(code).json({
+      message: msg,
+      order: { ...mainOrder, esims: createdEsims, transaction },
+      summary: responseSummary,
       error:
         mainOrder.status === "failed" || mainOrder.status === "partial"
           ? mainOrder.errorMessage || "Some eSIMs failed to process."
@@ -222,6 +206,7 @@ export const postOrder = async (req: any, res: Response) => {
     return res.status(500).json({ message: "Order failed", error: err.message });
   }
 };
+
 
 
 export const getOrderListByUser = async (req: any, res: Response) => {
