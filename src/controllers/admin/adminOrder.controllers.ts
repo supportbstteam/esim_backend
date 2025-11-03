@@ -13,10 +13,11 @@ export const getAllOrders = async (req: Request, res: Response) => {
             .leftJoinAndSelect("order.transaction", "transaction")
             .leftJoinAndSelect("order.country", "country")
             .leftJoinAndSelect("order.esims", "esims")
-            // .where("esims.id IS NOT NULL")
+            .where("order.type = :type", { type: "esim" })
+            .andWhere("order.code LIKE :codePrefix", { codePrefix: "ESM%" })
             .orderBy("order.createdAt", "DESC")
             .getMany();
-        
+
         // console.log("-----  ")
 
         // ✅ Response structure focusing on Order-level customer info
@@ -35,14 +36,14 @@ export const getAllOrders = async (req: Request, res: Response) => {
             updatedAt: order.updatedAt,
             transaction: order.transaction,
             country: order.country,
-            esims: order?.esims ? order?.esims:null,
+            esims: order?.esims ? order?.esims : null,
         }));
 
         return res.status(200).json({
             message: "Orders fetched successfully",
             status: "success",
             data: formattedOrders,
-            length:orders?.length
+            length: orders?.length
         });
     } catch (err: any) {
         console.error("--- Error in getAllOrders ---", err);
@@ -97,7 +98,7 @@ export const getOrderById = async (req: Request, res: Response) => {
                 status: order.status,
                 createdAt: order.createdAt,
                 updatedAt: order.updatedAt,
-                errorMessage:order?.errorMessage,
+                errorMessage: order?.errorMessage,
                 customer: customerDetails,
                 country: order.country,
                 transaction: order.transaction,
