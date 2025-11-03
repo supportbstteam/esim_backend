@@ -16,7 +16,7 @@ export const createBlog = async (req: Request, res: Response) => {
 
         const newBlog = blogRepo.create({
             title,
-            content, // HTML string
+            content, // HTML string contetn
             category: category,
             coverImage: coverImage,
             isActive: published,
