@@ -62,7 +62,7 @@ export const postOrder = async (req: any, res: Response) => {
       totalAmount: transaction?.amount,
       country: validCartItems[0].plan.country,
       type: OrderType.ESIM,
-      
+
     });
 
     await orderRepo.save(mainOrder);
@@ -83,9 +83,9 @@ export const postOrder = async (req: any, res: Response) => {
             { headers: thirdPartyToken }
           );
 
-          if (reserveResponse.data?.status !== "success") {
-            throw new Error(reserveResponse.data?.message || "Failed to reserve eSIM");
-          }
+          // if (reserveResponse.data?.status !== "success") {
+          //   throw new Error(reserveResponse.data?.message || "Failed to reserve eSIM");
+          // }
 
           const externalReserveId = reserveResponse.data.data?.id;
 
@@ -133,7 +133,27 @@ export const postOrder = async (req: any, res: Response) => {
           mainOrder.totalAmount = isFinite(transactionAmount) ? transactionAmount : 0;
 
         } catch (innerErr: any) {
-          // Capture individual failure but continue processing next one
+          console.error("⚠️ eSIM creation failed for plan:", plan.name, "-", innerErr.message);
+
+          // ✅ Create minimal empty eSIM linked to cartItem
+          const failedEsim = esimRepo.create({
+            externalId: null,
+            iccid: null,
+            qrCodeUrl: null,
+            productName: plan.name,
+            isActive: false,
+            startDate: null,
+            endDate: null,
+            country: plan.country,
+            user: transaction.user,
+            plans: [plan],
+            order: mainOrder,
+            cartItem: item, // ensure linkage
+          });
+
+          await esimRepo.save(failedEsim);
+
+          // Don't add it to `createdEsims` (since it’s failed)
           mainOrder.errorMessage = `${mainOrder.errorMessage || ""}\n${innerErr.message}`;
           await orderRepo.save(mainOrder);
         }
@@ -484,19 +504,25 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
         .json({ message: "eSIM not found", status: "error" });
     }
 
-    if (!esim.iccid) {
-      return res
-        .status(404)
-        .json({ message: "ICCID not found", status: "error" });
-    }
+    // if (!esim.iccid) {
+    //   return res
+    //     .status(404)
+    //     .json({ message: "ICCID not found", status: "error" });
+    // }
 
     // 🔹 Fetch live eSIM data from external API
-    const { data: simResponse } = await axios.get(
-      `${process.env.TURISM_URL}/v2/sims/${esim.iccid}/usage`,
-      { headers: thirdPartyToken }
-    );
 
-    const simData = simResponse?.data?.data;
+    let simResponse = null;
+
+    if (esim?.iccid) {
+      simResponse = (await axios.get(
+        `${process.env.TURISM_URL}/v2/sims/${esim.iccid}/usage`,
+        { headers: thirdPartyToken }
+      )).data;
+
+    }
+
+    const simData = simResponse?.data?.data || esim;
     if (!simData) {
       return res.status(404).json({
         message: "Invalid response from SIM provider",
@@ -545,7 +571,7 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
           isDeleted: esim.isDeleted,
           externalId: esim.externalId,
           iccid: esim.iccid,
-          qrCodeUrl: esim.qrCodeUrl,
+          qrCodeUrl: esim.qrCodeUrl || "",
           networkStatus: esim.networkStatus,
           statusText: esim.statusText,
           productName: esim.productName,

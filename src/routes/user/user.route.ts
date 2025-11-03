@@ -15,8 +15,8 @@ import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handle
 import userCartRoute from "./userCart.route"
 import userTransactionRoute from "./userTransaction.route"
 import esimUsage from "./userESimUsage.route"
-import userAuthRoute from "./userAuth.route"
 import { getAllTestimonials } from "../../controllers/admin/adminTestimonials.controllers";
+import { claimRefund } from "../../controllers/refundControllers";
 
 const router = Router();
 
@@ -59,7 +59,7 @@ router.use("/query", queryRoute);
 // ---- e sim usage ----
 router.use("/usage", esimUsage);
 
-router.get("/testimonials",getAllTestimonials);
+router.get("/testimonials", getAllTestimonials);
 
 
 // -------- order ------------
@@ -67,7 +67,7 @@ router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
 // router.post("/order", auth, generateFakeOrder);
 router.get("/order-list", auth, getOrderListByUser);
 router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
-router.post("/claim-refund", auth, postUserClaimRefund)
+router.post("/claim", auth, claimRefund);
 
 
 router.use("/add-to-cart", auth, userCartRoute)

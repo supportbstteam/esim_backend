@@ -375,8 +375,8 @@ export const sendOrderEmail = async (
     ? `
       <ul>
         ${order.esims
-          .map(
-            (e: any) => `
+      .map(
+        (e: any) => `
               <li>
                 <strong>${e.productName || "Unnamed Plan"}</strong><br/>
                 ICCID: ${e.iccid || "N/A"}<br/>
@@ -384,8 +384,8 @@ export const sendOrderEmail = async (
                 Price: ${e.currency || "$"} ${e.price || "0.00"}
               </li><br/>
             `
-          )
-          .join("")}
+      )
+      .join("")}
       </ul>
     `
     : "<p>No eSIM details available for this order.</p>";
@@ -491,3 +491,95 @@ export const sendForgotPasswordOtpEmail = async (to: string, otp: string) => {
   }
 };
 
+/**
+ * 💰 Refund Claim Email (User → Admin)
+ * Triggered when user claims refund for a failed or partially failed order
+ */
+export const sendRefundClaimEmail = async (
+  user: any,
+  order: any,
+  claimReason: string,
+  email: string
+) => {
+  try {
+    // Determine refund scenario
+    const totalEsims = order.esims?.length || 0;
+    const failedEsims = order.esims?.filter((e: any) => e.status === "FAILED") || [];
+    const successfulEsims = order.esims?.filter((e: any) => e.status === "SUCCESS") || [];
+
+    let scenario = "";
+    let summaryText = "";
+
+    if (failedEsims.length === totalEsims) {
+      scenario = "ALL_FAILED";
+      summaryText = `
+        <p>The user’s order <strong>#${order.orderCode}</strong> failed completely. 
+        None of the eSIMs were created successfully.</p>
+      `;
+    } else if (failedEsims.length > 0 && failedEsims.length < totalEsims) {
+      scenario = "PARTIAL_FAILED";
+      summaryText = `
+        <p>The user’s order <strong>#${order.orderCode}</strong> was partially completed.</p>
+        <p><b>${successfulEsims.length}</b> eSIM(s) succeeded and 
+        <b>${failedEsims.length}</b> eSIM(s) failed during processing.</p>
+      `;
+    }
+
+    const esimListHTML = order.esims
+      ?.map(
+        (e: any, i: number) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${e.productName || "Unnamed Plan"}</td>
+          <td>${e.iccid || "N/A"}</td>
+          <td style="text-transform:capitalize;">${e.status}</td>
+          <td>${e.currency || "$"}${e.price || "0.00"}</td>
+        </tr>`
+      )
+      .join("") || "";
+
+    const html = baseTemplate(
+      "Refund Claim Request",
+      `
+        <p>Hello Admin,</p>
+        <p>The following user has requested a <strong>refund</strong> for their order.</p>
+        
+        ${summaryText}
+
+        <h3>User Details:</h3>
+        <table style="width:100%; border-collapse:collapse;">
+          <tr><td><b>Name:</b></td><td>${user.firstName} ${user.lastName}</td></tr>
+          <tr><td><b>Email:</b></td><td>${user.email}</td></tr>
+          <tr><td><b>Country:</b></td><td>${user.country || "N/A"}</td></tr>
+        </table>
+
+        <h3>Order Details:</h3>
+        <table style="width:100%; border-collapse:collapse; margin-top:10px;" border="1">
+          <tr><th>#</th><th>Plan</th><th>ICCID</th><th>Status</th><th>Price</th></tr>
+          ${esimListHTML}
+        </table>
+
+        <p><b>Total Amount:</b> $${order.totalAmount?.toFixed(2) || "0.00"}</p>
+        <p><b>Refund Reason:</b> ${claimReason}</p>
+
+        <p style="margin-top:15px;">Please review this refund claim and process accordingly.</p>
+
+        <p style="margin-top:20px;">– eSIM Connect System</p>
+      `
+    );
+
+    const adminRepo = AppDataSource.getRepository(Admin);
+    const admin = await adminRepo.findOne({ select: ["notificationMail"] });
+
+    await transporter.sendMail({
+      from: email || user?.email,
+      to: admin?.notificationMail || "admin@esimconnect.com",
+      subject: `💰 Refund Claim - Order #${order.orderCode}`,
+      html,
+    });
+
+    console.log(`✅ Refund claim email sent to admin for order ${order.orderCode}`);
+  } catch (error: any) {
+    console.error("❌ Failed to send refund claim email:", error.message);
+  }
+};
