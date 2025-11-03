@@ -8,6 +8,8 @@ export const createBlog = async (req: Request, res: Response) => {
 
         const { title, content, category, coverImage, published, summary } = req.body;
 
+        // console.log("----- summary ----", summary)
+
         if (!title) {
             return res.status(400).json({ message: "Title and content are required" });
         }
@@ -15,9 +17,10 @@ export const createBlog = async (req: Request, res: Response) => {
         const newBlog = blogRepo.create({
             title,
             content, // HTML string
-            category: category || null,
-            coverImage: coverImage || null,
-            isActive: published || false,
+            category: category,
+            coverImage: coverImage,
+            isActive: published,
+            summary:summary,
         });
 
         await blogRepo.save(newBlog);
