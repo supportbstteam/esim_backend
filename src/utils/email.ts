@@ -12,6 +12,18 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+
+const adminMailNotfication = async () => {
+
+  const adminRepo = await AppDataSource.getRepository(Admin);
+  const admin: any = await adminRepo.findOne({
+    select: ["notificationMail"],
+    where: {}, // required, even if empty
+  });
+
+  return admin?.notificationMail
+}
+
 // ---------- Helper: Base Template 1----------
 export const baseTemplate = (title: string, content: string) => `
   <div style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px;">
@@ -54,9 +66,10 @@ export const sendOtpEmail = async (to: string, otp: string) => {
         <p style="margin-top: 25px;">Thanks,<br><strong>The eSIM Connect Team</strong></p>
       `
     );
-
+    const mail: any = await adminMailNotfication();
+    console.log("----- mail to the admin -----", mail);
     const info = await transporter.sendMail({
-      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+      from: mail,
       to,
       subject,
       text,
@@ -86,8 +99,10 @@ export const sendOrderConfirmationEmail = async (userEmail: string, order: any) 
     `
   );
 
+  const mail: any = await adminMailNotfication();
+
   await transporter.sendMail({
-    from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+    from: mail,
     to: userEmail,
     subject: `🛒 Order Confirmation - ${order.id}`,
     html,
@@ -97,7 +112,7 @@ export const sendOrderConfirmationEmail = async (userEmail: string, order: any) 
 };
 
 // ---------- 1️⃣(b) Order Notification to Admin ----------
-export const sendAdminOrderNotification = async (adminEmail: string, order: any) => {
+export const sendAdminOrderNotification = async (order: any) => {
   const html = baseTemplate(
     "New Order Placed",
     `
@@ -108,15 +123,15 @@ export const sendAdminOrderNotification = async (adminEmail: string, order: any)
       <p><a href="${process.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View in Dashboard</a></p>
     `
   );
-
+  const mail: any = await adminMailNotfication();
   await transporter.sendMail({
-    from: `"eSIM Connect Orders" <${process.env.SMTP_USER}>`,
-    to: adminEmail,
+    from: mail,
+    to: mail,
     subject: `🧾 New Order - ${order.id}`,
     html,
   });
 
-  console.log("✅ Order email sent to admin:", adminEmail);
+  console.log("✅ Order email sent to admin:", mail);
 };
 
 // ---------- 2️⃣(b) Welcome Email to New User ----------
@@ -136,9 +151,9 @@ export const sendUserWelcomeEmail = async (userEmail: string, user: any) => {
       <p>Cheers,<br><strong>The eSIM Connect Team</strong></p>
     `
   );
-
+  const mail: any = await adminMailNotfication();
   await transporter.sendMail({
-    from: `"eSIM Connect Support" <${process.env.SMTP_USER}>`, // from admin
+    from: mail, // from admin
     to: userEmail,
     subject: "👋 Welcome to eSIM Connect",
     html,
@@ -164,9 +179,9 @@ export const sendAdminUserVerifiedNotification = async (adminEmail: string, user
       <p style="margin-top:20px;">– The eSIM Connect System</p>
     `
   );
-
+const mail: any = await adminMailNotfication();
   await transporter.sendMail({
-    from: `"eSIM Connect System" <${process.env.SMTP_USER}>`,
+    from: mail,
     to: adminEmail,
     subject: `✅ User Verified: ${user.firstName} ${user.lastName}`,
     html,
@@ -184,9 +199,9 @@ export const sendPasswordUpdateEmail = async (userEmail: string, userName: strin
       <p>Your password has been successfully updated. If this wasn’t you, please reset your password immediately or contact support.</p>
     `
   );
-
+  const mail: any = await adminMailNotfication();
   await transporter.sendMail({
-    from: `"eSIM Connect Security" <${process.env.SMTP_USER}>`,
+    from: mail,
     to: userEmail,
     subject: "🔐 Password Updated Successfully",
     html,
@@ -221,9 +236,9 @@ export const sendRefundEmails = async (userEmail: string, adminEmail: string, re
       <p><a href="${process.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View Refund</a></p>
     `
   );
-
+  const mail: any = await adminMailNotfication();
   await transporter.sendMail({
-    from: `"eSIM Connect Refunds" <${process.env.SMTP_USER}>`,
+    from: mail,
     to: userEmail,
     subject: `💰 Refund Request Received - ${refund.id}`,
     html: userHtml,
@@ -263,8 +278,9 @@ export const sendPasswordChangeEmail = async (to: string, name?: string) => {
       `
     );
 
+    const mail: any = await adminMailNotfication();
     await transporter.sendMail({
-      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+      from: mail,
       to,
       subject,
       text,
@@ -298,9 +314,9 @@ export const sendUserBlockedEmail = async (to: string, name?: string, reason?: s
         <p>– The eSIM Connect Team</p>
       `
     );
-
+    const mail: any = await adminMailNotfication();
     await transporter.sendMail({
-      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+      from: mail,
       to,
       subject,
       text,
@@ -334,9 +350,9 @@ export const sendAccountDeletedEmail = async (to: string, name?: string) => {
         <p><strong>The eSIM Connect Team</strong></p>
       `
     );
-
+    const mail: any = await adminMailNotfication();
     await transporter.sendMail({
-      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+      from: mail,
       to,
       subject,
       text,
@@ -419,6 +435,8 @@ export const sendOrderEmail = async (
     `,
   };
 
+  const mail: any = await adminMailNotfication();
+
   // 🧱 Wrap in baseTemplate
   const html = baseTemplate(
     subject,
@@ -433,7 +451,7 @@ export const sendOrderEmail = async (
   try {
     // Send to User
     await transporter.sendMail({
-      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+      from: mail,
       to: userEmail,
       subject,
       html,
@@ -444,7 +462,7 @@ export const sendOrderEmail = async (
     const admin = await adminRepo.findOne({ select: ["notificationMail"] });
 
     await transporter.sendMail({
-      from: `"eSIM Connect System" <${process.env.SMTP_USER}>`,
+      from: userEmail,
       to: admin?.notificationMail || "admin@esimconnect.com",
       subject: `[Admin Copy] ${subject}`,
       html,
@@ -477,9 +495,9 @@ export const sendForgotPasswordOtpEmail = async (to: string, otp: string) => {
             <p style="margin-top:25px;">Thanks,<br><strong>The eSIM Connect Team</strong></p>
             `
     );
-
+    const mail: any = await adminMailNotfication();
     await transporter.sendMail({
-      from: `"eSIM Connect Security" <${process.env.SMTP_USER}>`,
+      from: mail,
       to,
       subject,
       html,

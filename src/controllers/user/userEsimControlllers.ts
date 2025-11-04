@@ -8,7 +8,7 @@ import { AppDataSource } from "../../data-source";
 import { Cart } from "../../entity/Carts.entity";
 import { CartItem } from "../../entity/CartItem.entity";
 import { Refund } from "../../entity/Refund.entity";
-import { sendOrderEmail } from "../../utils/email";
+import { sendAdminOrderNotification, sendOrderEmail } from "../../utils/email";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
 export const postOrder = async (req: any, res: Response) => {
@@ -189,6 +189,8 @@ export const postOrder = async (req: any, res: Response) => {
       },
       (mainOrder?.status === "COMPLETED") ? "COMPLETED" : (mainOrder?.status === "FAILED") ? "FAILED" : "PARTIAL"
     );
+
+    await sendAdminOrderNotification(mainOrder);
 
     // 🔹 Step 6: Dynamic response based on final state
     const responseSummary = {
