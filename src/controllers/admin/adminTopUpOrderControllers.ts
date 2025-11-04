@@ -88,7 +88,7 @@ export const getTopUpOrderById = async (req: Request, res: Response) => {
     }
 
     // 🧠 2️⃣ Find the corresponding EsimTopUp link for this order
-    const esimTopup = await esimTopupRepo.findOne({
+    const esimTopup:any = await esimTopupRepo.findOne({
       where: { order: { id: order.id } },
       relations: [
         "esim",
@@ -123,7 +123,7 @@ export const getTopUpOrderById = async (req: Request, res: Response) => {
       updatedAt: order.updatedAt,
       transaction: order.transaction || null,
       country: order.country || null,
-      email: order.transaction?.user?.email || null,
+      email: order?.email || null,
       esims: [
         {
           id: esim?.id || null,
