@@ -9,6 +9,7 @@ import { User } from "../../entity/User.entity";
 import axios from "axios";
 import { Order, OrderType } from "../../entity/order.entity";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
+import { sendAdminOrderNotification } from "../../utils/email";
 export const postUserTopUpOrder = async (req: any, res: Response) => {
     const { id } = req.user || {};
     const { topupId, transactionId, esimId } = req.body;
@@ -115,6 +116,7 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
             });
             await esimTopUpRepo.save(esimTopUp);
 
+            await sendAdminOrderNotification(order);
             return res.status(200).json({
                 status: true,
                 message: "Top-up successful",
@@ -135,6 +137,7 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
             topup: topUp,
             order,
         });
+        await sendAdminOrderNotification(order);
         await esimTopUpRepo.save(failedTopUp);
 
         return res.status(400).json({

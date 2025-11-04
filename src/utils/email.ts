@@ -122,7 +122,6 @@ export const sendAdminOrderNotification = async (order: any) => {
       <p><b>Customer Name:</b> ${order?.name}<br/>
       <p><b>Customer Name:</b> ${order?.mail}<br/>
       ${order?.phone && `<p><b>Customer Name:</b> ${order?.phone}<br/>`}
-      <p><b>Order ID:</b> ${order?.orderCode}<br/>
       <b>Amount:</b> $${order?.totalAmount}<br/>
       <b>Status:</b> ${order.status}</p>
       <p><a href="${process?.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View in Dashboard</a></p>
