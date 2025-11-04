@@ -603,3 +603,29 @@ export const sendRefundClaimEmail = async (
     console.error("❌ Failed to send refund claim email:", error.message);
   }
 };
+
+// ---------- 1️⃣(b) Order Notification to Admin ----------
+export const sendTopUpUserNotification = async (order: any) => {
+  const html = baseTemplate(
+    "New Order Placed",
+    `
+      <p>A new order has been placed by <strong>${order?.user?.name}</strong>.</p>
+      <p><b>Order ID:</b> ${order?.orderCode}<br/>
+      <p><b>Customer Name:</b> ${order?.name}<br/>
+      <p><b>Customer Name:</b> ${order?.mail}<br/>
+      ${order?.phone && `<p><b>Customer Name:</b> ${order?.phone}<br/>`}
+      <b>Amount:</b> $${order?.totalAmount}<br/>
+      <b>Status:</b> ${order.status}</p>
+      <p><a href="${process?.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View in Dashboard</a></p>
+    `
+  );
+  const mail: any = await adminMailNotfication();
+  await transporter.sendMail({
+    from: mail,
+    to: order?.user?.email,
+    subject: `🧾 New Order - ${order.id}`,
+    html,
+  });
+
+  console.log("✅ Order email sent to admin:", mail);
+};

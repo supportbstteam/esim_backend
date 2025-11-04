@@ -9,7 +9,7 @@ import { User } from "../../entity/User.entity";
 import axios from "axios";
 import { Order, OrderType } from "../../entity/order.entity";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
-import { sendAdminOrderNotification } from "../../utils/email";
+import { sendAdminOrderNotification, sendTopUpUserNotification } from "../../utils/email";
 export const postUserTopUpOrder = async (req: any, res: Response) => {
     const { id } = req.user || {};
     const { topupId, transactionId, esimId } = req.body;
@@ -138,6 +138,7 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
             order,
         });
         await sendAdminOrderNotification(order);
+        await sendTopUpUserNotification(order);
         await esimTopUpRepo.save(failedTopUp);
 
         return res.status(400).json({
