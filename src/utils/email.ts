@@ -465,7 +465,7 @@ export const sendOrderEmail = async (
 
     await transporter.sendMail({
       from: userEmail,
-      to: admin?.notificationMail || "admin@esimconnect.com",
+      to: mail,
       subject: `[Admin Copy] ${subject}`,
       html,
     });
