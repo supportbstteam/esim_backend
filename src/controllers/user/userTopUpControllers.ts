@@ -117,6 +117,7 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
             await esimTopUpRepo.save(esimTopUp);
 
             await sendAdminOrderNotification(order);
+            await sendTopUpUserNotification(order);
             return res.status(200).json({
                 status: true,
                 message: "Top-up successful",

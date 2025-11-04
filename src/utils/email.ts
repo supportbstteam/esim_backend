@@ -117,7 +117,7 @@ export const sendAdminOrderNotification = async (order: any) => {
   const html = baseTemplate(
     "New Order Placed",
     `
-      <p>A new order has been placed by <strong>${order?.user?.name}</strong>.</p>
+      <p>A new order has been placed by <strong>${order?.name}</strong>.</p>
       <p><b>Order ID:</b> ${order?.orderCode}<br/>
       <p><b>Customer Name:</b> ${order?.name}<br/>
       <p><b>Customer Name:</b> ${order?.mail}<br/>
