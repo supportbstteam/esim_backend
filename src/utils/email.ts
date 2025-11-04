@@ -380,7 +380,7 @@ export const sendOrderEmail = async (
   const totalAmount = Number(order?.totalAmount || 0).toFixed(2);
   const activationStatus = order?.activated ? "✅ Active" : "⏳ Pending";
 
-  // ✉️ Dynamic subject line
+  // Dynamic subject
   const subjectMap = {
     COMPLETED: `✅ Order Confirmation - #${orderCode}`,
     FAILED: `❌ Order Failed - #${orderCode}`,
@@ -388,13 +388,13 @@ export const sendOrderEmail = async (
   };
   const subject = subjectMap[status];
 
-  // 🧠 Build eSIM List HTML
+  // eSIM list HTML
   const esimListHTML = order.esims?.length
     ? `
       <ul>
         ${order.esims
-      .map(
-        (e: any) => `
+          .map(
+            (e: any) => `
               <li>
                 <strong>${e.productName || "Unnamed Plan"}</strong><br/>
                 ICCID: ${e.iccid || "N/A"}<br/>
@@ -402,13 +402,13 @@ export const sendOrderEmail = async (
                 Price: ${e.currency || "$"} ${e.price || "0.00"}
               </li><br/>
             `
-      )
-      .join("")}
+          )
+          .join("")}
       </ul>
     `
     : "<p>No eSIM details available for this order.</p>";
 
-  // 💬 Define message blocks for each status
+  // Email content by status
   const contentMap: Record<typeof status, string> = {
     COMPLETED: `
       <p>Hi ${userName || "there"},</p>
@@ -437,40 +437,38 @@ export const sendOrderEmail = async (
     `,
   };
 
-  const mail: any = await adminMailNotfication();
-
-  // 🧱 Wrap in baseTemplate
-  const html = baseTemplate(
-    subject,
-    `
-      ${contentMap[status]}
-      <hr />
-      <p style="font-size: 13px; color: #777;">Order Date: ${new Date().toLocaleString()}</p>
-      <p style="font-size: 13px; color: #777;">eSIM Connect © ${new Date().getFullYear()}</p>
-    `
-  );
-
   try {
-    // Send to User
+    const mail: any = await adminMailNotfication(); // Fetch admin sender address
+
+    // Main email HTML
+    const html = baseTemplate(
+      subject,
+      `
+        ${contentMap[status]}
+        <hr />
+        <p style="font-size: 13px; color: #777;">Order Date: ${new Date().toLocaleString()}</p>
+        <p style="font-size: 13px; color: #777;">eSIM Connect © ${new Date().getFullYear()}</p>
+      `
+    );
+
+    // 1️⃣ Send to user
     await transporter.sendMail({
-      from: mail,
+      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
       to: userEmail,
       subject,
       html,
+      replyTo: mail, // admin receives replies
     });
 
-    // Send Copy to Admin
-    const adminRepo = AppDataSource.getRepository(Admin);
-    const admin = await adminRepo.findOne({ select: ["notificationMail"] });
-
+    // 2️⃣ Send copy to admin
     await transporter.sendMail({
-      from: userEmail,
+      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
       to: mail,
       subject: `[Admin Copy] ${subject}`,
       html,
     });
 
-    console.log(`📩 Order ${status} email sent to ${userEmail} and admin`);
+    console.log(`📩 Order ${status} email sent to ${userEmail} and admin ${mail}`);
   } catch (error: any) {
     console.error("❌ Failed to send order email:", error.message);
   }
