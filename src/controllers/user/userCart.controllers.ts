@@ -151,33 +151,64 @@ export const updateCartItem = async (req: any, res: Response) => {
  * Remove cart item (soft delete)
  */
 export const removeFromCart = async (req: any, res: Response) => {
-  const userId = req.user?.id;
-  const { cartItemId } = req.params;
+    const userId = req.user?.id;
+    const { cartItemId } = req.params;
 
-  try {
-    const cartItemRepo = AppDataSource.getRepository(CartItem);
-    const cartItem = await cartItemRepo.findOne({
-      where: { id: cartItemId },
-      relations: ["cart", "cart.user"],
-    });
+    try {
+        const cartItemRepo = AppDataSource.getRepository(CartItem);
+        const cartRepo = AppDataSource.getRepository(Cart);
 
-    if (!cartItem)
-      return res.status(404).json({ success: false, message: "Cart item not found." });
+        // --- 1️⃣ Find the cart item ---
+        const cartItem = await cartItemRepo.findOne({
+            where: { id: cartItemId },
+            relations: ["cart", "cart.user"],
+        });
 
-    if (cartItem?.cart?.user?.id !== userId)
-      return res.status(403).json({ success: false, message: "Unauthorized." });
+        if (!cartItem)
+            return res
+                .status(404)
+                .json({ success: false, message: "Cart item not found." });
 
-    cartItem.cart = undefined;
-    cartItem.cartId = '';
-    cartItem.isDeleted = true;
+        if (cartItem.cart?.user?.id !== userId)
+            return res
+                .status(403)
+                .json({ success: false, message: "Unauthorized action." });
 
-    await cartItemRepo.save(cartItem);
+        const cart:any = cartItem.cart;
 
-    return res.json({ success: true, message: "Item removed from your cart." });
-  } catch (err) {
-    console.error("Error removing cart item:", err);
-    return res.status(500).json({ success: false, message: "Failed to remove item." });
-  }
+        // --- 2️⃣ Soft delete the item ---
+        cartItem.cart = undefined;
+        cartItem.isDeleted = true;
+        await cartItemRepo.save(cartItem);
+
+        // --- 3️⃣ Check if cart still has active items ---
+        const remainingItems = await cartItemRepo.count({
+            where: {
+                cart: { id: cart?.id },
+                isDeleted: false,
+            },
+        });
+
+        // --- 4️⃣ If no active items left, remove cart ---
+        if (remainingItems === 0) {
+            await cartRepo.remove(cart);
+            console.log(`🗑️ Cart ${cart.id} deleted because it was empty.`);
+        }
+
+        // --- 5️⃣ Response ---
+        return res.json({
+            success: true,
+            message:
+                remainingItems === 0
+                    ? "Item removed. Cart was empty and deleted."
+                    : "Item removed from your cart.",
+        });
+    } catch (err) {
+        console.error("Error removing cart item:", err);
+        return res
+            .status(500)
+            .json({ success: false, message: "Failed to remove item from cart." });
+    }
 };
 
 /**
