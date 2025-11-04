@@ -135,7 +135,7 @@ export const updateCartItem = async (req: any, res: Response) => {
             relations: ["cart", "cart.user"],
         });
         if (!cartItem) return res.status(404).json({ success: false, message: "Cart item not found." });
-        if (cartItem.cart.user && cartItem.cart.user.id !== userId) return res.status(403).json({ success: false, message: "You are not authorized to update this item." });
+        if (cartItem?.cart?.user && cartItem.cart.user.id !== userId) return res.status(403).json({ success: false, message: "You are not authorized to update this item." });
 
         cartItem.quantity = quantity;
         await cartItemRepo.save(cartItem);
@@ -151,27 +151,33 @@ export const updateCartItem = async (req: any, res: Response) => {
  * Remove cart item (soft delete)
  */
 export const removeFromCart = async (req: any, res: Response) => {
-    const userId = req.user?.id;
-    const { cartItemId } = req.params;
+  const userId = req.user?.id;
+  const { cartItemId } = req.params;
 
-    try {
-        const cartItemRepo = AppDataSource.getRepository(CartItem);
-        const cartItem = await cartItemRepo.findOne({
-            where: { id: cartItemId },
-            relations: ["cart", "cart.user"],
-        });
+  try {
+    const cartItemRepo = AppDataSource.getRepository(CartItem);
+    const cartItem = await cartItemRepo.findOne({
+      where: { id: cartItemId },
+      relations: ["cart", "cart.user"],
+    });
 
-        if (!cartItem) return res.status(404).json({ success: false, message: "Cart item not found." });
-        if ((cartItem.cart.user && cartItem.cart.user.id !== userId)) return res.status(403).json({ success: false, message: "You are not authorized to remove this item." });
+    if (!cartItem)
+      return res.status(404).json({ success: false, message: "Cart item not found." });
 
-        cartItem.isDeleted = true;
-        await cartItemRepo.save(cartItem);
+    if (cartItem?.cart?.user?.id !== userId)
+      return res.status(403).json({ success: false, message: "Unauthorized." });
 
-        return res.json({ success: true, message: "Item removed from your cart." });
-    } catch (err) {
-        console.error("Error removing cart item:", err);
-        return res.status(500).json({ success: false, message: "Failed to remove item from cart." });
-    }
+    cartItem.cart = undefined;
+    cartItem.cartId = '';
+    cartItem.isDeleted = true;
+
+    await cartItemRepo.save(cartItem);
+
+    return res.json({ success: true, message: "Item removed from your cart." });
+  } catch (err) {
+    console.error("Error removing cart item:", err);
+    return res.status(500).json({ success: false, message: "Failed to remove item." });
+  }
 };
 
 /**

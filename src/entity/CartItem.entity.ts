@@ -19,12 +19,12 @@ export class CartItem {
     id!: string;
 
     // ---- Cart ----
-    @ManyToOne(() => Cart, (cart) => cart.items, { nullable: false, onDelete: "CASCADE" })
+    @ManyToOne(() => Cart, (cart) => cart.items, { nullable: true, onDelete: "CASCADE" })
     @JoinColumn({ name: "cartId" })
-    cart!: Cart;
+    cart?: Cart;
 
-    @Column({ type: "uuid" })
-    cartId!: string;
+    @Column({ type: "uuid", nullable: true })
+    cartId?: string;
 
     // ---- Item Type ----
     @Column({
