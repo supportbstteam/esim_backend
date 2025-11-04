@@ -186,6 +186,7 @@ export const postOrder = async (req: any, res: Response) => {
         activated: mainOrder.activated,
         esims: createdEsims,
         orderCode: mainOrder?.orderCode,
+        // name:mainOrder?.name
       },
       (mainOrder?.status === "COMPLETED") ? "COMPLETED" : (mainOrder?.status === "FAILED") ? "FAILED" : "PARTIAL"
     );

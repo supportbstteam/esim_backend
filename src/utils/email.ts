@@ -118,9 +118,12 @@ export const sendAdminOrderNotification = async (order: any) => {
     "New Order Placed",
     `
       <p>A new order has been placed by <strong>${order?.user?.name}</strong>.</p>
-      <p><b>Order ID:</b> ${order?.id}<br/>
+      <p><b>Order ID:</b> ${order?.orderCode}<br/>
+      <p><b>Customer Name:</b> ${order?.name}<br/>
+      <p><b>Customer Name:</b> ${order?.mail}<br/>
+      ${order?.phone && `<p><b>Customer Name:</b> ${order?.phone}<br/>`}
+      <p><b>Order ID:</b> ${order?.orderCode}<br/>
       <b>Amount:</b> $${order?.totalAmount}<br/>
-      <b>Data:</b> $${order?.dataAmount}<br/>
       <b>Status:</b> ${order.status}</p>
       <p><a href="${process?.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View in Dashboard</a></p>
     `
@@ -181,7 +184,7 @@ export const sendAdminUserVerifiedNotification = async (adminEmail: string, user
       <p style="margin-top:20px;">– The eSIM Connect System</p>
     `
   );
-const mail: any = await adminMailNotfication();
+  const mail: any = await adminMailNotfication();
   await transporter.sendMail({
     from: mail,
     to: adminEmail,
@@ -393,8 +396,8 @@ export const sendOrderEmail = async (
     ? `
       <ul>
         ${order.esims
-          .map(
-            (e: any) => `
+      .map(
+        (e: any) => `
               <li>
                 <strong>${e.productName || "Unnamed Plan"}</strong><br/>
                 ICCID: ${e.iccid || "N/A"}<br/>
@@ -402,8 +405,8 @@ export const sendOrderEmail = async (
                 Price: ${e.currency || "$"} ${e.price || "0.00"}
               </li><br/>
             `
-          )
-          .join("")}
+      )
+      .join("")}
       </ul>
     `
     : "<p>No eSIM details available for this order.</p>";
