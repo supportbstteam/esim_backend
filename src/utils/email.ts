@@ -87,13 +87,14 @@ export const sendOrderConfirmationEmail = async (userEmail: string, order: any) 
   const html = baseTemplate(
     "Order Confirmation",
     `
-      <p>Hi <strong>${order.user.firstName}</strong>,</p>
+      <p>Hi <strong>${order?.name}</strong>,</p>
       <p>Thank you for your order! Your eSIM order has been successfully placed.</p>
       <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
-        <tr><td><b>Order ID:</b></td><td>${order.id}</td></tr>
-        <tr><td><b>Plan:</b></td><td>${order.planName}</td></tr>
-        <tr><td><b>Amount:</b></td><td>$${order.amount}</td></tr>
-        <tr><td><b>Status:</b></td><td style="text-transform: capitalize;">${order.status}</td></tr>
+        <tr><td><b>Order ID:</b></td><td>${order?.id}</td></tr>
+        <tr><td><b>Plan:</b></td><td>${order?.planName}</td></tr>
+        <tr><td><b>Amount:</b></td><td>$${order?.totalAmount}</td></tr>
+        <tr><td><b>Data:</b></td><td>$${order?.dataAmount}</td></tr>
+        <tr><td><b>Status:</b></td><td style="text-transform: capitalize;">${order?.status}</td></tr>
       </table>
       <p>You will receive a follow-up email once your eSIM is activated.</p>
     `
@@ -116,11 +117,12 @@ export const sendAdminOrderNotification = async (order: any) => {
   const html = baseTemplate(
     "New Order Placed",
     `
-      <p>A new order has been placed by <strong>${order.user.firstName} ${order.user.lastName}</strong>.</p>
-      <p><b>Order ID:</b> ${order.id}<br/>
-      <b>Amount:</b> $${order.amount}<br/>
+      <p>A new order has been placed by <strong>${order?.user?.name}</strong>.</p>
+      <p><b>Order ID:</b> ${order?.id}<br/>
+      <b>Amount:</b> $${order?.totalAmount}<br/>
+      <b>Data:</b> $${order?.dataAmount}<br/>
       <b>Status:</b> ${order.status}</p>
-      <p><a href="${process.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View in Dashboard</a></p>
+      <p><a href="${process?.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View in Dashboard</a></p>
     `
   );
   const mail: any = await adminMailNotfication();
