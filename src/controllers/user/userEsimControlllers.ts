@@ -191,7 +191,7 @@ export const postOrder = async (req: any, res: Response) => {
       (mainOrder?.status === "COMPLETED") ? "COMPLETED" : (mainOrder?.status === "FAILED") ? "FAILED" : "PARTIAL"
     );
 
-    await sendAdminOrderNotification(mainOrder);
+    // await sendAdminOrderNotification(mainOrder);
 
     // 🔹 Step 6: Dynamic response based on final state
     const responseSummary = {
