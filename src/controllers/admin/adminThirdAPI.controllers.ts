@@ -108,7 +108,7 @@ export const postImportThirdPartyPlans = async (req: any, res: Response) => {
 
     const isAdmin = checkAdmin(req, res);
 
-    console.log("------- third party token----", req.thirdPartyToken);
+    // console.log("------- third party token----", req.thirdPartyToken);
     if (!isAdmin)
         return res.status(401).json({
             message: "Unauthorized, please login",

@@ -7,7 +7,9 @@ import adminRouter from "./routes/admin/admin.route";
 import userRouter from "./routes/user/user.route";
 import { auth } from "./middlewares/auth.handler";
 import { AppDataSource } from "./data-source";
-import dbRouter from "./routes/db.route";
+import cron from "node-cron";
+import { postSchedularImportPlans } from "./controllers/admin/adminSchedulerController";
+
 const app = express();
 
 // ======= Third-party middleware =======
@@ -17,58 +19,46 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ======= ⚡ Lazy DB Initialization middleware =======
-app.use(async (req, res, next) => {
-    if (!AppDataSource.isInitialized) {
-        await AppDataSource.initialize();
-        console.log("📦 Data Source initialized");
-    }
-    next();
-});
-
-// (async () => {
-//     await AppDataSource.initialize();
-//     await AppDataSource.dropDatabase();
-//     console.log("✅ Database dropped successfully!");
-//     await AppDataSource.synchronize(); // recreate schema if needed
-//     console.log("✅ Schema recreated!");
-//     await AppDataSource.destroy();
-// })();
 // ======= Routes =======
-app.get("/", (req, res) => {
-    res.send("Hello from Node + TypeORM + MySQL!");
-});
+app.get("/", (req, res) => res.send("Hello from Node + TypeORM + MySQL!"));
+app.get("/api", (req, res) =>
+  res.send("Hello from Node + TypeORM + MySQL! with our Esim products")
+);
 
-
-app.get("/api", (req, res) => {
-    res.send("Hello from Node + TypeORM + MySQL! with our Esim products");
-});
-
-// ✅ Debug route to show all loaded entities
 app.get("/api/entities", (req, res) => {
-    const entities = AppDataSource.entityMetadatas.map((e) => ({
-        name: e.name,
-        tableName: e.tableName,
-        columns: e.columns.map((c) => c.propertyName),
-    }));
-
-    res.json({
-        message: "Loaded entities",
-        count: entities.length,
-        entities,
-    });
+  const entities = AppDataSource.entityMetadatas.map((e) => ({
+    name: e.name,
+    tableName: e.tableName,
+    columns: e.columns.map((c) => c.propertyName),
+  }));
+  res.json({ message: "Loaded entities", count: entities.length, entities });
 });
 
-
-
-// ====== Admin =======
 app.use("/api/admin", auth, adminRouter);
-
-// ====== User =======
 app.use("/api/user", userRouter);
-
-// app.use("/db", dbRouter);
-// ======= Error handler =======
 app.use(errorHandler);
+
+// ======= Initialize DB and then Start Everything =======
+AppDataSource.initialize()
+  .then(() => {
+    console.log("✅ Database connected.");
+
+    // 🕒 Start cron after DB is ready
+    cron.schedule("0 0 * * *", async () => {
+      console.log("🕒 Running scheduler: Importing 3rd-party plans...");
+      try {
+        await postSchedularImportPlans();
+        console.log("✅ Scheduler completed successfully");
+      } catch (err) {
+        console.error("❌ Scheduler failed:", err);
+      }
+    });
+
+    // 🚀 Start the server
+    app.listen(4000, () => console.log("🚀 Server running on port 4000"));
+  })
+  .catch((err) => {
+    console.error("❌ DB initialization failed:", err);
+  });
 
 export default app;
