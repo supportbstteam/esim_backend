@@ -525,6 +525,8 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
 
     }
 
+    console.log("----- simResponse?.data?.data -----",simResponse?.data?.data);
+
     const simData = simResponse?.data?.data || esim;
     if (!simData) {
       return res.status(404).json({

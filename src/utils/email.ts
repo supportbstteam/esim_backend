@@ -579,7 +579,7 @@ export const sendRefundClaimEmail = async (
           ${esimListHTML}
         </table>
 
-        <p><b>Total Amount:</b> $${order.totalAmount?.toFixed(2) || "0.00"}</p>
+        <p><b>Total Amount:</b> $${Number(order.totalAmount || 0).toFixed(2)}</p>
         <p><b>Refund Reason:</b> ${claimReason}</p>
 
         <p style="margin-top:15px;">Please review this refund claim and process accordingly.</p>
@@ -587,13 +587,10 @@ export const sendRefundClaimEmail = async (
         <p style="margin-top:20px;">– eSIM Connect System</p>
       `
     );
-
-    const adminRepo = AppDataSource.getRepository(Admin);
-    const admin = await adminRepo.findOne({ select: ["notificationMail"] });
-
+    const mail: any = await adminMailNotfication();
     await transporter.sendMail({
-      from: email || user?.email,
-      to: admin?.notificationMail || "admin@esimconnect.com",
+      from: mail,
+      to: mail || "admin@esimconnect.com",
       subject: `💰 Refund Claim - Order #${order.orderCode}`,
       html,
     });
@@ -615,7 +612,7 @@ export const sendTopUpUserNotification = async (order: any) => {
       <p><b>Customer Name:</b> ${order?.mail}<br/>
       ${order?.phone && `<p><b>Customer Name:</b> ${order?.phone}<br/>`}
       <b>Amount:</b> $${order?.totalAmount}<br/>
-      <b>Status:</b> ${order.status}</p>
+      <b>Status:</b> ${order?.status || "In Active"}</p>
       <p><a href="${process?.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View in Dashboard</a></p>
     `
   );

@@ -99,6 +99,8 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
             }
         );
 
+        console.log("----- response.data top up ----",response.data);
+
         // ✅ Success case
         if (response.data?.status === "success") {
             transaction.status = "SUCCESS";
