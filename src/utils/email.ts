@@ -613,7 +613,7 @@ export const sendTopUpUserNotification = async (order: any) => {
       ${order?.phone && `<p><b>Customer Name:</b> ${order?.phone}<br/>`}
       <b>Amount:</b> $${order?.totalAmount}<br/>
       <b>Status:</b> ${order?.status || "In Active"}</p>
-      <p><a href="${process?.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View in Dashboard</a></p>
+      <p><a href="${`${process?.env.ADMIN_URL}/admin/orders/plans`|| "#"}" style="color: #0070f3;">View in Dashboard</a></p>
     `
   );
   const mail: any = await adminMailNotfication();
