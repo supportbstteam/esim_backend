@@ -174,7 +174,7 @@ export const removeFromCart = async (req: any, res: Response) => {
                 .status(403)
                 .json({ success: false, message: "Unauthorized action." });
 
-        const cart:any = cartItem.cart;
+        const cart: any = cartItem.cart;
 
         // --- 2️⃣ Soft delete the item ---
         cartItem.cart = undefined;
@@ -224,6 +224,7 @@ export const getUserCart = async (req: any, res: Response) => {
     try {
         const cartRepo = AppDataSource.getRepository(Cart);
 
+        // ✅ Find the latest active cart
         const latestCart = await cartRepo.findOne({
             where: {
                 user: { id },
@@ -239,6 +240,20 @@ export const getUserCart = async (req: any, res: Response) => {
             return res.status(404).json({
                 success: false,
                 message: "No active cart found",
+            });
+        }
+
+        // ✅ Filter out deleted items
+        latestCart.items = latestCart.items.filter(
+            (item) => item && item.isDeleted === false
+        );
+
+        // If all items were deleted, mark cart as empty
+        if (latestCart.items.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Cart is empty (all items deleted)",
+                cart: { ...latestCart, items: [] },
             });
         }
 
