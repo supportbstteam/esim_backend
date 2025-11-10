@@ -189,7 +189,7 @@ export const postUserLogin = async (req: Request, res: Response) => {
 // GET USER DETAILS (requires JWT)
 // -----------------------------
 export const getUserDetails = async (req: any, res: Response) => {
-    console.log("---- fetch user details ------");
+    // console.log("---- fetch user details ------");
     try {
         const userRepo = AppDataSource.getRepository(User);
 

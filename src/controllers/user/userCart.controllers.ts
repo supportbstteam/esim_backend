@@ -39,25 +39,18 @@ export const addToCart = async (req: any, res: Response) => {
             relations: ["items", "items.plan", "items.plan.country"],
         });
 
+
+        
         if (!cart || cart.isDeleted || cart.isError || cart.isCheckedOut) {
             cart = cartRepo.create({ user, items: [], isError: false, isCheckedOut: false, isDeleted: false });
             await cartRepo.save(cart);
         }
-
-        // Check for last successful transaction to avoid conflicts
-        const lastTransaction = await transactionRepo.findOne({
-            where: { user: { id: userId }, status: "SUCCESS" },
-            relations: ["cart"],
-            order: { createdAt: "DESC" },
-        });
-
-        if (lastTransaction?.cart?.isCheckedOut) {
-            cart = cartRepo.create({ user, items: [], isError: false });
-            await cartRepo.save(cart);
-        }
-
+        
+        console.log("----- new cart required -----",cart);
         // Add or update cart items
         for (const p of plans) {
+
+
             const plan = await planRepo.findOneBy({ id: p.planId, isDeleted: false, isActive: true });
             if (!plan) return res.status(404).json({ success: false, message: `Plan ${p.planId} not found.` });
 
