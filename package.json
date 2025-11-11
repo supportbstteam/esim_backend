@@ -6,7 +6,8 @@
     "dev": "nodemon --watch src -e ts --exec ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "typeorm": "typeorm-ts-node-commonjs"
+    "typeorm": "typeorm-ts-node-commonjs",
+    "drop-and-rebuild": "ts-node src/scripts/dropAndRebuild.ts"
   },
   "keywords": [],
   "author": "",

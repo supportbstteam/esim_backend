@@ -40,13 +40,13 @@ export const addToCart = async (req: any, res: Response) => {
         });
 
 
-        
+
         if (!cart || cart.isDeleted || cart.isError || cart.isCheckedOut) {
             cart = cartRepo.create({ user, items: [], isError: false, isCheckedOut: false, isDeleted: false });
             await cartRepo.save(cart);
         }
-        
-        console.log("----- new cart required -----",cart);
+
+        console.log("----- new cart required -----", cart);
         // Add or update cart items
         for (const p of plans) {
 
@@ -151,12 +151,13 @@ export const removeFromCart = async (req: any, res: Response) => {
         const cartItemRepo = AppDataSource.getRepository(CartItem);
         const cartRepo = AppDataSource.getRepository(Cart);
 
-        // --- 1️⃣ Find the cart item ---
+        // --- 1️⃣ Find the cart item with its cart and user ---
         const cartItem = await cartItemRepo.findOne({
             where: { id: cartItemId },
             relations: ["cart", "cart.user"],
         });
 
+        // --- 2️⃣ Validate existence and ownership ---
         if (!cartItem)
             return res
                 .status(404)
@@ -167,42 +168,39 @@ export const removeFromCart = async (req: any, res: Response) => {
                 .status(403)
                 .json({ success: false, message: "Unauthorized action." });
 
-        const cart: any = cartItem.cart;
+        const cart = cartItem?.cart;
 
-        // --- 2️⃣ Soft delete the item ---
-        cartItem.cart = undefined;
-        cartItem.isDeleted = true;
-        await cartItemRepo.save(cartItem);
+        // --- 3️⃣ Remove the cart item ---
+        await cartItemRepo.remove(cartItem);
 
-        // --- 3️⃣ Check if cart still has active items ---
+        // --- 4️⃣ Check if the cart is now empty ---
         const remainingItems = await cartItemRepo.count({
-            where: {
-                cart: { id: cart?.id },
-                isDeleted: false,
-            },
+            where: { cart: { id: cart?.id } },
         });
 
-        // --- 4️⃣ If no active items left, remove cart ---
-        if (remainingItems === 0) {
+        // --- 5️⃣ If no items left, delete the cart itself ---
+        if (remainingItems === 0 && cart) {
             await cartRepo.remove(cart);
-            console.log(`🗑️ Cart ${cart.id} deleted because it was empty.`);
         }
 
-        // --- 5️⃣ Response ---
+        // --- 6️⃣ Return success response ---
         return res.json({
             success: true,
             message:
                 remainingItems === 0
-                    ? "Item removed. Cart was empty and deleted."
-                    : "Item removed from your cart.",
+                    ? "Item removed. Cart is now empty and has been deleted."
+                    : "Item successfully removed from your cart.",
         });
     } catch (err) {
         console.error("Error removing cart item:", err);
-        return res
-            .status(500)
-            .json({ success: false, message: "Failed to remove item from cart." });
+        return res.status(500).json({
+            success: false,
+            message: "Failed to remove item from cart.",
+        });
     }
 };
+
+
 
 /**
  * Get user's active cart

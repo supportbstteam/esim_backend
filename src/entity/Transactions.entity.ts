@@ -25,24 +25,25 @@ export class Transaction {
     @PrimaryGeneratedColumn("uuid")
     id!: string;
 
-    @ManyToOne(() => User, { nullable: true, onDelete: "SET NULL" })
+    // When a user is deleted, delete all their transactions
+    @ManyToOne(() => User, { nullable: true, onDelete: "CASCADE" })
     @JoinColumn({ name: "userId" })
     user!: User | null;
 
-
-    @ManyToOne(() => Cart, { nullable: true })
+    // When a cart is deleted, delete all linked transactions
+    @ManyToOne(() => Cart, { nullable: true, onDelete: "CASCADE" })
     @JoinColumn({ name: "cartId" })
     cart?: Cart;
 
-    @ManyToOne(() => TopUpPlan, { nullable: true })
+    // When a top-up plan is deleted, set null (optional)
+    @ManyToOne(() => TopUpPlan, { nullable: true, onDelete: "SET NULL" })
     @JoinColumn({ name: "topupPlanId" })
     topupPlan?: TopUpPlan;
 
-
-    @ManyToOne(() => Esim, { onDelete: "CASCADE", nullable: true })
+    // When an eSIM is deleted, delete all related transactions
+    @ManyToOne(() => Esim, { nullable: true, onDelete: "CASCADE" })
     @JoinColumn({ name: "esimId" })
     esim!: Esim;
-
 
     @Column({ type: "varchar", length: 100 })
     paymentGateway!: string;

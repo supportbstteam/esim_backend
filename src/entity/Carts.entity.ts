@@ -15,7 +15,12 @@ export class Cart {
     @Column({ type: "boolean", default: false })
     isDeleted!: boolean; // soft delete
 
-    @OneToMany(() => CartItem, item => item.cart, { cascade: true })
+    // When a cart is deleted, also delete its items (DB-level cascade)
+    @OneToMany(() => CartItem, (item) => item.cart, {
+        cascade: true, // ORM-level cascade
+        onDelete: "CASCADE", // DB-level cascade
+        orphanedRowAction: "delete", // ensures orphan cleanup
+    })
     items!: CartItem[];
 
     @Column({ type: "decimal", default: 0 })
