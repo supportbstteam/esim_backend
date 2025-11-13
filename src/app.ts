@@ -2,6 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
+import bodyParser from "body-parser"; // 👈 add this
 import { errorHandler } from "./middlewares/error.handler";
 import adminRouter from "./routes/admin/admin.route";
 import userRouter from "./routes/user/user.route";
@@ -10,12 +11,24 @@ import { AppDataSource } from "./data-source";
 import cron from "node-cron";
 import { postSchedularImportPlans } from "./controllers/admin/adminSchedulerController";
 
+// 👇 import your webhook controller
+import { handleMobileStripeWebhook } from "./controllers/stripe/MobileCartStripe.controllers";
+
 const app = express();
 
 // ======= Third-party middleware =======
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(cors());
+
+// ⚠️ IMPORTANT: Register webhook BEFORE express.json() to keep raw body
+app.post(
+  "/api/user/transactions/mobile/stripe/webhook",
+  bodyParser.raw({ type: "application/json" }),
+  handleMobileStripeWebhook
+);
+
+// ✅ Apply JSON/body parsers for all OTHER routes (after webhook)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -68,3 +81,6 @@ AppDataSource.initialize()
   });
 
 export default app;
+
+
+// stripe listen --forward-to localhost:4000/api/user/transactions/mobile/stripe/webhook

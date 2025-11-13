@@ -230,7 +230,6 @@ export const postOrder = async (req: any, res: Response) => {
 };
 
 
-
 export const getOrderListByUser = async (req: any, res: Response) => {
   const { id, role } = req.user;
   if (!id || role !== "user") return res.status(401).json({ message: "Unauthorized", status: "error" });
@@ -525,7 +524,7 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
 
     }
 
-    console.log("----- simResponse?.data?.data -----",simResponse?.data?.data);
+    console.log("----- simResponse?.data?.data -----", simResponse?.data?.data);
 
     const simData = simResponse?.data?.data || esim;
     if (!simData) {
@@ -826,3 +825,28 @@ export const postUserClaimRefund = async (req: any, res: Response) => {
     });
   }
 };
+
+// GET /user/orders/status/:transactionId
+export const getOrderStatus = async (req: any, res: Response) => {
+  const { transactionId } = req.params;
+
+  console.log("----- transaction id ----",transactionId);
+  const orderRepo = AppDataSource.getRepository(Order);
+
+  const order = await orderRepo.findOne({
+    where: { transaction: { id: transactionId } },
+    relations: ["transaction"],
+  });
+
+  if (!order) {
+    return res.status(404).json({ message: "Order not found" });
+  }
+
+  res.json({
+    status: order.status,
+    orderCode: order.orderCode,
+    orderId: order.id,
+    activated: order.activated,
+  });
+};
+

@@ -1,4 +1,4 @@
-import { Router } from "express";
+import express, { Router } from "express";
 import countryRoute from "./userCountry.route"
 import topUpPlanRoute from "./userTopupPlan.route"
 import esimRoute from "./userEsim.route"
@@ -10,15 +10,26 @@ import { auth } from "../../middlewares/auth.handler";
 import queryRoute from "./userQuery.routes"
 import { deleteAccount, getUserDetails, postCreateUser, postForgotPassword, postResetPassword, postUserLogin, postVerifyForgotPasswordOtp, postVerifyOtp, updateProfile } from "../../controllers/user/userAuth.controllers";
 import { getSocials } from "../../controllers/Social.Media.controllers";
-import { getOrderDetailsByUser, getOrderListByUser, getUserSimSummary, postOrder, postUserClaimRefund } from "../../controllers/user/userEsimControlllers";
+import { getOrderDetailsByUser, getOrderListByUser, getOrderStatus, getUserSimSummary, postOrder, postUserClaimRefund } from "../../controllers/user/userEsimControlllers";
 import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handler";
 import userCartRoute from "./userCart.route"
 import userTransactionRoute from "./userTransaction.route"
 import esimUsage from "./userESimUsage.route"
 import { getAllTestimonials } from "../../controllers/admin/adminTestimonials.controllers";
 import { claimRefund } from "../../controllers/refundControllers";
+import { handleMobileStripeWebhook, initiateMobileTransaction } from "../../controllers/stripe/MobileCartStripe.controllers";
 
 const router = Router();
+
+
+// ✅ JSON parser for all other routes
+router.use((req, res, next) => {
+    if (req.originalUrl.startsWith("/api/user/transactions/mobile/stripe/webhook")) {
+        next(); // skip json parsing for this route
+    } else {
+        express.json()(req, res, next);
+    }
+});
 
 // Public
 router.post("/verify-otp", postCreateUser);
@@ -48,6 +59,14 @@ router.get("/sim/summary", auth, getUserSimSummary);
 router.use("/quick-links", userQuickies);
 
 // ---- quickies -----
+// ✅ Mobile routes
+router.post("/transactions/mobile/stripe/initiate", auth, initiateMobileTransaction);
+router.post(
+    "/transactions/mobile/stripe/webhook",
+    express.raw({ type: "application/json" }),
+    handleMobileStripeWebhook
+);
+// router.post("/transactions/orders/status/:transactionId", auth, initiateMobileTransaction);
 router.use("/transactions", auth, userTransactionRoute);
 
 // ---- support ----
@@ -63,6 +82,7 @@ router.get("/testimonials", getAllTestimonials);
 
 
 // -------- order ------------
+router.get("/orders/status/:transactionId", auth, getOrderStatus);
 router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
 // router.post("/order", auth, generateFakeOrder);
 router.get("/order-list", auth, getOrderListByUser);

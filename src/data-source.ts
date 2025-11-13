@@ -32,8 +32,8 @@ export const AppDataSource = new DataSource({
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
     synchronize: false,
-    dropSchema: false,
     logging: false,
+    dropSchema: false,
     extra: {
         connectionLimit: Number(process.env.DB_CONNECTION_LIMIT) || 3,
         connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT) || 15000,

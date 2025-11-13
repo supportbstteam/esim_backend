@@ -60,6 +60,9 @@ export class Transaction {
     @Column({ type: "text", nullable: true })
     response?: string;
 
+    @Column({ type: "varchar", length: 20, default: "WEB", nullable:true })
+    source !: "WEB" | "MOBILE";
+
     @OneToMany(() => Charges, (charge) => charge.transaction, { cascade: true })
     charges?: Charges[];
 
