@@ -111,6 +111,8 @@ export const getFeaturePlans = async (req: Request, res: Response) => {
       country: {
         id: plan.country.id,
         name: plan.country.name,
+        iso2: plan?.country?.isoCode,
+        ios3: plan?.country?.iso3Code,
       },
       createdAt: plan.createdAt,
       updatedAt: plan.updatedAt,
