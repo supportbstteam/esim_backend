@@ -13,19 +13,32 @@ import { postSchedularImportPlans } from "./controllers/admin/adminSchedulerCont
 
 // 👇 import your webhook controller
 import { handleMobileStripeWebhook } from "./controllers/stripe/MobileCartStripe.controllers";
+import { handleMobileTopUpStripeWebhook } from "./controllers/stripe/MobileTopUpStripe.controllers";
 
 const app = express();
 
 // ======= Third-party middleware =======
 app.use(morgan("dev"));
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",               // allow all mobile/web origins
+    methods: "GET,POST,PUT,DELETE,OPTIONS",
+    allowedHeaders: "Content-Type, Authorization, Stripe-Signature",
+  })
+);
 
 // ⚠️ IMPORTANT: Register webhook BEFORE express.json() to keep raw body
 app.post(
   "/api/user/transactions/mobile/stripe/webhook",
   bodyParser.raw({ type: "application/json" }),
   handleMobileStripeWebhook
+);
+
+app.post(
+  "/api/user/transactions/mobile/top-up/stripe/webhook",
+  bodyParser.raw({ type: "application/json" }),
+  handleMobileTopUpStripeWebhook
 );
 
 // ✅ Apply JSON/body parsers for all OTHER routes (after webhook)

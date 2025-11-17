@@ -18,6 +18,7 @@ import esimUsage from "./userESimUsage.route"
 import { getAllTestimonials } from "../../controllers/admin/adminTestimonials.controllers";
 import { claimRefund } from "../../controllers/refundControllers";
 import { handleMobileStripeWebhook, initiateMobileTransaction } from "../../controllers/stripe/MobileCartStripe.controllers";
+import { getTopUpStatus, handleMobileTopUpStripeWebhook, initiateMobileTopUpTransaction } from "../../controllers/stripe/MobileTopUpStripe.controllers";
 
 const router = Router();
 
@@ -46,7 +47,13 @@ router.post("/auth/temp-reset-password", postResetPassword);
 
 router.use("/country", countryRoute);
 router.use("/plans", planRoute);
+
+// top up mobile + route (web)
+router.post("/transactions/mobile/top-up/stripe/initiate", auth, initiateMobileTopUpTransaction);
+router.get("/top-up/status/:transactionId", auth, getTopUpStatus);
 router.use("/top-up", auth, topUpPlanRoute);
+
+
 router.use("/e-sim", auth, esimRoute);
 // router.use("/auth", userAuthRoute);
 
@@ -61,11 +68,7 @@ router.use("/quick-links", userQuickies);
 // ---- quickies -----
 // ✅ Mobile routes
 router.post("/transactions/mobile/stripe/initiate", auth, initiateMobileTransaction);
-router.post(
-    "/transactions/mobile/stripe/webhook",
-    express.raw({ type: "application/json" }),
-    handleMobileStripeWebhook
-);
+
 // router.post("/transactions/orders/status/:transactionId", auth, initiateMobileTransaction);
 router.use("/transactions", auth, userTransactionRoute);
 

@@ -830,7 +830,7 @@ export const postUserClaimRefund = async (req: any, res: Response) => {
 export const getOrderStatus = async (req: any, res: Response) => {
   const { transactionId } = req.params;
 
-  console.log("----- transaction id ----",transactionId);
+  // console.log("----- transaction id ----",transactionId);
   const orderRepo = AppDataSource.getRepository(Order);
 
   const order = await orderRepo.findOne({
