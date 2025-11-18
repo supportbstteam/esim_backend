@@ -14,6 +14,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 });
 
 export const initiateMobileTopUpTransaction = async (req: any, res: Response) => {
+
+    console.log("-=-=--=-=-=-=-= in the initiate mobile top up transaction -=--=-=--=-=-=-=-=-",req.body)
     const userId = req.user?.id;
     const { topupId, esimId } = req.body;
 
@@ -240,4 +242,78 @@ export const getTopUpStatus = async (req: any, res: Response) => {
         dataAdded: transaction.topupPlan?.dataLimit || 0,
         validityAdded: transaction.topupPlan?.validityDays || 0,
     });
+};
+
+export const initiateCODTopUpTransaction = async (req: any, res: Response) => {
+    const userId = req.user?.id;
+    const { topupId, esimId } = req.body;
+
+    if (!userId || !topupId || !esimId) {
+        return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    try {
+        const userRepo = AppDataSource.getRepository(User);
+        const esimRepo = AppDataSource.getRepository(Esim);
+        const topUpRepo = AppDataSource.getRepository(TopUpPlan);
+        const transactionRepo = AppDataSource.getRepository(Transaction);
+        const orderRepo = AppDataSource.getRepository(Order);
+
+        const user = await userRepo.findOne({ where: { id: userId } });
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const esim = await esimRepo.findOne({
+            where: { id: esimId, user: { id: userId } },
+            relations: ["country"],
+        });
+        if (!esim) return res.status(404).json({ message: "eSIM not found" });
+
+        const topUp = await topUpRepo.findOne({
+            where: { id: topupId, isActive: true, isDeleted: false },
+            relations: ["country"],
+        });
+        if (!topUp) return res.status(404).json({ message: "Top-up plan not found" });
+
+        const amount = Number(topUp.price || 0);
+
+        // 1️⃣ CREATE TRANSACTION (PENDING COD)
+        const transaction = transactionRepo.create({
+            user,
+            topupPlan: topUp,
+            esim,
+            paymentGateway: "COD",
+            amount,
+            status: TransactionStatus.PENDING,
+            source: "MOBILE",
+        });
+
+        await transactionRepo.save(transaction);
+
+        // 2️⃣ CREATE ORDER (NOT COMPLETED)
+        const order = orderRepo.create({
+            user,
+            transaction,
+            country: esim.country,
+            totalAmount: amount,
+            status: "PENDING",
+            email: user.email,
+            name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+            phone: user.phone,
+            activated: false,
+            type: OrderType.TOP_UP,
+        });
+
+        await orderRepo.save(order);
+
+        return res.status(201).json({
+            message: "COD top-up transaction created",
+            transactionId: transaction.id,
+            orderId: order.id,
+            payableAmount: amount,
+        });
+
+    } catch (err: any) {
+        console.error("❌ initiateCODTopUpTransaction error:", err);
+        return res.status(500).json({ message: "Internal server error", error: err.message });
+    }
 };

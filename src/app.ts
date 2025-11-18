@@ -14,6 +14,7 @@ import { postSchedularImportPlans } from "./controllers/admin/adminSchedulerCont
 // 👇 import your webhook controller
 import { handleMobileStripeWebhook } from "./controllers/stripe/MobileCartStripe.controllers";
 import { handleMobileTopUpStripeWebhook } from "./controllers/stripe/MobileTopUpStripe.controllers";
+import { handleStripeWebhook } from "./controllers/stripe/CartStrip.controller";
 
 const app = express();
 
@@ -29,6 +30,12 @@ app.use(
 );
 
 // ⚠️ IMPORTANT: Register webhook BEFORE express.json() to keep raw body
+app.post(
+  "/api/user/transactions/stripe/webhook",
+  bodyParser.raw({ type: "application/json" }),
+  handleStripeWebhook
+);
+
 app.post(
   "/api/user/transactions/mobile/stripe/webhook",
   bodyParser.raw({ type: "application/json" }),
