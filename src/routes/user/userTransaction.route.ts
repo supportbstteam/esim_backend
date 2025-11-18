@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post("/stripe/initiate", initiateTransaction);
 router.post("/stripe/webhook", handleStripeWebhook);
-router.post("/cod/initiate", handleCODTransaction);
+router.post("/cod", handleCODTransaction);
 router.get("/", getUserTransactions);
 router.post("/topup/initiate", initiateTopUpTransaction);
 

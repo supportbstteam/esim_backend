@@ -5,7 +5,6 @@ import esimRoute from "./userEsim.route"
 import planRoute from "./userPlans.route"
 import useContactRoute from "./userContact.route";
 import userQuickies from "./userQuickies.route";
-import userSupport from "./userSupport.route";
 import { auth } from "../../middlewares/auth.handler";
 import queryRoute from "./userQuery.routes"
 import { deleteAccount, getUserDetails, postCreateUser, postForgotPassword, postResetPassword, postUserLogin, postVerifyForgotPasswordOtp, postVerifyOtp, updateProfile } from "../../controllers/user/userAuth.controllers";
@@ -17,8 +16,8 @@ import userTransactionRoute from "./userTransaction.route"
 import esimUsage from "./userESimUsage.route"
 import { getAllTestimonials } from "../../controllers/admin/adminTestimonials.controllers";
 import { claimRefund } from "../../controllers/refundControllers";
-import { handleMobileStripeWebhook, initiateMobileTransaction } from "../../controllers/stripe/MobileCartStripe.controllers";
-import { getTopUpStatus, handleMobileTopUpStripeWebhook, initiateMobileTopUpTransaction } from "../../controllers/stripe/MobileTopUpStripe.controllers";
+import { initiateMobileTransaction } from "../../controllers/stripe/MobileCartStripe.controllers";
+import { getTopUpStatus, initiateMobileTopUpTransaction } from "../../controllers/stripe/MobileTopUpStripe.controllers";
 
 const router = Router();
 
@@ -71,9 +70,6 @@ router.post("/transactions/mobile/stripe/initiate", auth, initiateMobileTransact
 
 // router.post("/transactions/orders/status/:transactionId", auth, initiateMobileTransaction);
 router.use("/transactions", auth, userTransactionRoute);
-
-// ---- support ----
-router.use("/support", userSupport);
 
 // ---- query ------
 router.use("/query", queryRoute);
