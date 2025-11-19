@@ -345,12 +345,11 @@ export const initiateTopUpTransaction = async (req: any, res: Response) => {
             topupPlan,
             paymentGateway,
             amount: topupPlan.price || 0,
+            transactionId: uuid(),
             status:
                 paymentGateway === "cod"
                     ? TransactionStatus.SUCCESS
                     : TransactionStatus.PENDING,
-            transactionId:
-                paymentGateway === "cod" ? `cod_${Date.now()}` : "",
         });
 
         await transactionRepo.save(transaction);

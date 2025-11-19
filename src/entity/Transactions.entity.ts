@@ -48,7 +48,7 @@ export class Transaction {
     @Column({ type: "varchar", length: 100 })
     paymentGateway!: string;
 
-    @Column({ type: "varchar", length: 100, unique: true })
+    @Column({ type: "varchar", length: 100, unique: true, nullable:true })
     transactionId!: string;
 
     @Column({ type: "decimal", precision: 10, scale: 2 })
