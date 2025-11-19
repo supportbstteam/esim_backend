@@ -6,7 +6,7 @@ import { initiateCODTopUpTransaction } from '../../controllers/stripe/MobileTopU
 const router = express.Router();
 
 router.get("/", getUserTopUpPlans)
-router.post("/cod", initiateCODTopUpTransaction)
+router.post("/cod", thirdPartyAuthMiddleware, initiateCODTopUpTransaction)
 router.post("/purchase", thirdPartyAuthMiddleware, postUserTopUpOrder);
 router.get("/order/", getUserTopUpOrderList);
 

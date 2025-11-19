@@ -6,7 +6,11 @@ import { TopUpPlan } from '../../entity/Topup.entity';
 import { Transaction, TransactionStatus } from '../../entity/Transactions.entity';
 import Stripe from "stripe";
 import { EsimTopUp } from '../../entity/EsimTopUp.entity';
-import { Order, OrderType } from '../../entity/order.entity';
+import { Order, ORDER_STATUS, OrderType } from '../../entity/order.entity';
+import { v4 as uuid } from "uuid";
+import { sendAdminOrderNotification, sendTopUpUserNotification } from '../../utils/email';
+import axios from 'axios';
+const FormData = require("form-data");
 
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
@@ -15,7 +19,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 
 export const initiateMobileTopUpTransaction = async (req: any, res: Response) => {
 
-    console.log("-=-=--=-=-=-=-= in the initiate mobile top up transaction -=--=-=--=-=-=-=-=-",req.body)
+    console.log("-=-=--=-=-=-=-= in the initiate mobile top up transaction -=--=-=--=-=-=-=-=-", req.body)
     const userId = req.user?.id;
     const { topupId, esimId } = req.body;
 
@@ -245,57 +249,82 @@ export const getTopUpStatus = async (req: any, res: Response) => {
 };
 
 export const initiateCODTopUpTransaction = async (req: any, res: Response) => {
+    console.log("➡️ [COD-TOPUP] Request received:", req.body);
+
     const userId = req.user?.id;
     const { topupId, esimId } = req.body;
 
+    console.log("🔍 User ID:", userId);
+    console.log("🔍 TopUp ID:", topupId);
+    console.log("🔍 eSIM ID:", esimId);
+
     if (!userId || !topupId || !esimId) {
-        return res.status(400).json({ message: "Missing required fields" });
+        console.log("❌ Missing fields");
+        return res.status(400).json({ message: "topupId and esimId are required" });
     }
 
     try {
+        // Repos
         const userRepo = AppDataSource.getRepository(User);
         const esimRepo = AppDataSource.getRepository(Esim);
         const topUpRepo = AppDataSource.getRepository(TopUpPlan);
         const transactionRepo = AppDataSource.getRepository(Transaction);
         const orderRepo = AppDataSource.getRepository(Order);
+        const esimTopUpRepo = AppDataSource.getRepository(EsimTopUp);
 
+        // 1️⃣ Validate user
+        console.log("📦 Fetching user...");
         const user = await userRepo.findOne({ where: { id: userId } });
         if (!user) return res.status(404).json({ message: "User not found" });
 
+        // 2️⃣ Validate eSIM
+        console.log("📦 Fetching eSIM...");
         const esim = await esimRepo.findOne({
             where: { id: esimId, user: { id: userId } },
-            relations: ["country"],
+            relations: ["country", "plans"],
         });
         if (!esim) return res.status(404).json({ message: "eSIM not found" });
 
+        if (!esim.plans?.length) {
+            return res.status(400).json({ message: "eSIM has no base plan to top-up" });
+        }
+
+        const basePlanId = esim.plans[0].id;
+
+        // 3️⃣ Validate top-up plan
+        console.log("📦 Fetching TopUp plan...");
         const topUp = await topUpRepo.findOne({
-            where: { id: topupId, isActive: true, isDeleted: false },
-            relations: ["country"],
+            where: { id: topupId, isActive: true, isDeleted: false }
         });
         if (!topUp) return res.status(404).json({ message: "Top-up plan not found" });
 
         const amount = Number(topUp.price || 0);
+        console.log("💰 Amount:", amount);
 
-        // 1️⃣ CREATE TRANSACTION (PENDING COD)
+        // 4️⃣ Create COD transaction
+        console.log("🧾 Creating COD transaction...");
         const transaction = transactionRepo.create({
             user,
-            topupPlan: topUp,
             esim,
+            topupPlan: topUp,
             paymentGateway: "COD",
+            transactionId: uuid(),
             amount,
-            status: TransactionStatus.PENDING,
+            status: TransactionStatus.SUCCESS, // COD auto-success
             source: "MOBILE",
         });
 
         await transactionRepo.save(transaction);
+        console.log("✅ Transaction created:", transaction.id);
 
-        // 2️⃣ CREATE ORDER (NOT COMPLETED)
+        // 5️⃣ Create order
+        console.log("🧾 Creating order...");
         const order = orderRepo.create({
             user,
             transaction,
             country: esim.country,
             totalAmount: amount,
-            status: "PENDING",
+            status: ORDER_STATUS.PROCESSING,
             email: user.email,
             name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
             phone: user.phone,
@@ -304,16 +333,94 @@ export const initiateCODTopUpTransaction = async (req: any, res: Response) => {
         });
 
         await orderRepo.save(order);
+        console.log("✅ Order created:", order.id);
 
-        return res.status(201).json({
-            message: "COD top-up transaction created",
-            transactionId: transaction.id,
-            orderId: order.id,
-            payableAmount: amount,
+        // 6️⃣ Send Top-Up request to API
+        console.log("📡 Calling TopUp API...");
+
+        const formdata = new FormData();
+        formdata.append("product_plan_id", String(topUp.topupId || ""));
+        formdata.append("product_id", String(basePlanId || ""));
+        formdata.append("iccid", String(esim.iccid || ""));
+
+        const headers = {
+            Authorization: `Bearer ${req.thirdPartyToken}`,
+            ...formdata.getHeaders(), // <-- FIXED TS ERROR
+        };
+
+
+        const response = await axios.post(
+            `${process.env.TURISM_URL}/v2/sims/${esim.iccid}/topup`,
+            formdata,
+            { headers }
+        );
+
+        console.log("📡 TopUp API Response:", response.data);
+
+        // 7️⃣ Success case
+        if (response.data?.status === "success") {
+            console.log("✅ TopUp success — updating DB");
+
+            transaction.status = "SUCCESS";
+            await transactionRepo.save(transaction);
+
+            order.status = ORDER_STATUS.COMPLETED;
+            order.activated = true;
+            await orderRepo.save(order);
+
+            const topUpEntry = esimTopUpRepo.create({
+                esim,
+                topup: topUp,
+                order,
+            });
+
+            await esimTopUpRepo.save(topUpEntry);
+
+            await sendAdminOrderNotification(order);
+            await sendTopUpUserNotification(order);
+
+            return res.status(200).json({
+                status: true,
+                message: "Top-up successful",
+                transaction,
+                order,
+                providerResponse: response.data,
+            });
+        }
+
+        // 8️⃣ Failure case
+        console.log("❌ TopUp failed — rolling back");
+
+        transaction.status = "FAILED";
+        await transactionRepo.save(transaction);
+
+        order.status = ORDER_STATUS.FAILED;
+        order.errorMessage = response.data?.message || "Top-up failed";
+        await orderRepo.save(order);
+
+        const failedEntry = esimTopUpRepo.create({
+            esim,
+            topup: topUp,
+            order,
+        });
+        await esimTopUpRepo.save(failedEntry);
+
+        await sendAdminOrderNotification(order);
+        await sendTopUpUserNotification(order);
+
+        return res.status(400).json({
+            status: false,
+            message: "Top-up failed",
+            providerResponse: response.data,
         });
 
     } catch (err: any) {
-        console.error("❌ initiateCODTopUpTransaction error:", err);
-        return res.status(500).json({ message: "Internal server error", error: err.message });
+        console.error("🔥 [COD-TOPUP] Error:", err);
+
+        return res.status(500).json({
+            status: false,
+            message: "Internal Server Error",
+            error: err.message,
+        });
     }
 };

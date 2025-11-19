@@ -9,7 +9,11 @@ import { TopUpPlan } from "../../entity/Topup.entity";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 import { Order, ORDER_STATUS, OrderType } from "../../entity/order.entity";
 import { CartItem } from "../../entity/CartItem.entity";
+import { v4 as uuid } from "uuid";
 import { sendOrderEmail } from "../../utils/email";
+
+import axios from "axios";
+import { createOrderAfterPayment } from "../../utils/createOrderAfterPayment";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
     apiVersion: "2025-09-30.clover" as any,
@@ -197,176 +201,75 @@ export const getUserTransactions = async (req: any, res: Response) => {
 };
 
 export const handleCODTransaction = async (req: any, res: Response) => {
-  const { cartId } = req.body;
-  const userId = req.user?.id;
+    console.log("➡️ [COD] Request received:", req.body);
 
-  if (!cartId || !userId) {
-    return res.status(400).json({ message: "cartId and userId are required" });
-  }
+    const { cartId } = req.body;
+    const userId = req.user?.id;
 
-  try {
-    const userRepo = AppDataSource.getRepository(User);
-    const cartRepo = AppDataSource.getRepository(Cart);
-    const transactionRepo = AppDataSource.getRepository(Transaction);
-    const orderRepo = AppDataSource.getRepository(Order);
-    const esimRepo = AppDataSource.getRepository(Esim);
-    const cartItemRepo = AppDataSource.getRepository(CartItem);
-
-    const user = await userRepo.findOneBy({ id: userId });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (!cartId || !userId) {
+        return res.status(400).json({ message: "cartId and userId are required" });
     }
 
-    // 🔹 Get cart by ID
-    const cart = await cartRepo.findOne({
-      where: { id: cartId, user: { id: userId } },
-      relations: ["items", "items.plan", "items.plan.country"],
-    });
+    try {
+        const userRepo = AppDataSource.getRepository(User);
+        const cartRepo = AppDataSource.getRepository(Cart);
+        const transactionRepo = AppDataSource.getRepository(Transaction);
 
-    if (!cart || cart.isCheckedOut || cart.isDeleted) {
-      return res.status(404).json({ message: "Invalid or already checked-out cart" });
-    }
+        // 1️⃣ Validate User
+        const user = await userRepo.findOneBy({ id: userId });
+        if (!user) return res.status(404).json({ message: "User not found" });
 
-    const validItems = cart.items.filter((i) => !i.isDeleted);
-    if (!validItems.length) {
-      return res.status(400).json({ message: "Cart has no valid items" });
-    }
+        // 2️⃣ Validate Cart
+        const cart = await cartRepo.findOne({
+            where: { id: cartId, user: { id: userId } },
+            relations: ["items", "items.plan", "items.plan.country"],
+        });
 
-    // 🔹 Calculate total amount
-    const amount = validItems.reduce(
-      (total, item) => total + Number(item.plan.price) * item.quantity,
-      0
-    );
-
-    // 🔹 COD Transaction (auto success)
-    const transaction = transactionRepo.create({
-      user,
-      cart,
-      paymentGateway: "cod",
-      transactionId: `cod_${Date.now()}`,
-      amount,
-      status: TransactionStatus.SUCCESS,
-    });
-
-    await transactionRepo.save(transaction);
-
-    // 🔹 Create Order (same as online flow)
-    const mainOrder = orderRepo.create({
-      user,
-      transaction,
-      name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-      email: user.email,
-      phone: user.phone,
-      status: ORDER_STATUS.PROCESSING,
-      activated: false,
-      totalAmount: amount,
-      country: validItems[0].plan.country,
-      type: OrderType.ESIM,
-    });
-
-    await orderRepo.save(mainOrder);
-
-    const createdEsims: Esim[] = [];
-    const totalEsims = validItems.reduce((acc, i) => acc + i.quantity, 0);
-
-    // 🔹 Create eSIMs without third-party reservation (COD → direct activation)
-    for (const item of validItems) {
-      for (let i = 0; i < item.quantity; i++) {
-        try {
-          const plan = item.plan;
-
-          // This is COD → we manually create basic eSIM
-          const esim = esimRepo.create({
-            user,
-            plans: [plan],
-            country: plan.country,
-            isActive: true,
-            startDate: new Date(),
-            endDate: new Date(
-              new Date().setDate(new Date().getDate() + (plan.validityDays || 30))
-            ),
-            productName: plan.name,
-            price: Number(plan.price),
-            validityDays: plan.validityDays,
-            dataAmount: plan?.data || 0,
-            callAmount: plan?.call || 0,
-            smsAmount: plan?.sms || 0,
-            order: mainOrder,
-            cartItem: item,
-          });
-
-          const savedEsim = await esimRepo.save(esim);
-          createdEsims.push(savedEsim);
-        } catch (err: any) {
-          console.error("eSIM creation error:", err.message);
-
-          // Save failed minimal esim
-          const failedEsim = esimRepo.create({
-            productName: item.plan.name,
-            isActive: false,
-            country: item.plan.country,
-            user,
-            plans: [item.plan],
-            order: mainOrder,
-            cartItem: item,
-          });
-
-          await esimRepo.save(failedEsim);
-
-          mainOrder.errorMessage = `${mainOrder.errorMessage || ""}\n${err.message}`;
-          await orderRepo.save(mainOrder);
+        if (!cart || cart.isCheckedOut || cart.isDeleted) {
+            return res.status(400).json({ message: "Invalid or already checked-out cart" });
         }
-      }
+
+        const validItems = cart.items.filter((i) => !i.isDeleted);
+        if (!validItems.length) {
+            return res.status(400).json({ message: "Cart has no valid items" });
+        }
+
+        // 3️⃣ Calculate Amount
+        const amount = validItems.reduce(
+            (sum, item) => sum + Number(item.plan.price) * item.quantity,
+            0
+        );
+
+        // 4️⃣ Create COD transaction (SUCCESS)
+        const transaction = transactionRepo.create({
+            user,
+            cart,
+            amount,
+            paymentGateway: "COD",
+            transactionId: uuid(),       // UNIQUE ID
+            status: TransactionStatus.SUCCESS,
+        });
+
+        await transactionRepo.save(transaction);
+
+        console.log("✅ [COD] Transaction created:", transaction.id);
+
+        // 5️⃣ NOW HAND OVER EVERYTHING TO createOrderAfterPayment()
+        const { order, summary } = await createOrderAfterPayment(transaction, userId);
+
+        console.log("🎉 COD Order Flow Completed:", order.id);
+
+        return res.status(201).json({
+            message: "COD Order created successfully",
+            order,
+            summary,
+        });
+
+    } catch (err: any) {
+        console.error("🔥 COD Error:", err.message);
+        return res.status(500).json({ message: "COD order failed", error: err.message });
     }
-
-    // 🔹 Final order status
-    if (createdEsims.length === 0) {
-      mainOrder.status = ORDER_STATUS.FAILED;
-      mainOrder.activated = false;
-    } else if (createdEsims.length < totalEsims) {
-      mainOrder.status = ORDER_STATUS.PARTIAL;
-      mainOrder.activated = true;
-    } else {
-      mainOrder.status = ORDER_STATUS.COMPLETED;
-      mainOrder.activated = true;
-    }
-
-    await orderRepo.save(mainOrder);
-
-    // 🔹 Mark cart as checked out
-    cart.isCheckedOut = true;
-    await cartRepo.save(cart);
-
-    // 🔹 Send order mail
-    await sendOrderEmail(
-      user.email,
-      `${user.firstName} ${user.lastName}`,
-      {
-        id: mainOrder.id,
-        totalAmount: mainOrder.totalAmount,
-        activated: mainOrder.activated,
-        esims: createdEsims,
-        orderCode: mainOrder.orderCode,
-      },
-      (mainOrder?.status === "COMPLETED") ? "COMPLETED" : (mainOrder?.status === "FAILED") ? "FAILED" : "PARTIAL"
-    );
-
-    return res.status(201).json({
-      message: "COD order completed",
-      order: { ...mainOrder, esims: createdEsims, transaction },
-      summary: {
-        totalEsims,
-        successCount: createdEsims.length,
-        failedCount: totalEsims - createdEsims.length,
-      },
-    });
-
-  } catch (error: any) {
-    console.error("COD Error:", error.message);
-    return res.status(500).json({ message: "COD order failed", error: error.message });
-  }
 };
-
 
 /**
  * Update transaction status
