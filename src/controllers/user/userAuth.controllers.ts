@@ -269,6 +269,7 @@ export const updateProfile = async (req: any, res: Response) => {
         // ✅ Password update with verification
         if (password) {
             if (!currentPassword) {
+                console.log("-=-=-=-= current password in not set -=-=-=-=-=");
                 return res.status(400).json({
                     message: "Current password is required to set a new password",
                 });
@@ -276,6 +277,7 @@ export const updateProfile = async (req: any, res: Response) => {
 
             const isMatch = await bcrypt.compare(currentPassword, user.password);
             if (!isMatch) {
+                console.log("-=-=-=-= current password is not matching-=-=-=-=-=");
                 return res.status(400).json({ message: "Current password is incorrect" });
             }
 
