@@ -99,60 +99,39 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
 
     let event: Stripe.Event;
+
     try {
         event = stripe.webhooks.constructEvent(req.body, sig!, endpointSecret);
     } catch (err: any) {
-        console.error("Stripe webhook signature verification failed:", err.message);
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
     const transactionRepo = AppDataSource.getRepository(Transaction);
-    const esimRepo = AppDataSource.getRepository(Esim);
-    const cartRepo = AppDataSource.getRepository(Cart);
 
     if (event.type === "payment_intent.succeeded") {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
         const transaction = await transactionRepo.findOne({
             where: { transactionId: paymentIntent.id },
-            relations: ["cart", "cart.items", "cart.items.plan", "cart.items.plan.country", "user"],
         });
 
         if (!transaction) return res.status(404).send("Transaction not found");
 
-        transaction.status = TransactionStatus.SUCCESS;
+        transaction.status = "SUCCESS";
         transaction.response = JSON.stringify(paymentIntent);
+
         await transactionRepo.save(transaction);
 
-        // ---------------- CHANGE: Added null-check for cart to fix TS18048 ----------------
-        if (!transaction.cart) return res.status(400).send("Cart missing in transaction");
-
-        if (!transaction.user) {
-            console.warn(`⚠️ Transaction ${transaction.id} has no user associated.`);
-            return res.status(400).send("User missing in transaction");
-        }
-
-        for (const item of transaction?.cart.items) {
-            for (let i = 0; i < item.quantity; i++) {
-
-                const esim = esimRepo.create({
-                    user: { id: transaction.user.id },
-                    plans: [item.plan],
-                    country: item.plan.country,
-                    isActive: true,
-                });
-                await esimRepo.save(esim);
-            }
-        }
-
-        transaction.cart.isCheckedOut = true;
-        await cartRepo.save(transaction.cart);
+        // ❗❗ DO NOT create eSIMs here
+        // ❗❗ DO NOT checkout cart here
+        // postOrder will handle it
 
         return res.json({ received: true });
     }
 
-    res.json({ received: true });
+    return res.json({ received: true });
 };
+
 
 /**
  * Get all transactions for a user
