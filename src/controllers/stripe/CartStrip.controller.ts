@@ -97,6 +97,7 @@ export const initiateTransaction = async (req: any, res: Response) => {
 export const handleStripeWebhook = async (req: Request, res: Response) => {
     const sig = req.headers["stripe-signature"];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
+    // STRIPE_WEB_WEBHOOK_SECRET=whsec_PZq4rvtZ45yjKsdWNLvI6AZfXUt39vyE
 
     let event: Stripe.Event;
 
@@ -125,8 +126,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         // ❗❗ DO NOT create eSIMs here
         // ❗❗ DO NOT checkout cart here
         // postOrder will handle it
-
-        return res.json({ received: true });
+         return res.status(200).send("OK");
     }
 
     return res.json({ received: true });
