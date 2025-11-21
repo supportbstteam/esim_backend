@@ -8,6 +8,8 @@ const socialRepo = AppDataSource.getRepository(Social);
 export const getSocials = async (_req: Request, res: Response) => {
     try {
         const socials = await socialRepo.find();
+
+        console.log("-=-=-=-=-= socials medias -=-=-=-=-=-=", socials);
         return res.json(socials);
     } catch (err) {
         return res.status(500).json({ message: "Error fetching socials", error: err });

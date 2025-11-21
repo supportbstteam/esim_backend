@@ -4,7 +4,7 @@ import { Cart } from "../../entity/Carts.entity";
 import { TopUpPlan } from "../../entity/Topup.entity";
 import { AppDataSource } from "../../data-source";
 import { Esim } from "../../entity/Esim.entity";
-import { Transaction } from "../../entity/Transactions.entity";
+import { Transaction, TransactionStatus } from "../../entity/Transactions.entity";
 import { User } from "../../entity/User.entity";
 import axios from "axios";
 import { Order, OrderType } from "../../entity/order.entity";
@@ -35,12 +35,15 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
         const esimTopUpRepo = AppDataSource.getRepository(EsimTopUp);
 
         const user = await userRepo.findOne({ where: { id } });
-        const topUp: any = await topUpRepo.findOne({ where: { id: topupId } });
+        const topUp:any = await topUpRepo.findOne({ where: { id: topupId } });
         const esim: any = await esimRepo.findOne({
             where: { id: esimId },
-            relations: ["country", "plans"], // ❌ no need for old topUps
+            relations: ["country", "plans"],
         });
-        const transaction = await transactionRepo.findOne({ where: { id: transactionId } });
+        const transaction = await transactionRepo.findOne({
+            where: { id: transactionId },
+            relations: ["user", "esim"],
+        });
 
         if (!user) return res.status(404).json({ status: false, message: "User not found" });
         if (!topUp) return res.status(404).json({ status: false, message: "Top-up plan not found" });
@@ -49,7 +52,7 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
 
         // Ensure eSIM has a base plan
         if (!Array.isArray(esim.plans) || esim.plans.length === 0) {
-            transaction.status = "FAILED";
+            transaction.status = TransactionStatus.FAILED;
             await transactionRepo.save(transaction);
             return res.status(400).json({
                 status: false,
@@ -59,21 +62,26 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
 
         const planId = esim.plans[0]?.id;
 
+        // -------------------- FIX: MAKE IDEMPOTENT --------------------
         const existingOrder = await orderRepo.findOne({
             where: { transaction: { id: transactionId } },
         });
-        if (existingOrder)
-            return res.status(400).json({
-                status: false,
-                message: `Order already exists for this transaction (Order ID: ${existingOrder.id})`,
-            });
 
-        // Create order
+        if (existingOrder) {
+            return res.status(200).json({
+                status: true,
+                message: "Order already exists",
+                orderId: existingOrder.id,
+            });
+        }
+        // ---------------------------------------------------------------
+
+        // Create new order
         const order = orderRepo.create({
             user,
             transaction,
             country: esim.country,
-            totalAmount: Number(transaction?.amount || 0),
+            totalAmount: Number(transaction.amount || 0),
             status: "PENDING",
             name: `${user?.firstName || ""} ${user?.lastName || ""}`.trim(),
             email: user?.email || "",
@@ -100,18 +108,18 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
             }
         );
 
-        console.log("----- response.data top up ----",response.data);
+        console.log("----- response.data top up ----", response.data);
 
-        // ✅ Success case
+        // -------------------- SUCCESS CASE --------------------
         if (response.data?.status === "success") {
-            transaction.status = "SUCCESS";
+            transaction.status = TransactionStatus.SUCCESS;
             await transactionRepo.save(transaction);
 
             order.status = "COMPLETED";
             order.activated = true;
             await orderRepo.save(order);
 
-            // ✅ Record in EsimTopUp table
+            // Save in EsimTopUp table
             const esimTopUp = esimTopUpRepo.create({
                 esim,
                 topup: topUp,
@@ -121,15 +129,17 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
 
             await sendAdminOrderNotification(order);
             await sendTopUpUserNotification(order);
+
             return res.status(200).json({
                 status: true,
                 message: "Top-up successful",
+                orderId: order.id,
                 data: response.data,
             });
         }
 
-        // ❌ Failure case
-        transaction.status = "FAILED";
+        // -------------------- FAILURE CASE --------------------
+        transaction.status = TransactionStatus.FAILED;
         await transactionRepo.save(transaction);
 
         order.status = "FAILED";
@@ -141,9 +151,10 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
             topup: topUp,
             order,
         });
+        await esimTopUpRepo.save(failedTopUp);
+
         await sendAdminOrderNotification(order);
         await sendTopUpUserNotification(order);
-        await esimTopUpRepo.save(failedTopUp);
 
         return res.status(400).json({
             status: false,
@@ -153,28 +164,30 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
     } catch (err: any) {
         console.error("Unexpected error in postUserTopUpOrder:", err?.message || err);
 
+        // Fallback failure marking
         try {
             const transactionRepo = AppDataSource.getRepository(Transaction);
             const orderRepo = AppDataSource.getRepository(Order);
+
             const transaction = await transactionRepo.findOne({
                 where: { id: req.body?.transactionId },
             });
+
             const order = await orderRepo.findOne({
                 where: { transaction: { id: req.body?.transactionId } },
             });
 
             if (transaction) {
-                transaction.status = "FAILED";
+                transaction.status = TransactionStatus.FAILED;
                 await transactionRepo.save(transaction);
             }
+
             if (order) {
                 order.status = "FAILED";
                 order.errorMessage = err.message;
                 await orderRepo.save(order);
             }
-        } catch (innerErr: any) {
-            console.error("Error marking transaction/order failed:", innerErr?.message);
-        }
+        } catch {}
 
         return res.status(500).json({
             status: false,
@@ -183,6 +196,7 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
         });
     }
 };
+
 
 export const getUserTopUpOrderList = async () => {
 
