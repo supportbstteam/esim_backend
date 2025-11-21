@@ -12,6 +12,8 @@ import { sendAdminOrderNotification, sendOrderEmail } from "../../utils/email";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
 export const postOrder = async (req: any, res: Response) => {
+
+  console.log("-=-=-=-=- post order calling -=-=-=-=-=");
   const { transactionId } = req.body;
   const userId = req.user?.id;
   const thirdPartyToken = { Authorization: `Bearer ${req.thirdPartyToken}` };
@@ -82,6 +84,8 @@ export const postOrder = async (req: any, res: Response) => {
             `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${plan.planId}`,
             { headers: thirdPartyToken }
           );
+
+          console.log("-=-=-=-= calling reserveResponse api in the post order -=-=--==-=-=-=", i);
 
           // if (reserveResponse.data?.status !== "success") {
           //   throw new Error(reserveResponse.data?.message || "Failed to reserve eSIM");
@@ -228,7 +232,6 @@ export const postOrder = async (req: any, res: Response) => {
     return res.status(500).json({ message: "Order failed", error: err.message });
   }
 };
-
 
 export const getOrderListByUser = async (req: any, res: Response) => {
   const { id, role } = req.user;
