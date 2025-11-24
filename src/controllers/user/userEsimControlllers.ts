@@ -83,9 +83,11 @@ export const postOrder = async (req: any, res: Response) => {
     // Idempotency check: ensure there's no existing order for this transaction
     console.log(`[${requestId}] 🔐 Checking existing order for transaction`);
     const alreadyOrder = await orderRepo.findOne({
-      where: { transaction: { id: transactionId } },
+      where: { transaction: { transactionId } },   // compare with paymentIntent.id
       relations: ["esims", "user"],
     });
+
+
     if (alreadyOrder) {
       console.log(`[${requestId}] ⚠️ Existing order detected for this transaction. Returning existing order.`, { orderId: alreadyOrder.id });
       return res.status(200).json({
