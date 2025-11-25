@@ -3,7 +3,7 @@ import axios from "axios";
 import { User } from "../../entity/User.entity";
 import { Order, ORDER_STATUS, OrderType } from "../../entity/order.entity";
 import { Esim } from "../../entity/Esim.entity";
-import { Transaction } from "../../entity/Transactions.entity";
+import { Transaction, TransactionStatus } from "../../entity/Transactions.entity";
 import { AppDataSource } from "../../data-source";
 import { Cart } from "../../entity/Carts.entity";
 import { CartItem } from "../../entity/CartItem.entity";
@@ -320,8 +320,6 @@ export const postOrder = async (req: any, res: Response) => {
     return res.status(500).json({ message: "Order failed", error: err.message });
   }
 };
-
-
 
 export const getOrderListByUser = async (req: any, res: Response) => {
   const { id, role } = req.user;

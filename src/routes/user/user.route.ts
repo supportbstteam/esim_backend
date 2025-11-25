@@ -21,16 +21,6 @@ import { getTopUpStatus, initiateMobileTopUpTransaction } from "../../controller
 
 const router = Router();
 
-
-// ✅ JSON parser for all other routes
-router.use((req, res, next) => {
-    if (req.originalUrl.startsWith("/api/user/transactions/mobile/stripe/webhook")) {
-        next(); // skip json parsing for this route
-    } else {
-        express.json()(req, res, next);
-    }
-});
-
 // Public
 router.post("/verify-otp", postCreateUser);
 router.post("/signup", postVerifyOtp);

@@ -77,6 +77,7 @@ export const initiateMobileTransaction = async (req: any, res: Response) => {
  * ✅ 2️⃣ Handle Mobile Stripe Webhook + Create Order
  */
 export const handleMobileStripeWebhook = async (req: Request, res: Response) => {
+    console.log("-=-=-=-=-=- hello mobile-hook calling -=-=-=-=-=")
     console.log("🚀 [WEBHOOK] Mobile Stripe webhook received");
 
     const sig = req.headers["stripe-signature"];

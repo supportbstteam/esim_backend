@@ -41,7 +41,7 @@ export const initiateTransaction = async (req: any, res: Response) => {
             order: { createdAt: "DESC" }
         });
 
-        console.log("----- cart item ---", cart);
+        // console.log("----- cart item ---", cart);
 
         if (!cart || cart.items.length === 0) {
             return res.status(404).json({ message: "Cart is empty" });
@@ -95,10 +95,20 @@ export const initiateTransaction = async (req: any, res: Response) => {
  * Handle Stripe webhook
  */
 export const handleStripeWebhook = async (req: Request, res: Response) => {
-    const sig = req.headers["stripe-signature"];
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
-    // STRIPE_WEB_WEBHOOK_SECRET=whsec_PZq4rvtZ45yjKsdWNLvI6AZfXUt39vyE
+    console.log("-=-=-=-=-=- hello web-hook calling -=-=-=-=-=");
 
+    // 🛑 Ignore unwanted webhook URLs
+    const url = req.originalUrl || req.url;
+    if (
+        url.includes("/mobile/stripe/webhook") ||
+        url.includes("/mobile/top-up/stripe/webhook")
+    ) {
+        console.log("⚠️ Ignoring mobile webhook route for payment_intent.succeeded");
+        return res.status(200).send("IGNORED");
+    }
+
+    const sig = req.headers["stripe-signature"];
+    const endpointSecret = "whsec_PZq4rvtZ45yjKsdWNLvI6AZfXUt39vyE";
     let event: Stripe.Event;
 
     try {
@@ -118,15 +128,13 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
 
         if (!transaction) return res.status(404).send("Transaction not found");
 
+        // Mark successful
         transaction.status = "SUCCESS";
         transaction.response = JSON.stringify(paymentIntent);
 
         await transactionRepo.save(transaction);
 
-        // ❗❗ DO NOT create eSIMs here
-        // ❗❗ DO NOT checkout cart here
-        // postOrder will handle it
-         return res.status(200).send("OK");
+        return res.status(200).send("OK");
     }
 
     return res.json({ received: true });
