@@ -104,24 +104,38 @@ async function refreshThirdPartyToken(): Promise<string | undefined> {
   // =============================
 }
 
-const axiosInstance = createAxiosInstance(getThirdPartyToken, refreshThirdPartyToken);
+const axiosInstance = axios.create({
+  timeout: 8000, // 8 sec hard timeout
+});
 
-// Reserve + purchase wrapper per plan.unit
-async function reserveAndPurchaseSim(planId: number) {
-  // Reserve
-  const reserveResp = await axiosInstance.get(`${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${planId}`);
-  if (reserveResp.status !== 200) throw new Error(`Reserve failed: ${reserveResp.status}`);
-  const externalReserveId = reserveResp.data?.data?.id;
-  if (!externalReserveId) throw new Error("No externalReserveId from reserve");
+export async function reserveAndPurchaseSim(planId: number) {
+  try {
+    // 💨 hard timeout + fast fail
+    const reserve = await axiosInstance.get(
+      `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${planId}`,
+      {
+        headers: { Authorization: `Bearer ${inMemoryThirdPartyToken}` },
+      }
+    );
 
-  // Purchase
-  const purchaseResp = await axiosInstance.post(`${process.env.TURISM_URL}/v2/sims/${externalReserveId}/purchase`, {});
-  if (purchaseResp.status !== 200 && purchaseResp.status !== 201) {
-    throw new Error(`Purchase failed: ${purchaseResp.status}`);
+    const reserveId = reserve.data?.data?.id;
+    if (!reserveId) throw new Error("Reserve failed: No reserveId");
+
+    const purchase = await axiosInstance.post(
+      `${process.env.TURISM_URL}/v2/sims/${reserveId}/purchase`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${inMemoryThirdPartyToken}` },
+      }
+    );
+
+    return purchase.data?.data;
+  } catch (err: any) {
+    console.error("reserveAndPurchaseSim failed:", err.message);
+    throw new Error(
+      `SIM creation failed: ${err.response?.status || ""} ${err.message}`
+    );
   }
-  const esimData = purchaseResp.data?.data;
-  if (!esimData) throw new Error("No esim data from purchase");
-  return esimData;
 }
 
 // Main handler (reworked)
