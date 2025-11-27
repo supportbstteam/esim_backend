@@ -9,7 +9,7 @@ import { auth } from "../../middlewares/auth.handler";
 import queryRoute from "./userQuery.routes"
 import { deleteAccount, getUserDetails, postCreateUser, postForgotPassword, postResetPassword, postUserLogin, postVerifyForgotPasswordOtp, postVerifyOtp, updateProfile } from "../../controllers/user/userAuth.controllers";
 import { getSocials } from "../../controllers/Social.Media.controllers";
-import { getOrderDetailsByUser, getOrderListByUser, getOrderStatus, getUserSimSummary, postOrder, postUserClaimRefund } from "../../controllers/user/userEsimControlllers";
+import { getOrderDetailsByUser, getOrderListByUser, getOrderStatus, getUserSimSummary, postUserClaimRefund } from "../../controllers/user/userEsimControlllers";
 import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handler";
 import userCartRoute from "./userCart.route"
 import userTransactionRoute from "./userTransaction.route"
@@ -18,6 +18,7 @@ import { getAllTestimonials } from "../../controllers/admin/adminTestimonials.co
 import { claimRefund } from "../../controllers/refundControllers";
 import { initiateMobileTransaction } from "../../controllers/stripe/MobileCartStripe.controllers";
 import { getTopUpStatus, initiateMobileTopUpTransaction } from "../../controllers/stripe/MobileTopUpStripe.controllers";
+import { postOrder } from "../../controllers/user/userPostSim.controller";
 
 const router = Router();
 

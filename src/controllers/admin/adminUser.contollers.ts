@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { Cart } from "../../entity/Carts.entity";
 import { CartItem } from "../../entity/CartItem.entity";
 import { Transaction } from "../../entity/Transactions.entity";
-import { sendAccountDeletedEmail, sendUserBlockedEmail } from "../../utils/email";
+// import { sendAccountDeletedEmail, sendUserBlockedEmail } from "../../utils/email";
 import { Esim } from "../../entity/Esim.entity";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
