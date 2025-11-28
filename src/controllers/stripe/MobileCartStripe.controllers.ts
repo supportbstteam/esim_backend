@@ -39,6 +39,9 @@ export const initiateMobileTransaction = async (req: any, res: Response) => {
             return total + price * qty;
         }, 0);
 
+        cart.isProcessing = true;
+        await cartRepo.save(cart);
+
         // 🟢 Create PaymentIntent
         const paymentIntent = await stripe.paymentIntents.create({
             amount: Math.round(amount * 100),
@@ -152,6 +155,7 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
             }
 
             transaction.cart.isCheckedOut = true;
+            transaction.cart.isProcessing = true;
             await cartRepo.save(transaction.cart);
             // console.log("🛒 [WEBHOOK] Cart marked as checked out");
 

@@ -29,6 +29,9 @@ export class Cart {
     @Column({ type: "boolean", default: false })
     isCheckedOut!: boolean;
 
+    @Column({ type: "boolean", default: false, nullable:true })
+    isProcessing!: boolean;
+
     @Column({ type: "boolean", default: false })
     isError!: boolean;
 
