@@ -21,16 +21,16 @@ export const postSchedularImportPlans = async () => {
       isValid = await verifyTokenTruismAPi(token.token);
     }
 
-    // console.log("---- validating token ------");
+    // // console.log("---- validating token ------");
     if (!isValid) {
-      console.log("🔄 Token expired or invalid, regenerating...");
+      // console.log("🔄 Token expired or invalid, regenerating...");
       const newToken = await tokenTurismApi();
 
       if (token) {
         token.token = newToken;
         await tokenRepo.save(token);
       } else {
-        // console.log("---- new validating token ------");
+        // // console.log("---- new validating token ------");
         const newTokenEntity = tokenRepo.create({ token: newToken });
         await tokenRepo.save(newTokenEntity);
         token = newTokenEntity;
@@ -40,7 +40,7 @@ export const postSchedularImportPlans = async () => {
     const authHeader = { Authorization: `Bearer ${token?.token}` };
 
 
-    // console.log("---- importing api plan token ------");
+    // // console.log("---- importing api plan token ------");
     // 🧩 Step 2: Fetch Plans
     const planRes = await axios.get(`${process.env.TURISM_URL}/v2/plans`, { headers: authHeader });
     const plansFromApi = planRes.data?.data || [];
@@ -102,11 +102,11 @@ export const postSchedularImportPlans = async () => {
       }
 
       await planRepo.save(plan);
-      // console.log("---- importing plan saved ------");
+      // // console.log("---- importing plan saved ------");
     }
 
 
-    // console.log("---- top up plan api import token ------");
+    // // console.log("---- top up plan api import token ------");
     // 🧩 Step 3: Fetch Top-up Plans
     const topUpApiResponse = await axios.get(`${process.env.TURISM_URL}/v2/plans/topup-plans`, {
       headers: authHeader,
@@ -166,10 +166,10 @@ export const postSchedularImportPlans = async () => {
       }
 
       await topUpRepo.save(topUp);
-      // console.log("---- Top up imported ------");
+      // // console.log("---- Top up imported ------");
     }
 
-    console.log("✅ Scheduler successfully updated plans and top-ups");
+    // console.log("✅ Scheduler successfully updated plans and top-ups");
     return { message: "Successfully Updated" };
   } catch (err) {
     console.error("❌ Error in the scheduler:", err);

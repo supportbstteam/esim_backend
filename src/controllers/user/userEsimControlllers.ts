@@ -13,16 +13,16 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
 // export const postOrder = async (req: any, res: Response) => {
 //   const requestId = `postOrder-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-//   console.log(`[${requestId}] ▶ ENTER postOrder`, { body: req.body, user: req.user?.id });
+//   // console.log(`[${requestId}] ▶ ENTER postOrder`, { body: req.body, user: req.user?.id });
 
 //   const { transactionId } = req.body;
 //   const userId = req.user?.id;
 //   const thirdPartyToken = { Authorization: `Bearer ${req.thirdPartyToken}` };
 
-//   console.log(`[${requestId}] 🧾 Received transactionId:`, transactionId, "userId:", userId);
+//   // console.log(`[${requestId}] 🧾 Received transactionId:`, transactionId, "userId:", userId);
 
 //   if (!transactionId || !userId) {
-//     console.log(`[${requestId}] ❌ Missing transactionId or userId`, { transactionId, userId });
+//     // console.log(`[${requestId}] ❌ Missing transactionId or userId`, { transactionId, userId });
 //     return res.status(400).json({ message: "transactionId and userId are required" });
 //   }
 
@@ -37,36 +37,36 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 //   let mainOrder: Order | null = null;
 
 //   try {
-//     console.log(`[${requestId}] 🔎 Step 1: Fetch transaction with relations`);
+//     // console.log(`[${requestId}] 🔎 Step 1: Fetch transaction with relations`);
 //     const transaction = await transactionRepo.findOne({
 //       where: { id: transactionId },
 //       relations: ["user", "cart", "cart.items", "cart.items.plan", "cart.items.plan.country"],
 //     });
-//     console.log(`[${requestId}] 🔁 transaction fetched:`, !!transaction);
+//     // console.log(`[${requestId}] 🔁 transaction fetched:`, !!transaction);
 
-//     console.log(`[${requestId}] 🔎 Step 1b: Fetch user`);
+//     // console.log(`[${requestId}] 🔎 Step 1b: Fetch user`);
 //     const user = await userRepo.findOneBy({ id: userId });
-//     console.log(`[${requestId}] 🔁 user fetched:`, !!user);
+//     // console.log(`[${requestId}] 🔁 user fetched:`, !!user);
 
 //     if (!user) {
-//       console.log(`[${requestId}] ❌ User not found`, { userId });
+//       // console.log(`[${requestId}] ❌ User not found`, { userId });
 //       throw new Error("User not found");
 //     }
 //     if (!transaction) {
-//       console.log(`[${requestId}] ❌ Transaction not found`, { transactionId });
+//       // console.log(`[${requestId}] ❌ Transaction not found`, { transactionId });
 //       throw new Error("Transaction not found");
 //     }
-//     console.log(`[${requestId}] ℹ transaction.status:`, transaction.status);
+//     // console.log(`[${requestId}] ℹ transaction.status:`, transaction.status);
 //     if (transaction.status !== "SUCCESS") {
-//       console.log(`[${requestId}] ❌ Transaction not SUCCESS`, { status: transaction.status });
+//       // console.log(`[${requestId}] ❌ Transaction not SUCCESS`, { status: transaction.status });
 //       throw new Error(`Invalid transaction status: ${transaction.status}`);
 //     }
 
 //     latestCart = transaction.cart ?? null;
-//     console.log(`[${requestId}] 🔎 latestCart present:`, !!latestCart);
+//     // console.log(`[${requestId}] 🔎 latestCart present:`, !!latestCart);
 
 //     if (!latestCart || latestCart.isDeleted || latestCart.isCheckedOut || latestCart.isError) {
-//       console.log(
+//       // console.log(
 //         `[${requestId}] ❌ No valid cart found or cart invalid flags`,
 //         { latestCartExists: !!latestCart, isDeleted: latestCart?.isDeleted, isCheckedOut: latestCart?.isCheckedOut, isError: latestCart?.isError }
 //       );
@@ -74,14 +74,14 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 //     }
 
 //     const validCartItems = latestCart.items.filter((i) => !i.isDeleted);
-//     console.log(`[${requestId}] 🔎 validCartItems count:`, validCartItems.length);
+//     // console.log(`[${requestId}] 🔎 validCartItems count:`, validCartItems.length);
 //     if (!validCartItems.length) {
-//       console.log(`[${requestId}] ❌ No valid cart items found`);
+//       // console.log(`[${requestId}] ❌ No valid cart items found`);
 //       throw new Error("No valid cart items found");
 //     }
 
 //     // Idempotency check: ensure there's no existing order for this transaction
-//     console.log(`[${requestId}] 🔐 Checking existing order for transaction`);
+//     // console.log(`[${requestId}] 🔐 Checking existing order for transaction`);
 //     const alreadyOrder = await orderRepo.findOne({
 //       where: { transaction: { transactionId } },   // compare with paymentIntent.id
 //       relations: ["esims", "user"],
@@ -89,7 +89,7 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
 
 //     if (alreadyOrder) {
-//       console.log(`[${requestId}] ⚠️ Existing order detected for this transaction. Returning existing order.`, { orderId: alreadyOrder.id });
+//       // console.log(`[${requestId}] ⚠️ Existing order detected for this transaction. Returning existing order.`, { orderId: alreadyOrder.id });
 //       return res.status(200).json({
 //         message: "Order already processed",
 //         order: alreadyOrder,
@@ -97,7 +97,7 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 //     }
 
 //     // 🔹 Step 2: Create new order
-//     console.log(`[${requestId}] ✍️ Creating new order record`);
+//     // console.log(`[${requestId}] ✍️ Creating new order record`);
 //     mainOrder = orderRepo.create({
 //       user: transaction.user,
 //       transaction,
@@ -111,58 +111,58 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 //       type: OrderType.ESIM,
 //     });
 
-//     console.log(`[${requestId}] 💾 Saving new order to DB (pre-save)`, { orderPreview: mainOrder });
+//     // console.log(`[${requestId}] 💾 Saving new order to DB (pre-save)`, { orderPreview: mainOrder });
 //     await orderRepo.save(mainOrder);
-//     console.log(`[${requestId}] ✅ Order saved`, { orderId: mainOrder.id });
+//     // console.log(`[${requestId}] ✅ Order saved`, { orderId: mainOrder.id });
 
 //     const createdEsims: Esim[] = [];
 //     const totalEsimsInCart = validCartItems.reduce((acc, item) => acc + item.quantity, 0);
-//     console.log(`[${requestId}] ℹ totalEsimsInCart:`, totalEsimsInCart);
+//     // console.log(`[${requestId}] ℹ totalEsimsInCart:`, totalEsimsInCart);
 
 //     // 🔹 Step 3: Sequentially process each cart item
 //     for (const item of validCartItems) {
-//       console.log(`[${requestId}] 🔁 Processing cartItem`, { cartItemId: item.id, planId: item.plan?.id, quantity: item.quantity });
+//       // console.log(`[${requestId}] 🔁 Processing cartItem`, { cartItemId: item.id, planId: item.plan?.id, quantity: item.quantity });
 
 //       const plan = item.plan;
 
 //       // Safety: check if any eSIMs already exist for this cartItem (prevent duplicates)
-//       console.log(`[${requestId}] 🔐 Checking existing eSIMs for cartItem ${item.id}`);
+//       // console.log(`[${requestId}] 🔐 Checking existing eSIMs for cartItem ${item.id}`);
 //       const existingEsimsForCartItem = await esimRepo.find({ where: { cartItem: { id: item.id } } });
 //       if (existingEsimsForCartItem && existingEsimsForCartItem.length > 0) {
-//         console.log(`[${requestId}] ⚠️ Found existing eSIM(s) for cartItem - skipping creation for this item.`, { existingCount: existingEsimsForCartItem.length });
+//         // console.log(`[${requestId}] ⚠️ Found existing eSIM(s) for cartItem - skipping creation for this item.`, { existingCount: existingEsimsForCartItem.length });
 //         // Add any already saved ones to createdEsims to keep counts consistent (optional)
 //         createdEsims.push(...existingEsimsForCartItem);
 //         continue;
 //       }
 
 //       for (let i = 0; i < item.quantity; i++) {
-//         console.log(`[${requestId}] ▶ Start create loop for cartItem ${item.id} - iteration ${i + 1}/${item.quantity}`);
+//         // console.log(`[${requestId}] ▶ Start create loop for cartItem ${item.id} - iteration ${i + 1}/${item.quantity}`);
 
 //         try {
-//           console.log(`[${requestId}] 🔹 Reserving SIM from third-party for planId: ${plan.planId}`);
+//           // console.log(`[${requestId}] 🔹 Reserving SIM from third-party for planId: ${plan.planId}`);
 //           const reserveResponse = await axios.get(
 //             `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${plan.planId}`,
 //             { headers: thirdPartyToken }
 //           );
-//           console.log(`[${requestId}] 🔹 reserveResponse received`, { status: reserveResponse.status, dataExists: !!reserveResponse.data });
+//           // console.log(`[${requestId}] 🔹 reserveResponse received`, { status: reserveResponse.status, dataExists: !!reserveResponse.data });
 
 //           const externalReserveId = reserveResponse.data?.data?.id;
-//           console.log(`[${requestId}] 🔹 externalReserveId:`, externalReserveId);
+//           // console.log(`[${requestId}] 🔹 externalReserveId:`, externalReserveId);
 
 //           if (!externalReserveId) {
 //             throw new Error("Failed to reserve SIM: no externalReserveId returned");
 //           }
 
-//           console.log(`[${requestId}] 🔹 Purchasing SIM with externalReserveId: ${externalReserveId}`);
+//           // console.log(`[${requestId}] 🔹 Purchasing SIM with externalReserveId: ${externalReserveId}`);
 //           const createSimResponse = await axios.post(
 //             `${process.env.TURISM_URL}/v2/sims/${externalReserveId}/purchase`,
 //             {},
 //             { headers: thirdPartyToken }
 //           );
-//           console.log(`[${requestId}] 🔹 purchase response received`, { status: createSimResponse.status, dataExists: !!createSimResponse.data });
+//           // console.log(`[${requestId}] 🔹 purchase response received`, { status: createSimResponse.status, dataExists: !!createSimResponse.data });
 
 //           const esimData = createSimResponse.data?.data;
-//           console.log(`[${requestId}] 🔹 esimData extracted`, { esimDataSnippet: { id: esimData?.id, iccid: esimData?.iccid } });
+//           // console.log(`[${requestId}] 🔹 esimData extracted`, { esimDataSnippet: { id: esimData?.id, iccid: esimData?.iccid } });
 
 //           // Create eSIM entity
 //           const esim = esimRepo.create({
@@ -190,16 +190,16 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 //             cartItem: item,
 //           });
 
-//           console.log(`[${requestId}] 💾 Saving eSIM to DB (pre-save)`, { productName: esim.productName, cartItemId: item.id });
+//           // console.log(`[${requestId}] 💾 Saving eSIM to DB (pre-save)`, { productName: esim.productName, cartItemId: item.id });
 //           const savedEsim = await esimRepo.save(esim);
-//           console.log(`[${requestId}] ✅ eSIM saved`, { esimId: savedEsim.id, externalId: savedEsim.externalId });
+//           // console.log(`[${requestId}] ✅ eSIM saved`, { esimId: savedEsim.id, externalId: savedEsim.externalId });
 
 //           createdEsims.push(savedEsim);
 
 //           // Update running order total (mirrors previous logic)
 //           const transactionAmount = Number(transaction?.amount) || 0;
 //           mainOrder.totalAmount = isFinite(transactionAmount) ? transactionAmount : 0;
-//           console.log(`[${requestId}] ℹ Updated mainOrder.totalAmount to`, mainOrder.totalAmount);
+//           // console.log(`[${requestId}] ℹ Updated mainOrder.totalAmount to`, mainOrder.totalAmount);
 
 //         } catch (innerErr: any) {
 //           console.error(`[${requestId}] ⚠️ eSIM creation failed for plan: ${plan?.name}`, innerErr?.message || innerErr);
@@ -220,23 +220,23 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 //               cartItem: item,
 //             });
 
-//             console.log(`[${requestId}] 💾 Saving failed placeholder eSIM to DB for cartItem ${item.id}`);
+//             // console.log(`[${requestId}] 💾 Saving failed placeholder eSIM to DB for cartItem ${item.id}`);
 //             await esimRepo.save(failedEsim);
-//             console.log(`[${requestId}] ✅ Failed placeholder eSIM saved`);
+//             // console.log(`[${requestId}] ✅ Failed placeholder eSIM saved`);
 //           } catch (saveErr: any) {
 //             console.error(`[${requestId}] ❌ Failed to save failed placeholder eSIM`, saveErr?.message || saveErr);
 //           }
 
 //           mainOrder.errorMessage = `${mainOrder.errorMessage || ""}\n${innerErr.message || innerErr}`;
-//           console.log(`[${requestId}] ℹ mainOrder.errorMessage updated`);
+//           // console.log(`[${requestId}] ℹ mainOrder.errorMessage updated`);
 //           await orderRepo.save(mainOrder);
-//           console.log(`[${requestId}] ✅ mainOrder saved after error update`);
+//           // console.log(`[${requestId}] ✅ mainOrder saved after error update`);
 //         }
 //       } // end quantity loop
 //     } // end cart items loop
 
 //     // 🔹 Step 4: Final order status resolution
-//     console.log(`[${requestId}] 🔍 Resolving final order status`, { createdEsimsCount: createdEsims.length, totalEsimsInCart });
+//     // console.log(`[${requestId}] 🔍 Resolving final order status`, { createdEsimsCount: createdEsims.length, totalEsimsInCart });
 //     if (createdEsims.length === 0) {
 //       mainOrder.status = ORDER_STATUS.FAILED;
 //       mainOrder.activated = false;
@@ -248,16 +248,16 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 //       mainOrder.activated = true;
 //     }
 
-//     console.log(`[${requestId}] 💾 Saving final order status`, { status: mainOrder.status, activated: mainOrder.activated });
+//     // console.log(`[${requestId}] 💾 Saving final order status`, { status: mainOrder.status, activated: mainOrder.activated });
 //     await orderRepo.save(mainOrder);
 
 //     // Mark cart checked out
 //     latestCart.isCheckedOut = true;
-//     console.log(`[${requestId}] 💾 Marking cart checked out`, { cartId: latestCart.id });
+//     // console.log(`[${requestId}] 💾 Marking cart checked out`, { cartId: latestCart.id });
 //     await cartRepo.save(latestCart);
 
 //     // 🔹 Step 5: Send confirmation email
-//     console.log(`[${requestId}] ✉️ Sending order email to`, user.email);
+//     // console.log(`[${requestId}] ✉️ Sending order email to`, user.email);
 //     try {
 //       await sendOrderEmail(
 //         user.email,
@@ -271,7 +271,7 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 //         },
 //         (mainOrder?.status === "COMPLETED") ? "COMPLETED" : (mainOrder?.status === "FAILED") ? "FAILED" : "PARTIAL"
 //       );
-//       console.log(`[${requestId}] ✅ Order email sent`);
+//       // console.log(`[${requestId}] ✅ Order email sent`);
 //     } catch (emailErr: any) {
 //       console.error(`[${requestId}] ❌ Failed to send order email`, emailErr?.message || emailErr);
 //     }
@@ -283,7 +283,7 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 //       failedCount: totalEsimsInCart - createdEsims.length,
 //     };
 
-//     console.log(`[${requestId}] ✅ Final responseSummary`, responseSummary);
+//     // console.log(`[${requestId}] ✅ Final responseSummary`, responseSummary);
 
 //     const statusMapping: Record<string, { code: number; msg: string }> = {
 //       completed: { code: 201, msg: "Order completed successfully" },
@@ -292,7 +292,7 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 //     };
 
 //     const { code, msg } = statusMapping[mainOrder.status.toLowerCase()] || statusMapping.failed;
-//     console.log(`[${requestId}] 🔚 Returning response`, { code, msg });
+//     // console.log(`[${requestId}] 🔚 Returning response`, { code, msg });
 
 //     return res.status(code).json({
 //       message: msg,
@@ -309,14 +309,14 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 //       try {
 //         mainOrder.status = "failed";
 //         mainOrder.errorMessage = err.message;
-//         console.log(`[${requestId}] 💾 Saving failed mainOrder in catch`);
+//         // console.log(`[${requestId}] 💾 Saving failed mainOrder in catch`);
 //         await orderRepo.save(mainOrder);
-//         console.log(`[${requestId}] ✅ mainOrder saved in catch`);
+//         // console.log(`[${requestId}] ✅ mainOrder saved in catch`);
 //       } catch (saveErr: any) {
 //         console.error(`[${requestId}] ❌ Failed to save mainOrder in catch`, saveErr?.message || saveErr);
 //       }
 //     }
-//     console.log(`[${requestId}] 🔚 Exiting postOrder with 500`);
+//     // console.log(`[${requestId}] 🔚 Exiting postOrder with 500`);
 //     return res.status(500).json({ message: "Order failed", error: err.message });
 //   }
 // };
@@ -538,6 +538,7 @@ export const getUserAllSims = async (req: any, res: Response) => {
 
         updatedEsims.push(esim);
       } catch (apiErr: any) {
+        console.error(`Failed to update eSIM ${esim.iccid}:`, apiErr);
         console.error(`Failed to update eSIM ${esim.iccid}:`, apiErr.message);
         updatedEsims.push(esim); // still include old data if API fails
       }
@@ -615,7 +616,7 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
 
     }
 
-    console.log("----- simResponse?.data?.data -----", simResponse?.data?.data);
+    // console.log("----- simResponse?.data?.data -----", simResponse?.data?.data);
 
     const simData = simResponse?.data?.data || esim;
     if (!simData) {
@@ -700,21 +701,21 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
 };
 
 export const getUserSimSummary = async (req: any, res: Response) => {
-  console.log("=== HIT getUserSimSummary route ===");
-  console.log("Request user:", req.user);
+  // console.log("=== HIT getUserSimSummary route ===");
+  // console.log("Request user:", req.user);
 
   // return res.status(200).json({ message: "eSIM summary fetched successfully", status: "success", data: {} });
 
   const { id, role } = req.user;
 
   if (!id || role !== "user") {
-    console.log("Unauthorized access attempt");
+    // console.log("Unauthorized access attempt");
     return res.status(401).json({ message: "Unauthorized", status: "error" });
   }
 
   try {
     const esimRepo = AppDataSource.getRepository(Esim);
-    console.log("Repository initialized:", !!esimRepo);
+    // console.log("Repository initialized:", !!esimRepo);
 
     // Fetch all eSIMs (linked directly or through an order)
     const esims = await esimRepo.find({
@@ -726,13 +727,13 @@ export const getUserSimSummary = async (req: any, res: Response) => {
       order: { createdAt: "DESC" },
     });
 
-    console.log("------- esims fetched for summary --------", esims.length);
+    // console.log("------- esims fetched for summary --------", esims.length);
     if (esims.length > 0) {
-      console.log("First eSIM record:", esims[0]);
+      // console.log("First eSIM record:", esims[0]);
     }
 
     if (!esims.length) {
-      console.log("No eSIMs found for this user");
+      // console.log("No eSIMs found for this user");
       return res.status(200).json({
         message: "No eSIMs found for this user",
         status: "success",
@@ -751,7 +752,7 @@ export const getUserSimSummary = async (req: any, res: Response) => {
     const activeSims = esims.filter((e) => e.isActive).length;
     const inactiveSims = totalSims - activeSims;
 
-    console.log("Stats: totalSims =", totalSims, "activeSims =", activeSims, "inactiveSims =", inactiveSims);
+    // console.log("Stats: totalSims =", totalSims, "activeSims =", activeSims, "inactiveSims =", inactiveSims);
 
     // --- Group by Plan ---
     const planSummary = new Map<
@@ -788,8 +789,8 @@ export const getUserSimSummary = async (req: any, res: Response) => {
 
     const planSummaryArray = Array.from(planSummary.values());
     const totalData = planSummaryArray.reduce((sum, p) => sum + p.totalData, 0);
-    console.log("Plan summary:", planSummaryArray);
-    console.log("Total data across all plans:", totalData);
+    // console.log("Plan summary:", planSummaryArray);
+    // console.log("Total data across all plans:", totalData);
 
     // --- Response ---
     return res.status(200).json({
@@ -921,7 +922,7 @@ export const postUserClaimRefund = async (req: any, res: Response) => {
 export const getOrderStatus = async (req: any, res: Response) => {
   const { transactionId } = req.params;
 
-  // console.log("----- transaction id ----",transactionId);
+  // // console.log("----- transaction id ----",transactionId);
   const orderRepo = AppDataSource.getRepository(Order);
 
   const order = await orderRepo.findOne({

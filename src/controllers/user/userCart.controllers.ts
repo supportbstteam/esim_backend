@@ -46,7 +46,7 @@ export const addToCart = async (req: any, res: Response) => {
             await cartRepo.save(cart);
         }
 
-        // console.log("----- new cart required -----", cart);
+        // // console.log("----- new cart required -----", cart);
         // Add or update cart items
         for (const p of plans) {
 
@@ -61,9 +61,9 @@ export const addToCart = async (req: any, res: Response) => {
                 existingItem.quantity += quantityToAdd;
                 await cartItemRepo.save(existingItem);
 
-                // console.log('============== EXISITNG CART ITEMS ======================');
-                // console.log(existingItem);
-                // console.log('====================================');
+                // // console.log('============== EXISITNG CART ITEMS ======================');
+                // // console.log(existingItem);
+                // // console.log('====================================');
             } else {
                 const newItem = cartItemRepo.create({
                     cart,
@@ -74,9 +74,9 @@ export const addToCart = async (req: any, res: Response) => {
                 });
                 await cartItemRepo.save(newItem);
 
-                console.log('================ NEW CART ITEM ====================');
-                console.log(newItem);
-                console.log('====================================');
+                // console.log('================ NEW CART ITEM ====================');
+                // console.log(newItem);
+                // console.log('====================================');
             }
         }
 

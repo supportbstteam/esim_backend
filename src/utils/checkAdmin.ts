@@ -27,7 +27,7 @@ export const checkAdmin = async (req: any, res: Response): Promise<boolean> => {
 
         return true;
     } catch (error) {
-        console.log("---error ---", error);
+        // console.log("---error ---", error);
         res.status(500).json({ message: "Authorization failed", error });
         return false;
     }

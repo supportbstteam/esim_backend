@@ -19,7 +19,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
             .getMany();
 
 
-        // console.log("-----  ")
+        // // console.log("-----  ")
 
         // ✅ Response structure focusing on Order-level customer info
         const formattedOrders = orders.map((order) => ({

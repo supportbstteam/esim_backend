@@ -41,8 +41,8 @@ export const createEsimFromThirdParty = async (
             { headers: thirdPartyToken }
         );
 
-        console.log(" ✅ ----- response in the posting esim ---- ✅ ", response)
-        console.log(" ✅ ------------------------------------------- ✅ ")
+        // console.log(" ✅ ----- response in the posting esim ---- ✅ ", response)
+        // console.log(" ✅ ------------------------------------------- ✅ ")
         // ✅ Handle success
         if (response.data && response.data.data) {
             const data = response.data.data;

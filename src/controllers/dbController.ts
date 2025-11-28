@@ -9,5 +9,5 @@ export const clearDatabase = async () => {
         await repository.query(`TRUNCATE TABLE \`${entity.tableName}\``);
     }
 
-    console.log("✅ All tables truncated successfully.");
+    // console.log("✅ All tables truncated successfully.");
 };

@@ -116,7 +116,7 @@ export class Order {
         const nextNum = lastNum + 1;
         this.orderCode = `${prefix}${String(nextNum).padStart(5, "0")}`;
 
-        console.log(`✅ Generated orderCode: ${this.orderCode}`);
+        // console.log(`✅ Generated orderCode: ${this.orderCode}`);
 
         await queryRunner.commitTransaction();
       } catch (err) {

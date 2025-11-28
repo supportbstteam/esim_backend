@@ -9,12 +9,12 @@ import { Plan } from "../../entity/Plans.entity";
 import { TopUpPlan } from "../../entity/Topup.entity";
 
 export const thirdPartyLogin = async (req: any, res: Response) => {
-    // console.log("---- third party login ----", req);
+    // // console.log("---- third party login ----", req);
     try {
 
         // ✅ Admin check
         const isAdmin = await checkAdmin(req, res);
-        // console.log("---- isAdmin ----", isAdmin);
+        // // console.log("---- isAdmin ----", isAdmin);
         if (!isAdmin) {
             return;
         }
@@ -108,7 +108,7 @@ export const postImportThirdPartyPlans = async (req: any, res: Response) => {
 
     const isAdmin = checkAdmin(req, res);
 
-    // console.log("------- third party token----", req.thirdPartyToken);
+    // // console.log("------- third party token----", req.thirdPartyToken);
     if (!isAdmin)
         return res.status(401).json({
             message: "Unauthorized, please login",
@@ -137,7 +137,7 @@ export const postImportThirdPartyPlans = async (req: any, res: Response) => {
             // 2️⃣ Handle country
             const countryData = apiPlan.country;
 
-            console.log("------ country name ----", countryData)
+            // console.log("------ country name ----", countryData)
             if (!countryData) continue;
 
             // Check if country exists by name
@@ -215,7 +215,7 @@ export const postImportTopUpPlans = async (req: any, res: Response) => {
     if (!isAdmin)
         return res.status(401).json({ message: "Unauthorized, please login" });
 
-    console.log("---- top up token ----", req.thirdPartyToken)
+    // console.log("---- top up token ----", req.thirdPartyToken)
 
     try {
         // 1️⃣ Fetch top-up plans from API

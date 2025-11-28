@@ -66,7 +66,7 @@ export const sendOtpEmail = async (to: string, otp: string) => {
       `
     );
     const mail: any = await adminMailNotfication();
-    console.log("----- mail to the admin -----", mail);
+    // console.log("----- mail to the admin -----", mail);
     const info = await transporter.sendMail({
       from: mail,
       to,
@@ -75,7 +75,7 @@ export const sendOtpEmail = async (to: string, otp: string) => {
       html,
     });
 
-    console.log(`✅ OTP email sent to ${to} (messageId: ${info.messageId})`);
+    // console.log(`✅ OTP email sent to ${to} (messageId: ${info.messageId})`);
   } catch (error: any) {
     console.error("❌ Failed to send OTP email:", error.message);
   }
@@ -108,7 +108,7 @@ export const sendOrderConfirmationEmail = async (userEmail: string, order: any) 
     html,
   });
 
-  console.log("✅ Order email sent to user:", userEmail);
+  // console.log("✅ Order email sent to user:", userEmail);
 };
 
 // ---------- 1️⃣(b) Order Notification to Admin ----------
@@ -119,8 +119,8 @@ export const sendAdminOrderNotification = async (order: any) => {
       <p>A new order has been placed by <strong>${order?.name}</strong>.</p>
       <p><b>Order ID:</b> ${order?.orderCode}<br/>
       <p><b>Customer Name:</b> ${order?.name}<br/>
-      <p><b>Customer Name:</b> ${order?.mail}<br/>
-      ${order?.phone && `<p><b>Customer Name:</b> ${order?.phone}<br/>`}
+      <p><b>Customer Email:</b> ${order?.email}<br/>
+      ${order?.phone && `<p><b>Customer Phone:</b> ${order?.phone || "not provided"}<br/>`}
       <b>Amount:</b> $${order?.totalAmount}<br/>
       <b>Status:</b> ${order.status}</p>
       <p><a href="${process?.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View in Dashboard</a></p>
@@ -134,7 +134,7 @@ export const sendAdminOrderNotification = async (order: any) => {
     html,
   });
 
-  console.log("✅ Order email sent to admin:", mail);
+  // console.log("✅ Order email sent to admin:", mail);
 };
 
 // ---------- 2️⃣(b) Welcome Email to New User ----------
@@ -162,7 +162,7 @@ export const sendUserWelcomeEmail = async (userEmail: string, user: any) => {
     html,
   });
 
-  console.log(`✅ Welcome email sent to user: ${userEmail}`);
+  // console.log(`✅ Welcome email sent to user: ${userEmail}`);
 };
 
 // ---------- 2️⃣(c) Notify Admin When User Verifies OTP ----------
@@ -190,7 +190,7 @@ export const sendAdminUserVerifiedNotification = async (adminEmail: string, user
     html,
   });
 
-  console.log(`✅ Admin notified about verified user: ${user.email}`);
+  // console.log(`✅ Admin notified about verified user: ${user.email}`);
 };
 
 // ---------- 3️⃣ Password Updated (User) ----------
@@ -210,7 +210,7 @@ export const sendPasswordUpdateEmail = async (userEmail: string, userName: strin
     html,
   });
 
-  console.log("✅ Password update email sent:", userEmail);
+  // console.log("✅ Password update email sent:", userEmail);
 };
 
 // ---------- 4️⃣ Refund Notification (User + Admin) ----------
@@ -254,7 +254,7 @@ export const sendRefundEmails = async (userEmail: string, adminEmail: string, re
     html: adminHtml,
   });
 
-  console.log("✅ Refund emails sent (user + admin)");
+  // console.log("✅ Refund emails sent (user + admin)");
 };
 
 /**
@@ -290,7 +290,7 @@ export const sendPasswordChangeEmail = async (to: string, name?: string) => {
       html,
     });
 
-    console.log(`✅ Password change email sent to ${to}`);
+    // console.log(`✅ Password change email sent to ${to}`);
   } catch (error: any) {
     console.error("❌ Failed to send password change email:", error.message);
   }
@@ -326,7 +326,7 @@ export const sendUserBlockedEmail = async (to: string, name?: string, reason?: s
       html,
     });
 
-    console.log(`✅ Block notification sent to ${to}`);
+    // console.log(`✅ Block notification sent to ${to}`);
   } catch (error: any) {
     console.error("❌ Failed to send blocked user email:", error.message);
   }
@@ -362,7 +362,7 @@ export const sendAccountDeletedEmail = async (to: string, name?: string) => {
       html,
     });
 
-    console.log(`✅ Account deletion email sent to ${to}`);
+    // console.log(`✅ Account deletion email sent to ${to}`);
   } catch (error: any) {
     console.error("❌ Failed to send account deletion email:", error.message);
   }
@@ -469,7 +469,7 @@ export const sendOrderEmail = async (
       html,
     });
 
-    console.log(`📩 Order ${status} email sent to ${userEmail} and admin ${mail}`);
+    // console.log(`📩 Order ${status} email sent to ${userEmail} and admin ${mail}`);
   } catch (error: any) {
     console.error("❌ Failed to send order email:", error.message);
   }
@@ -504,7 +504,7 @@ export const sendForgotPasswordOtpEmail = async (to: string, otp: string) => {
       html,
     });
 
-    console.log(`✅ Forgot Password OTP email sent to ${to}`);
+    // console.log(`✅ Forgot Password OTP email sent to ${to}`);
   } catch (error: any) {
     console.error("❌ Failed to send Forgot Password OTP email:", error.message);
   }
@@ -594,7 +594,7 @@ export const sendRefundClaimEmail = async (
       html,
     });
 
-    console.log(`✅ Refund claim email sent to admin for order ${order.orderCode}`);
+    // console.log(`✅ Refund claim email sent to admin for order ${order.orderCode}`);
   } catch (error: any) {
     console.error("❌ Failed to send refund claim email:", error.message);
   }
@@ -608,8 +608,8 @@ export const sendTopUpUserNotification = async (order: any) => {
       <p>A new order has been placed by <strong>${order?.user?.name}</strong>.</p>
       <p><b>Order ID:</b> ${order?.orderCode}<br/>
       <p><b>Customer Name:</b> ${order?.name}<br/>
-      <p><b>Customer Name:</b> ${order?.mail}<br/>
-      ${order?.phone && `<p><b>Customer Name:</b> ${order?.phone}<br/>`}
+      <p><b>Customer e-mail:</b> ${order?.email}<br/>
+      ${order?.phone && `<p><b>Customer phone:</b> ${order?.phone || "not provided"}<br/>`}
       <b>Amount:</b> $${order?.totalAmount}<br/>
       <b>Status:</b> ${order?.status || "In Active"}</p>
       <p><a href="${`${process?.env.ADMIN_URL}/admin/orders/plans`|| "#"}" style="color: #0070f3;">View in Dashboard</a></p>
@@ -623,5 +623,5 @@ export const sendTopUpUserNotification = async (order: any) => {
     html,
   });
 
-  console.log("✅ Order email sent to admin:", mail);
+  // console.log("✅ Order email sent to admin:", mail);
 };

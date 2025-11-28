@@ -8,7 +8,7 @@ export const createBlog = async (req: Request, res: Response) => {
 
         const { title, content, category, coverImage, published, summary } = req.body;
 
-        // console.log("----- summary ----", summary)
+        // // console.log("----- summary ----", summary)
 
         if (!title) {
             return res.status(400).json({ message: "Title and content are required" });

@@ -72,33 +72,33 @@ app.use("/api/user", userRouter);
 app.use(errorHandler);
 
 // ======= Initialize DB and then Start Everything =======
-AppDataSource.initialize()
-  .then(() => {
-    console.log("✅ Database connected.");
+// AppDataSource.initialize()
+//   .then(() => {
+//     // console.log("✅ Database connected.");
 
-    // 🕒 Start cron after DB is ready
-    cron.schedule(
-      "0 0 * * *", // ⏰ Every day at 00:00
-      async () => {
-        console.log("🕛 Running scheduler (Europe/Istanbul): Importing 3rd-party plans...");
-        try {
-          await postSchedularImportPlans();
-          console.log("✅ Scheduler completed successfully");
-        } catch (err) {
-          console.error("❌ Scheduler failed:", err);
-        }
-      },
-      {
-        timezone: "Europe/Istanbul", // 👈 ensures midnight Turkey time
-      }
-    );
+//     // 🕒 Start cron after DB is ready
+//     cron.schedule(
+//       "0 0 * * *", // ⏰ Every day at 00:00
+//       async () => {
+//         // console.log("🕛 Running scheduler (Europe/Istanbul): Importing 3rd-party plans...");
+//         try {
+//           await postSchedularImportPlans();
+//           // console.log("✅ Scheduler completed successfully");
+//         } catch (err) {
+//           console.error("❌ Scheduler failed:", err);
+//         }
+//       },
+//       {
+//         timezone: "Europe/Istanbul", // 👈 ensures midnight Turkey time
+//       }
+//     );
 
-    // 🚀 Start the server
-    app.listen(4000, "0.0.0.0", () => console.log("🚀 Server running on port 4000"));
-  })
-  .catch((err) => {
-    console.error("❌ DB initialization failed:", err);
-  });
+//     // 🚀 Start the server
+//     app.listen(4000, "0.0.0.0", () => // console.log("🚀 Server running on port 4000"));
+//   })
+//   .catch((err) => {
+//     console.error("❌ DB initialization failed:", err);
+//   });
 
 export default app;
 

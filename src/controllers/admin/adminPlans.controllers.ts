@@ -114,7 +114,7 @@ export const getPlans = async (req: Request, res: Response) => {
 // GET a single plan by ID
 export const getPlanById = async (req: Request, res: Response) => {
 
-    // console.log("------ params ------", req.params?.)
+    // // console.log("------ params ------", req.params?.)
     try {
         const planRepo = AppDataSource.getRepository(Plan);
         const { planId } = req.params;

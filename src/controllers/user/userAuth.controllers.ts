@@ -189,7 +189,7 @@ export const postUserLogin = async (req: Request, res: Response) => {
 // GET USER DETAILS (requires JWT)
 // -----------------------------
 export const getUserDetails = async (req: any, res: Response) => {
-    // console.log("---- fetch user details ------");
+    // // console.log("---- fetch user details ------");
     try {
         const userRepo = AppDataSource.getRepository(User);
 
@@ -269,7 +269,7 @@ export const updateProfile = async (req: any, res: Response) => {
         // ✅ Password update with verification
         if (password) {
             if (!currentPassword) {
-                console.log("-=-=-=-= current password in not set -=-=-=-=-=");
+                // console.log("-=-=-=-= current password in not set -=-=-=-=-=");
                 return res.status(400).json({
                     message: "Current password is required to set a new password",
                 });
@@ -277,7 +277,7 @@ export const updateProfile = async (req: any, res: Response) => {
 
             const isMatch = await bcrypt.compare(currentPassword, user.password);
             if (!isMatch) {
-                console.log("-=-=-=-= current password is not matching-=-=-=-=-=");
+                // console.log("-=-=-=-= current password is not matching-=-=-=-=-=");
                 return res.status(400).json({ message: "Current password is incorrect" });
             }
 
@@ -474,7 +474,7 @@ export const postResetPassword = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
 
-        console.log("✅---- email, password ---",email,password);
+        // console.log("✅---- email, password ---",email,password);
         
         if (!email || !password) {
             return res.status(400).json({ message: "Email and new password are required" });

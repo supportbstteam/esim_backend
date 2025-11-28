@@ -54,7 +54,7 @@ export const tokenTurismApiForSchedular = async (): Promise<string | null> => {
 
         // Validate and extract token
         if (apiResponse?.data?.status === "success" && apiResponse.data?.token) {
-            console.log("✅ New third-party token generated successfully");
+            // console.log("✅ New third-party token generated successfully");
             return apiResponse.data.token; // return only token
         } else {
             console.error("❌ Token generation failed: Invalid response structure", apiResponse.data);

@@ -19,11 +19,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 
 export const initiateMobileTopUpTransaction = async (req: any, res: Response) => {
 
-    console.log("-=-=--=-=-=-=-= in the initiate mobile top up transaction -=--=-=--=-=-=-=-=-", req.body)
+    // console.log("-=-=--=-=-=-=-= in the initiate mobile top up transaction -=--=-=--=-=-=-=-=-", req.body)
     const userId = req.user?.id;
     const { topupId, esimId } = req.body;
 
-    console.log("📱 initiateMobileTopUpTransaction started for:", userId);
+    // console.log("📱 initiateMobileTopUpTransaction started for:", userId);
 
     if (!userId || !topupId || !esimId) {
         return res.status(400).json({ message: "Missing required fields" });
@@ -91,7 +91,7 @@ export const initiateMobileTopUpTransaction = async (req: any, res: Response) =>
 
 
 export const handleMobileTopUpStripeWebhook = async (req: any, res: Response) => {
-    console.log("🚀 [WEBHOOK] Mobile TopUp Stripe webhook received");
+    // console.log("🚀 [WEBHOOK] Mobile TopUp Stripe webhook received");
 
     const sig = req.headers["stripe-signature"];
     const endpointSecret = process.env.STRIPE_MOBILE_TOPUP_WEBHOOK_SECRET || "";
@@ -105,7 +105,7 @@ export const handleMobileTopUpStripeWebhook = async (req: any, res: Response) =>
 
     try {
         event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-        console.log("✅ Webhook verified:", event.type);
+        // console.log("✅ Webhook verified:", event.type);
     } catch (err: any) {
         console.error("❌ Signature verification failed:", err.message);
         return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -172,7 +172,7 @@ export const handleMobileTopUpStripeWebhook = async (req: any, res: Response) =>
 
         await esimTopUpRepo.save(esimTopUp);
 
-        console.log("🎉 Top-up order created successfully");
+        // console.log("🎉 Top-up order created successfully");
         return res.status(200).json({ received: true });
 
     } catch (err: any) {
@@ -186,7 +186,7 @@ export const handleMobileTopUpStripeWebhook = async (req: any, res: Response) =>
 export const getTopUpStatus = async (req: any, res: Response) => {
     const { transactionId } = req.params;
 
-    console.log("----- TopUp transaction id ----", transactionId);
+    // console.log("----- TopUp transaction id ----", transactionId);
 
     const transactionRepo = AppDataSource.getRepository(Transaction);
     const esimTopUpRepo = AppDataSource.getRepository(EsimTopUp);
@@ -249,17 +249,17 @@ export const getTopUpStatus = async (req: any, res: Response) => {
 };
 
 export const initiateCODTopUpTransaction = async (req: any, res: Response) => {
-    console.log("➡️ [COD-TOPUP] Request received:", req.body);
+    // console.log("➡️ [COD-TOPUP] Request received:", req.body);
 
     const userId = req.user?.id;
     const { topupId, esimId } = req.body;
 
-    console.log("🔍 User ID:", userId);
-    console.log("🔍 TopUp ID:", topupId);
-    console.log("🔍 eSIM ID:", esimId);
+    // console.log("🔍 User ID:", userId);
+    // console.log("🔍 TopUp ID:", topupId);
+    // console.log("🔍 eSIM ID:", esimId);
 
     if (!userId || !topupId || !esimId) {
-        console.log("❌ Missing fields");
+        // console.log("❌ Missing fields");
         return res.status(400).json({ message: "topupId and esimId are required" });
     }
 
@@ -273,12 +273,12 @@ export const initiateCODTopUpTransaction = async (req: any, res: Response) => {
         const esimTopUpRepo = AppDataSource.getRepository(EsimTopUp);
 
         // 1️⃣ Validate user
-        console.log("📦 Fetching user...");
+        // console.log("📦 Fetching user...");
         const user = await userRepo.findOne({ where: { id: userId } });
         if (!user) return res.status(404).json({ message: "User not found" });
 
         // 2️⃣ Validate eSIM
-        console.log("📦 Fetching eSIM...");
+        // console.log("📦 Fetching eSIM...");
         const esim = await esimRepo.findOne({
             where: { id: esimId, user: { id: userId } },
             relations: ["country", "plans"],
@@ -292,17 +292,17 @@ export const initiateCODTopUpTransaction = async (req: any, res: Response) => {
         const basePlanId = esim.plans[0].id;
 
         // 3️⃣ Validate top-up plan
-        console.log("📦 Fetching TopUp plan...");
+        // console.log("📦 Fetching TopUp plan...");
         const topUp = await topUpRepo.findOne({
             where: { id: topupId, isActive: true, isDeleted: false }
         });
         if (!topUp) return res.status(404).json({ message: "Top-up plan not found" });
 
         const amount = Number(topUp.price || 0);
-        console.log("💰 Amount:", amount);
+        // console.log("💰 Amount:", amount);
 
         // 4️⃣ Create COD transaction
-        console.log("🧾 Creating COD transaction...");
+        // console.log("🧾 Creating COD transaction...");
         const transaction = transactionRepo.create({
             user,
             esim,
@@ -315,10 +315,10 @@ export const initiateCODTopUpTransaction = async (req: any, res: Response) => {
         });
 
         await transactionRepo.save(transaction);
-        console.log("✅ Transaction created:", transaction.id);
+        // console.log("✅ Transaction created:", transaction.id);
 
         // 5️⃣ Create order
-        console.log("🧾 Creating order...");
+        // console.log("🧾 Creating order...");
         const order = orderRepo.create({
             user,
             transaction,
@@ -333,10 +333,10 @@ export const initiateCODTopUpTransaction = async (req: any, res: Response) => {
         });
 
         await orderRepo.save(order);
-        console.log("✅ Order created:", order.id);
+        // console.log("✅ Order created:", order.id);
 
         // 6️⃣ Send Top-Up request to API
-        console.log("📡 Calling TopUp API...");
+        // console.log("📡 Calling TopUp API...");
 
         const formdata = new FormData();
         formdata.append("product_plan_id", String(topUp.topupId || ""));
@@ -355,11 +355,11 @@ export const initiateCODTopUpTransaction = async (req: any, res: Response) => {
             { headers }
         );
 
-        console.log("📡 TopUp API Response:", response.data);
+        // console.log("📡 TopUp API Response:", response.data);
 
         // 7️⃣ Success case
         if (response.data?.status === "success") {
-            console.log("✅ TopUp success — updating DB");
+            // console.log("✅ TopUp success — updating DB");
 
             transaction.status = "SUCCESS";
             await transactionRepo.save(transaction);
@@ -389,7 +389,7 @@ export const initiateCODTopUpTransaction = async (req: any, res: Response) => {
         }
 
         // 8️⃣ Failure case
-        console.log("❌ TopUp failed — rolling back");
+        // console.log("❌ TopUp failed — rolling back");
 
         transaction.status = "FAILED";
         await transactionRepo.save(transaction);

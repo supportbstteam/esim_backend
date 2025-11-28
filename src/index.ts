@@ -1,14 +1,21 @@
-import "reflect-metadata"; // MUST be first
+import "reflect-metadata";
 import "dotenv/config";
 import app from "./app";
-import { connectDB } from "./lib/db";
+import { AppDataSource } from "./data-source";
 
 const PORT = process.env.PORT || 4000;
 
 (async () => {
-  await connectDB(); // TypeORM initialized before server
+  try {
+    await AppDataSource.initialize();
+    console.log("📦 Data Source initialized");
+    console.log("📦 Loaded entities:", AppDataSource.entityMetadatas.map(e => e.name));
 
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-  });
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ Database connection failed:", error);
+    process.exit(1);
+  }
 })();

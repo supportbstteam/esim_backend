@@ -15,7 +15,7 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
     const { id } = req.user || {};
     const { topupId, transactionId, esimId } = req.body;
 
-    console.log("POST /topup - payload:", { topupId, transactionId, esimId, userId: id });
+    // console.log("POST /topup - payload:", { topupId, transactionId, esimId, userId: id });
 
     if (!id)
         return res.status(401).json({ status: false, message: "Unauthorized" });
@@ -35,7 +35,7 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
         const esimTopUpRepo = AppDataSource.getRepository(EsimTopUp);
 
         const user = await userRepo.findOne({ where: { id } });
-        const topUp:any = await topUpRepo.findOne({ where: { id: topupId } });
+        const topUp: any = await topUpRepo.findOne({ where: { id: topupId } });
         const esim: any = await esimRepo.findOne({
             where: { id: esimId },
             relations: ["country", "plans"],
@@ -108,7 +108,7 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
             }
         );
 
-        console.log("----- response.data top up ----", response.data);
+        // // console.log("----- response.data top up ----", response.data);
 
         // -------------------- SUCCESS CASE --------------------
         if (response.data?.status === "success") {
@@ -127,7 +127,10 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
             });
             await esimTopUpRepo.save(esimTopUp);
 
+            // console.log("Top-up successful for order:", order);
+
             await sendAdminOrderNotification(order);
+
             await sendTopUpUserNotification(order);
 
             return res.status(200).json({
@@ -187,7 +190,7 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
                 order.errorMessage = err.message;
                 await orderRepo.save(order);
             }
-        } catch {}
+        } catch { }
 
         return res.status(500).json({
             status: false,
@@ -238,7 +241,7 @@ export const getUserTopUpPlans = async (req: any, res: Response) => {
 
         const countryId = esim?.country.id;
 
-        console.log("----- country id -----", countryId);
+        // // console.log("----- country id -----", countryId);
 
         // 2️⃣ Fetch all active top-up plans for this country
         const topUpPlans = await topupRepo.find({
@@ -246,7 +249,7 @@ export const getUserTopUpPlans = async (req: any, res: Response) => {
             order: { price: "ASC" }, // optional: sort by price
         });
 
-        console.log("----- topUpPlans id -----", topUpPlans);
+        // // console.log("----- topUpPlans id -----", topUpPlans);
         return res.status(200).json({
             status: true,
             data: topUpPlans,

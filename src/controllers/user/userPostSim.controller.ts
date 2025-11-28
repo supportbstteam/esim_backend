@@ -141,13 +141,13 @@ export async function reserveAndPurchaseSim(planId: number) {
 // Main handler (reworked)
 export const postOrder = async (req: any, res: Response) => {
   const requestId = `postOrder-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-  console.log(`[${requestId}] ▶ ENTER postOrder`, { body: req.body, user: req.user?.id });
+  // console.log(`[${requestId}] ▶ ENTER postOrder`, { body: req.body, user: req.user?.id });
 
   const { transactionId } = req.body;
   const userId = req.user?.id;
 
   if (!transactionId || !userId) {
-    console.log(`[${requestId}] ❌ Missing transactionId or userId`, { transactionId, userId });
+    // console.log(`[${requestId}] ❌ Missing transactionId or userId`, { transactionId, userId });
     return res.status(400).json({ message: "transactionId and userId are required" });
   }
 
@@ -166,7 +166,7 @@ export const postOrder = async (req: any, res: Response) => {
   let mainOrder: Order | null = null;
 
   try {
-    console.log(`[${requestId}] 🔎 Fetching transaction + user`);
+    // console.log(`[${requestId}] 🔎 Fetching transaction + user`);
     const transaction = await transactionRepo.findOne({
       where: { id: transactionId },
       relations: ["user", "cart", "cart.items", "cart.items.plan", "cart.items.plan.country"],
@@ -190,7 +190,7 @@ export const postOrder = async (req: any, res: Response) => {
       relations: ["esims", "user"],
     });
     if (existingOrder) {
-      console.log(`[${requestId}] ⚠️ Existing order detected, returning it`);
+      // console.log(`[${requestId}] ⚠️ Existing order detected, returning it`);
       return res.status(200).json({ message: "Order already processed", order: existingOrder });
     }
 
@@ -208,7 +208,7 @@ export const postOrder = async (req: any, res: Response) => {
       type: OrderType.ESIM,
     });
     await orderRepo.save(mainOrder);
-    console.log(`[${requestId}] ✅ Order saved`, { orderId: mainOrder.id });
+    // console.log(`[${requestId}] ✅ Order saved`, { orderId: mainOrder.id });
 
     // Build per-unit tasks for all items (so quantity 3 == 3 tasks)
     type UnitTask = { cartItem: CartItem; plan: any; unitIndex: number };
@@ -218,13 +218,13 @@ export const postOrder = async (req: any, res: Response) => {
       const existingEsimsForCartItem = await esimRepo.find({ where: { cartItem: { id: item.id } } });
       if (existingEsimsForCartItem && existingEsimsForCartItem.length > 0) {
         // If already exists, we consider these as already-created and skip
-        console.log(`[${requestId}] ⚠️ existing esims for cartItem ${item.id} -> skipping unit creation`);
+        // console.log(`[${requestId}] ⚠️ existing esims for cartItem ${item.id} -> skipping unit creation`);
         continue;
       }
       for (let i = 0; i < item.quantity; i++) tasks.push({ cartItem: item, plan, unitIndex: i });
     }
 
-    console.log(`[${requestId}] ℹ Total units to create:`, tasks.length);
+    // console.log(`[${requestId}] ℹ Total units to create:`, tasks.length);
 
     // Run reserve+purchase with limited concurrency
     const results = await Promise.allSettled(
@@ -348,7 +348,7 @@ export const postOrder = async (req: any, res: Response) => {
           },
           (mainOrder?.status === "COMPLETED") ? "COMPLETED" : (mainOrder?.status === "FAILED") ? "FAILED" : "PARTIAL"
         );
-        console.log(`[${requestId}] ✅ Order email sent (background)`);
+        // console.log(`[${requestId}] ✅ Order email sent (background)`);
       } catch (emailErr: any) {
         console.error(`[${requestId}] ❌ Background email failed`, emailErr?.message || emailErr);
       }

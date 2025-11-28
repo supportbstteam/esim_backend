@@ -41,7 +41,7 @@ export const initiateTransaction = async (req: any, res: Response) => {
             order: { createdAt: "DESC" }
         });
 
-        // console.log("----- cart item ---", cart);
+        // // console.log("----- cart item ---", cart);
 
         if (!cart || cart.items.length === 0) {
             return res.status(404).json({ message: "Cart is empty" });
@@ -95,7 +95,7 @@ export const initiateTransaction = async (req: any, res: Response) => {
  * Handle Stripe webhook
  */
 export const handleStripeWebhook = async (req: Request, res: Response) => {
-    console.log("-=-=-=-=-=- hello web-hook calling -=-=-=-=-=");
+    // console.log("-=-=-=-=-=- hello web-hook calling -=-=-=-=-=");
 
     // 🛑 Ignore unwanted webhook URLs
     const url = req.originalUrl || req.url;
@@ -103,7 +103,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
         url.includes("/mobile/stripe/webhook") ||
         url.includes("/mobile/top-up/stripe/webhook")
     ) {
-        console.log("⚠️ Ignoring mobile webhook route for payment_intent.succeeded");
+        // console.log("⚠️ Ignoring mobile webhook route for payment_intent.succeeded");
         return res.status(200).send("IGNORED");
     }
 
@@ -188,7 +188,7 @@ export const getUserTransactions = async (req: any, res: Response) => {
 };
 
 export const handleCODTransaction = async (req: any, res: Response) => {
-    console.log("➡️ [COD] Request received:", req.body);
+    // console.log("➡️ [COD] Request received:", req.body);
 
     const { cartId } = req.body;
     const userId = req.user?.id;
@@ -239,12 +239,12 @@ export const handleCODTransaction = async (req: any, res: Response) => {
 
         await transactionRepo.save(transaction);
 
-        console.log("✅ [COD] Transaction created:", transaction.id);
+        // console.log("✅ [COD] Transaction created:", transaction.id);
 
         // 5️⃣ NOW HAND OVER EVERYTHING TO createOrderAfterPayment()
         const { order, summary } = await createOrderAfterPayment(transaction, userId);
 
-        console.log("🎉 COD Order Flow Completed:", order.id);
+        // console.log("🎉 COD Order Flow Completed:", order.id);
 
         return res.status(201).json({
             message: "COD Order created successfully",

@@ -19,7 +19,7 @@ export const getValidThirdPartyToken = async (): Promise<string> => {
 
     // 2️⃣ If no token, generate new
     if (!tokenRow) {
-      console.log("🟠 No Turisim token found — generating new one...");
+      // console.log("🟠 No Turisim token found — generating new one...");
       const apiResponse = await tokenTurismApi();
       const token = apiResponse?.data?.token;
 
@@ -30,13 +30,13 @@ export const getValidThirdPartyToken = async (): Promise<string> => {
 
       tokenRow = tokenRepo.create({ provider, token, expiry: expiryDate });
       await tokenRepo.save(tokenRow);
-      console.log("✅ Token created and saved in DB");
+      // console.log("✅ Token created and saved in DB");
       return token;
     }
 
     // 3️⃣ Check expiry
     if (tokenRow.expiry && new Date(tokenRow.expiry) < new Date()) {
-      console.log("⚠️ Token expired — refreshing...");
+      // console.log("⚠️ Token expired — refreshing...");
       const apiResponse = await tokenTurismApi();
       const token = apiResponse?.data?.token;
       if (!token) throw new Error("Failed to refresh Turisim token");
@@ -47,19 +47,19 @@ export const getValidThirdPartyToken = async (): Promise<string> => {
       tokenRow.token = token;
       tokenRow.expiry = expiryDate;
       await tokenRepo.save(tokenRow);
-      console.log("✅ Token refreshed and saved");
+      // console.log("✅ Token refreshed and saved");
       return token;
     }
 
     // 4️⃣ Verify token with API
     const isValid = await verifyTokenTruismAPi(tokenRow.token);
     if (isValid) {
-      console.log("✅ Turisim token valid");
+      // console.log("✅ Turisim token valid");
       return tokenRow.token;
     }
 
     // 5️⃣ If verification fails → refresh token
-    console.log("⚠️ Token invalid — generating new...");
+    // console.log("⚠️ Token invalid — generating new...");
     const apiResponse = await tokenTurismApi();
     const token = apiResponse?.data?.token;
     if (!token) throw new Error("Failed to refresh invalid token");
@@ -70,7 +70,7 @@ export const getValidThirdPartyToken = async (): Promise<string> => {
     tokenRow.token = token;
     tokenRow.expiry = expiryDate;
     await tokenRepo.save(tokenRow);
-    console.log("✅ Token refreshed after failed verification");
+    // console.log("✅ Token refreshed after failed verification");
 
     return token;
   } catch (err: any) {

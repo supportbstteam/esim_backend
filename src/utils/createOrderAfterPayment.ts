@@ -9,7 +9,7 @@ import { User } from "../entity/User.entity";
 import { getValidThirdPartyToken } from "../middlewares/tokenTruism.service";
 
 export const createOrderAfterPayment = async (transaction: Transaction, userId: string) => {
-  console.log("🟣 [createOrderAfterPayment] Start | Transaction:", transaction?.id, "| User:", userId);
+  // console.log("🟣 [createOrderAfterPayment] Start | Transaction:", transaction?.id, "| User:", userId);
 
   const cartRepo = AppDataSource.getRepository(Cart);
   const orderRepo = AppDataSource.getRepository(Order);
@@ -34,7 +34,7 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
     const validCartItems = latestCart.items.filter((i) => !i.isDeleted && i.plan);
     if (!validCartItems.length) throw new Error("No valid cart items found");
 
-    console.log(`🛒 Valid Cart Found | Items: ${validCartItems.length}`);
+    // console.log(`🛒 Valid Cart Found | Items: ${validCartItems.length}`);
 
     // 🔹 Step 2: Create new order
     mainOrder = orderRepo.create({
@@ -51,13 +51,13 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
     });
 
     await orderRepo.save(mainOrder);
-    console.log("✅ Order created successfully:", mainOrder.id, "| Code:", mainOrder.orderCode);
+    // console.log("✅ Order created successfully:", mainOrder.id, "| Code:", mainOrder.orderCode);
 
     // 🔹 Step 3: Get valid third-party token
-    console.log("🔑 Fetching valid Turisim token...");
+    // console.log("🔑 Fetching valid Turisim token...");
     const token = await getValidThirdPartyToken();
     const headers = { Authorization: `Bearer ${token}` };
-    console.log("✅ Valid token acquired");
+    // console.log("✅ Valid token acquired");
 
     const createdEsims: Esim[] = [];
     const totalEsimsInCart = validCartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -68,7 +68,7 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
 
       for (let i = 0; i < item.quantity; i++) {
         try {
-          console.log(`⚙️ Processing eSIM for plan: ${plan.name} (${i + 1}/${item.quantity})`);
+          // console.log(`⚙️ Processing eSIM for plan: ${plan.name} (${i + 1}/${item.quantity})`);
 
           // Reserve eSIM
           const reserveResponse = await axios.get(
@@ -85,7 +85,7 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
             { headers }
           );
           const esimData = purchaseResponse.data?.data;
-          console.log("✅ eSIM purchased successfully:", esimData?.id);
+          // console.log("✅ eSIM purchased successfully:", esimData?.id);
 
           // Save eSIM
           const esim = esimRepo.create({
@@ -156,16 +156,16 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
     }
 
     await orderRepo.save(mainOrder);
-    console.log(`📊 eSIM Summary: Success=${successCount} | Failed=${failedCount} | Final Order Status=${mainOrder.status}`);
+    // console.log(`📊 eSIM Summary: Success=${successCount} | Failed=${failedCount} | Final Order Status=${mainOrder.status}`);
 
     // 🔹 Step 6: Mark cart as checked out
     latestCart.isCheckedOut = true;
     await cartRepo.save(latestCart);
-    console.log("🛒 Cart marked as checked out");
+    // console.log("🛒 Cart marked as checked out");
 
     // 🔹 Step 7: Send confirmation email
     try {
-      console.log("📧 Sending order confirmation email...");
+      // console.log("📧 Sending order confirmation email...");
       await sendOrderEmail(
         user.email,
         `${user.firstName} ${user.lastName}`,
@@ -182,12 +182,12 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
           ? "FAILED"
           : "PARTIAL"
       );
-      console.log("✅ Confirmation email sent to:", user.email);
+      // console.log("✅ Confirmation email sent to:", user.email);
     } catch (err: any) {
       console.error("⚠️ Email sending failed:", err.message);
     }
 
-    console.log("🎯 [createOrderAfterPayment] Completed successfully.");
+    // console.log("🎯 [createOrderAfterPayment] Completed successfully.");
     return { order: mainOrder, summary: { totalEsimsInCart, successCount, failedCount } };
   } catch (err: any) {
     console.error("💥 [createOrderAfterPayment] Error:", err.message);
