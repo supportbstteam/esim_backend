@@ -406,10 +406,14 @@ export const getOrderDetailsByUser = async (req: any, res: Response) => {
         ],
       });
 
-      const esims = esimTopUps.map((et) => ({
+      const esims = esimTopUps.map((et) => {
+
+        const topUps = et.topup ? [{...et.topup, purchasedOn:order?.transaction?.createdAt}] : [];
+        return({
         ...et.esim,
-        topUps: et.topup ? [et.topup] : [],
-      }));
+        topUps,
+      })});
+
 
       const formattedOrder = {
         ...order,
