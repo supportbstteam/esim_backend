@@ -128,8 +128,13 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
                 relations: ["user", "cart", "cart.items", "cart.items.plan", "cart.items.plan.country"],
             });
 
-            if (!transaction || transaction?.source !== "MOBILE") {
+            if (!transaction) {
                 console.error("❌ [WEBHOOK] No transaction found for PaymentIntent:", paymentIntent.id);
+                return res.status(404).send("Transaction not found");
+            }
+
+            if (transaction?.source !== "MOBILE") {
+                console.error("❌ [WEBHOOK] No transaction found for Mobile Payment Intent:", paymentIntent.id);
                 return res.status(404).send("Transaction not found");
             }
 
