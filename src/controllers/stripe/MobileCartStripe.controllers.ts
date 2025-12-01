@@ -139,7 +139,7 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
             }
 
             // console.log("✅ [WEBHOOK] Transaction found:", transaction.id);
-            // console.log("👤 [WEBHOOK] User:", transaction.user?.email);
+            // console.log("👤 [WEBHOOK] User:", transaction.user?.email); added
             // console.log("🛒 [WEBHOOK] Cart ID:", transaction.cart?.id);
 
             // 🔹 Step 5: Mark transaction success
