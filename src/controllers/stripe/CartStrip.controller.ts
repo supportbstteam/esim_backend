@@ -126,7 +126,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
             where: { transactionId: paymentIntent.id },
         });
 
-        if (!transaction) return res.status(404).send("Transaction not found");
+        if (!transaction || transaction?.source.toLowerCase() !== "web") return res.status(404).send("Transaction not found");
 
         // Mark successful
         transaction.status = "SUCCESS";

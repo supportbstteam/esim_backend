@@ -128,7 +128,7 @@ export const handleMobileTopUpStripeWebhook = async (req: any, res: Response) =>
             relations: ["user", "topupPlan", "esim", "esim.country"],
         });
 
-        if (!transaction) {
+        if (!transaction || transaction?.source !== "MOBILE") {
             console.error("❌ No transaction for:", paymentIntent.id);
             return res.status(404).send("Transaction not found");
         }
