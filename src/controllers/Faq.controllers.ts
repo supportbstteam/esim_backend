@@ -11,7 +11,7 @@ export const getFaqs = async (req: Request, res: Response) => {
     try {
         const faqs = await faqRepo.find({
             order: { order: "ASC" },
-            where: { isActive: true },
+            // where: { isActive: true },
         });
         res.json(faqs);
     } catch (err) {
@@ -37,24 +37,32 @@ export const createFaq = async (req: Request, res: Response) => {
         const adminCheck = await checkAdmin(req, res);
         if (!adminCheck) return;
 
-        const faqs = Array.isArray(req.body) ? req.body : [req.body];
+        const {question, answer, order, isActive} = req.body;
 
-        if (!faqs.length) {
-            return res.status(400).json({ message: "FAQ data is required" });
-        }
+        // const faqs = Array.isArray(req.body) ? req.body : [req.body];
 
-        for (const f of faqs) {
-            if (!f.question?.trim() || !f.answer?.trim()) {
-                return res.status(400).json({ message: "Each FAQ must include question and answer" });
-            }
-        }
+        // if (!faqs.length) {
+        //     return res.status(400).json({ message: "FAQ data is required" });
+        // }
 
-        const newFaqs = faqRepo.create(faqs);
-        const savedFaqs = await faqRepo.save(newFaqs);
+        // for (const f of faqs) {
+        //     if (!f.question?.trim() || !f.answer?.trim()) {
+        //         return res.status(400).json({ message: "Each FAQ must include question and answer" });
+        //     }
+        // }
+
+        const newFaqs = faqRepo.create({
+            question,
+            answer,
+            order,
+            isActive
+        });
+
+        await faqRepo.save(newFaqs);
 
         return res.status(201).json({
-            message: `${savedFaqs.length} FAQ(s) created successfully`,
-            data: savedFaqs,
+            message: `${newFaqs} FAQ(s) created successfully`,
+            data: newFaqs,
         });
     } catch (err) {
         console.error("Error creating FAQs:", err);
