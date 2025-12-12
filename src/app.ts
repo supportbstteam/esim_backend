@@ -2,7 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
-import bodyParser from "body-parser"; // 👈 add this
+import bodyParser from "body-parser";
 import { errorHandler } from "./middlewares/error.handler";
 import adminRouter from "./routes/admin/admin.route";
 import userRouter from "./routes/user/user.route";
@@ -11,7 +11,7 @@ import { AppDataSource } from "./data-source";
 import cron from "node-cron";
 import { postSchedularImportPlans } from "./controllers/admin/adminSchedulerController";
 
-// 👇 import your webhook controller
+// webhooks
 import { handleMobileStripeWebhook } from "./controllers/stripe/MobileCartStripe.controllers";
 import { handleMobileTopUpStripeWebhook } from "./controllers/stripe/MobileTopUpStripe.controllers";
 import { handleStripeWebhook } from "./controllers/stripe/CartStrip.controller";
