@@ -3,19 +3,18 @@ import "dotenv/config";
 import app from "./app";
 import { AppDataSource } from "./data-source";
 
-const PORT = process.env.PORT || 4000;
+let isInitialized = false;
 
-(async () => {
-  try {
+export default async function handler(req: any, res: any) {
+  if (!isInitialized) {
     await AppDataSource.initialize();
-    console.log("📦 Data Source initialized");
-    console.log("📦 Loaded entities:", AppDataSource.entityMetadatas.map(e => e.name));
+    isInitialized = true;
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error("❌ Database connection failed:", error);
-    process.exit(1);
+    console.log(
+      "📦 Entities loaded:",
+      AppDataSource.entityMetadatas.map(e => e.name)
+    );
   }
-})();
+
+  return app(req, res);
+}
