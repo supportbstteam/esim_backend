@@ -3,17 +3,15 @@ import "dotenv/config";
 import app from "./app";
 import { AppDataSource } from "./data-source";
 
-let isInitialized = false;
+let initialized = false;
 
 export default async function handler(req: any, res: any) {
-  if (!isInitialized) {
-    await AppDataSource.initialize();
-    isInitialized = true;
-
-    console.log(
-      "📦 Entities loaded:",
-      AppDataSource.entityMetadatas.map(e => e.name)
-    );
+  if (!initialized) {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+      console.log("📦 DB initialized");
+    }
+    initialized = true;
   }
 
   return app(req, res);
