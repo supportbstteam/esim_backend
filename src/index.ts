@@ -1,21 +1,26 @@
+// src/index.ts
 import "reflect-metadata";
 import "dotenv/config";
 import app from "./app";
 import { AppDataSource } from "./data-source";
 
-const PORT = process.env.PORT || 4000;
+const PORT = Number(process.env.PORT) || 4000;
 
-(async () => {
+async function startServer() {
   try {
-    await AppDataSource.initialize();
-    console.log("📦 Data Source initialized");
-    console.log("📦 Loaded entities:", AppDataSource.entityMetadatas.map(e => e.name));
+    if (!AppDataSource.isInitialized) {
+      console.log("🔄 Initializing DB (local)...");
+      await AppDataSource.initialize();
+      console.log("✅ DB initialized (local)");
+    }
 
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      console.log(`🚀 Local server running on http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error("❌ Database connection failed:", error);
+    console.error("❌ Failed to start local server:", error);
     process.exit(1);
   }
-})();
+}
+
+startServer();
