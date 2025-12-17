@@ -16,7 +16,7 @@ import adminBlogs from "./adminBlogs.route"
 import adminTestimonials from "./adminTestimonial.route"
 import adminFaq from "./adminFaq.route"
 import { deleteTopUpOrder, getAllTopUpOrders, getTopUpOrderById, getTopUpOrdersByUser, updateTopUpOrderStatus } from '../../controllers/admin/adminTopUpOrderControllers';
-
+import pagesRoutes from "./adminPage.route"
 
 const router = express.Router();
 
@@ -67,7 +67,7 @@ router.use("/e-sim", eSimRoute);
 router.use("/contact", adminContactRouter);
 router.use("/social-media", adminSocialRouter);
 router.use("/content", contentRouter);
-
+router.use("/cms/pages",pagesRoutes);
 // query
 router.use("/query", queryRoute);
 

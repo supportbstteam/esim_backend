@@ -94,3 +94,34 @@ export const getUserNotification = async (req: any, res: any) => {
     });
   }
 };
+
+
+export const putUserNotification = async (req: any, res: any) => {
+  const { id } = req.user;
+  const { notificationId } = req.body;
+
+  if (!id) {
+    return res.status(401).json({
+      success: false,
+      message: "User unauthorized",
+    });
+  }
+
+  if (!notificationId)
+    return res.status(404).json({
+      message: "Bhadwe koyi notification nahi hai esa"
+    })
+  try {
+
+  }
+  catch (err) {
+
+    console.error("❌ putUserNotification error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch notifications",
+    });
+
+  }
+}

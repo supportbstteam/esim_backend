@@ -25,11 +25,11 @@ export const addToCart = async (req: any, res: Response) => {
         const transactionRepo = AppDataSource.getRepository(Transaction);
 
         // ✅ Ensure user exists (might have been deleted)
-        const user = await userRepo.findOneBy({ id: userId });
+        const user = await userRepo.findOneBy({ id: userId, isBlocked: false, isVerified: true, isDeleted: false });
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found or has been deleted.",
+                message: "User not found or has been deleted or disabled.",
             });
         }
 
@@ -133,7 +133,7 @@ export const updateCartItem = async (req: any, res: Response) => {
             relations: ["cart", "cart.user"],
         });
         if (!cartItem) return res.status(404).json({ success: false, message: "Cart item not found." });
-        if (cartItem?.cart?.user && cartItem.cart.user.id !== userId) return res.status(403).json({ success: false, message: "You are not authorized to update this item." });
+        if (cartItem?.cart?.user && cartItem.cart.user.id !== userId && cartItem.cart?.user?.isBlocked && cartItem.cart.user.isDeleted ) return res.status(403).json({ success: false, message: "You are not authorized to update this item." });
 
         cartItem.quantity = quantity;
         await cartItemRepo.save(cartItem);
@@ -168,7 +168,7 @@ export const removeFromCart = async (req: any, res: Response) => {
                 .status(404)
                 .json({ success: false, message: "Cart item not found." });
 
-        if (cartItem.cart?.user?.id !== userId)
+        if (cartItem.cart?.user?.id !== userId && cartItem?.cart?.user?.isBlocked && cartItem?.cart?.user?.isDeleted)
             return res
                 .status(403)
                 .json({ success: false, message: "Unauthorized action." });
@@ -223,7 +223,7 @@ export const getUserCart = async (req: any, res: Response) => {
         // ✅ Find the latest active cart
         const latestCart = await cartRepo.findOne({
             where: {
-                user: { id },
+                user: { id, isBlocked:false, isDeleted:false },
                 isDeleted: false,
                 isCheckedOut: false,
                 isError: false,

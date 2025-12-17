@@ -5,5 +5,6 @@ import { auth } from '../../middlewares/auth.handler';
 const router = express.Router();
 
 router.get("/", getUserNotification);
+router.put("/", getUserNotification);
 
 export default router;

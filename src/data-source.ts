@@ -35,6 +35,8 @@ import { Testimonial } from "./entity/Testimonials.entity";
 import { EsimTopUp } from "./entity/EsimTopUp.entity";
 import { NotificationContent } from "./entity/NotificationContent.entity";
 import { UserDevice } from "./entity/UserDevices.entity";
+import { Page } from "./entity/Page.entity";
+import { PageSection } from "./entity/PageSection.entity";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -43,7 +45,6 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-
   synchronize: false,
   logging: false,
 //   dropSchema: false,
@@ -85,7 +86,9 @@ export const AppDataSource = new DataSource({
     CartItem,
     Blog,
     NotificationContent,
-    UserDevice
+    UserDevice,
+    Page,
+    PageSection
   ],
 
   migrations: [],

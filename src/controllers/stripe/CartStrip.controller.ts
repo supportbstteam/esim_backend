@@ -29,7 +29,7 @@ export const initiateTransaction = async (req: any, res: Response) => {
         const transactionRepo = AppDataSource.getRepository(Transaction);
 
         // Fetch the user
-        const user = await userRepo.findOne({ where: { id: userId } });
+        const user = await userRepo.findOne({ where: { id: userId, isBlocked: false, isVerified: true, isDeleted: false } });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }

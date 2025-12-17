@@ -22,6 +22,7 @@ import { postOrder } from "../../controllers/user/userPostSim.controller";
 import { registerDevice } from "../../controllers/device.controller";
 import { registerPlayerId } from "../../controllers/notifications/createPlayerId.controller";
 import notificationRoute from "./userNotification.route"
+import { getAllPages, getPage } from "../../controllers/pages/getPage.controllers";
 const router = Router();
 
 router.post("/devices/register", auth, registerPlayerId); // create notification playerId
@@ -54,6 +55,10 @@ router.use("/top-up", auth, topUpPlanRoute);
 
 router.use("/e-sim", auth, esimRoute);
 // router.use("/auth", userAuthRoute);
+
+
+router.get("/cms/pages/:page", getPage);
+router.get("/cms/pages", getAllPages);
 
 router.use("/cms", useContactRoute);
 router.get("/social-media", getSocials);
@@ -89,7 +94,7 @@ router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
 router.post("/claim", auth, claimRefund);
 
 
-router.use("/add-to-cart", auth, userCartRoute)
+router.use("/add-to-cart", auth, userCartRoute);
 
 
 export default router;
