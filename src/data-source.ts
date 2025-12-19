@@ -37,6 +37,7 @@ import { NotificationContent } from "./entity/NotificationContent.entity";
 import { UserDevice } from "./entity/UserDevices.entity";
 import { Page } from "./entity/Page.entity";
 import { PageSection } from "./entity/PageSection.entity";
+import { Image } from "./entity/Images.entity";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -88,7 +89,8 @@ export const AppDataSource = new DataSource({
     NotificationContent,
     UserDevice,
     Page,
-    PageSection
+    PageSection,
+    Image
   ],
 
   migrations: [],

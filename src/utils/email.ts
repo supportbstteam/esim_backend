@@ -528,83 +528,119 @@ export const sendRefundClaimEmail = async (
   user: any,
   order: any,
   claimReason: string,
-  email: string
+  email: string,
+  meta: {
+    orderStatus: "COMPLETED" | "FAILED" | "PARTIAL";
+    refundPlans: {
+      cartItemId: string;
+      planId: string;
+      planName?: string;
+      quantity: number;
+      esimCreated: number;
+    }[];
+  }
 ) => {
   try {
-    // Determine refund scenario
-    const totalEsims = order.esims?.length || 0;
-    const failedEsims = order.esims?.filter((e: any) => e.status === "FAILED") || [];
-    const successfulEsims = order.esims?.filter((e: any) => e.status === "SUCCESS") || [];
-
-    let scenario = "";
+    /* -------------------- Scenario -------------------- */
+    let scenarioText = "";
     let summaryText = "";
 
-    if (failedEsims.length === totalEsims) {
-      scenario = "ALL_FAILED";
+    if (meta.orderStatus === "FAILED") {
+      scenarioText = "ALL_FAILED";
       summaryText = `
-        <p>The user’s order <strong>#${order.orderCode}</strong> failed completely. 
-        None of the eSIMs were created successfully.</p>
-      `;
-    } else if (failedEsims.length > 0 && failedEsims.length < totalEsims) {
-      scenario = "PARTIAL_FAILED";
-      summaryText = `
-        <p>The user’s order <strong>#${order.orderCode}</strong> was partially completed.</p>
-        <p><b>${successfulEsims.length}</b> eSIM(s) succeeded and 
-        <b>${failedEsims.length}</b> eSIM(s) failed during processing.</p>
+        <p>
+          The order <strong>#${order.orderCode}</strong> failed completely.
+          None of the purchased plans were successfully provisioned.
+        </p>
       `;
     }
 
-    const esimListHTML = order.esims
-      ?.map(
-        (e: any, i: number) => `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${e.productName || "Unnamed Plan"}</td>
-          <td>${e.iccid || "N/A"}</td>
-          <td style="text-transform:capitalize;">${e.status}</td>
-          <td>${e.currency || "$"}${e.price || "0.00"}</td>
-        </tr>`
-      )
-      .join("") || "";
+    if (meta.orderStatus === "PARTIAL") {
+      scenarioText = "PARTIAL_FAILED";
+      summaryText = `
+        <p>
+          The order <strong>#${order.orderCode}</strong> was <b>partially completed</b>.
+          Some plans failed during provisioning and are eligible for refund.
+        </p>
+      `;
+    }
 
+    /* -------------------- Refund Plans Table -------------------- */
+    const refundPlansHTML =
+      meta.refundPlans
+        ?.map(
+          (item, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${item.planName || "Unknown Plan"}</td>
+            <td>${item.quantity}</td>
+            <td>${item.esimCreated}</td>
+          </tr>
+        `
+        )
+        .join("") || "";
+
+    /* -------------------- Email HTML -------------------- */
     const html = baseTemplate(
       "Refund Claim Request",
       `
         <p>Hello Admin,</p>
-        <p>The following user has requested a <strong>refund</strong> for their order.</p>
-        
+
+        <p>
+          A user has submitted a <strong>refund claim</strong> for the following order.
+        </p>
+
         ${summaryText}
 
-        <h3>User Details:</h3>
+        <h3>User Details</h3>
         <table style="width:100%; border-collapse:collapse;">
-          <tr><td><b>Name:</b></td><td>${user.firstName} ${user.lastName}</td></tr>
-          <tr><td><b>Email:</b></td><td>${user.email}</td></tr>
-          <tr><td><b>Country:</b></td><td>${user.country || "N/A"}</td></tr>
+          <tr><td><b>Name</b></td><td>${user.firstName} ${user.lastName}</td></tr>
+          <tr><td><b>Email</b></td><td>${user.email}</td></tr>
         </table>
 
-        <h3>Order Details:</h3>
-        <table style="width:100%; border-collapse:collapse; margin-top:10px;" border="1">
-          <tr><th>#</th><th>Plan</th><th>ICCID</th><th>Status</th><th>Price</th></tr>
-          ${esimListHTML}
+        <h3 style="margin-top:15px;">Order Details</h3>
+        <table style="width:100%; border-collapse:collapse;">
+          <tr><td><b>Order Code</b></td><td>${order.orderCode}</td></tr>
+          <tr><td><b>Status</b></td><td>${order.status}</td></tr>
+          <tr><td><b>Total Amount</b></td><td>$${Number(order.totalAmount || 0).toFixed(2)}</td></tr>
         </table>
 
-        <p><b>Total Amount:</b> $${Number(order.totalAmount || 0).toFixed(2)}</p>
-        <p><b>Refund Reason:</b> ${claimReason}</p>
+        <h3 style="margin-top:20px;">Refundable Plans</h3>
+        <table
+          style="width:100%; border-collapse:collapse; margin-top:10px;"
+          border="1"
+        >
+          <tr>
+            <th>#</th>
+            <th>Plan</th>
+            <th>Quantity</th>
+            <th>eSIMs Created</th>
+          </tr>
+          ${refundPlansHTML}
+        </table>
 
-        <p style="margin-top:15px;">Please review this refund claim and process accordingly.</p>
+        <p style="margin-top:15px;">
+          <b>Refund Reason:</b><br/>
+          ${claimReason}
+        </p>
 
-        <p style="margin-top:20px;">– eSIM Connect System</p>
+        <p style="margin-top:20px;">
+          Please review this refund claim and process the eligible refund accordingly.
+        </p>
+
+        <p style="margin-top:20px;">— eSIM Connect System</p>
       `
     );
-    const mail: any = await adminMailNotfication();
+
+    /* -------------------- Send Mail -------------------- */
+    const adminMail: any = await adminMailNotfication();
+
     await transporter.sendMail({
-      from: mail,
-      to: mail || "admin@esimconnect.com",
-      subject: `💰 Refund Claim - Order #${order.orderCode}`,
+      from: adminMail,
+      to: adminMail || "admin@esimconnect.com",
+      subject: `💰 Refund Claim (${scenarioText}) – Order #${order.orderCode}`,
       html,
     });
-
-    // console.log(`✅ Refund claim email sent to admin for order ${order.orderCode}`);
   } catch (error: any) {
     console.error("❌ Failed to send refund claim email:", error.message);
   }

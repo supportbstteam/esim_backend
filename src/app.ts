@@ -18,11 +18,20 @@ import { handleStripeWebhook } from "./controllers/stripe/CartStrip.controller";
 import notificationContentRoute from "./routes/notifications/notificationContent.routes"
 import { testNotificationController } from "./controllers/notifications/testNotification";
 import { ALLOWED_PATH_ORIGINS } from "./utils/allowedCors";
+import path from "path";
+import os from "os";
+
 const app = express();
 
 // ======= Third-party middleware =======
 app.use(morgan("dev"));
-app.use(helmet());
+// app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+
 
 app.use(
   cors({
@@ -43,6 +52,8 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+const uploadsDir = path.join(os.homedir(), "Desktop", "uploadsimg");
 
 // ⚠️ IMPORTANT: Register webhook BEFORE express.json() to keep raw body
 app.post(
@@ -84,6 +95,7 @@ app.get("/api/entities", (req, res) => {
   res.json({ message: "Loaded entities", count: entities.length, entities });
 });
 
+app.use("/api/uploadsimg", express.static(uploadsDir));
 app.use("/api/admin", auth, adminRouter);
 app.use("/api/user", userRouter);
 app.use("/api/notification-content", notificationContentRoute);
