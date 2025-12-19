@@ -33,42 +33,43 @@ app.use(
 );
 
 
+// app.use(
+//   cors({
+//     origin: (origin, callback) => {
+//       console.log("Incoming Origin:", origin);
+
+//       // Allow Postman, mobile apps, server-to-server (no origin)
+//       if (!origin) return callback(null, true);
+
+//       if (ALLOWED_PATH_ORIGINS.includes(origin)) {
+//         return callback(null, true);
+//       }
+
+//       return callback(new Error("Not allowed by CORS"));
+//     },
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      console.log("Incoming Origin:", origin);
+      console.log("🌍 Incoming Origin:", origin);
 
-      // Allow Postman, mobile apps, server-to-server (no origin)
+      // Allow server-to-server, Postman, Stripe
       if (!origin) return callback(null, true);
 
-      if (ALLOWED_PATH_ORIGINS.includes(origin)) {
+      if (ALLOWED_PATH_ORIGINS.has(origin)) {
         return callback(null, true);
       }
 
-      return callback(new Error("Not allowed by CORS"));
+      // IMPORTANT: do NOT throw error
+      return callback(null, false);
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      console.log("Incoming Origin:", origin);
-
-      // Allow Postman, mobile apps, server-to-server (no origin)
-      if (!origin) return callback(null, true);
-
-      if (ALLOWED_PATH_ORIGINS.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
