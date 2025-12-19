@@ -105,8 +105,8 @@ app.post("/notifications/test", testNotificationController);
 /* =====================================================
    7️⃣ STATIC FILES
 ===================================================== */
-const uploadsDir = path.join(os.homedir(), "Desktop", "uploadsimg");
-app.use("/api/uploadsimg", express.static(uploadsDir));
+// const uploadsDir = path.join(os.homedir(), "Desktop", "uploadsimg");
+// app.use("/api/uploadsimg", express.static(uploadsDir));
 
 /* =====================================================
    8️⃣ API ROUTES
