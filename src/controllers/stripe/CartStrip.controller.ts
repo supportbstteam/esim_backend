@@ -100,54 +100,52 @@ export const initiateTransaction = async (req: any, res: Response) => {
  * Handle Stripe webhook
  */
 export const handleStripeWebhook = async (req: Request, res: Response) => {
-    // console.log("-=-=-=-=-=- hello web-hook calling -=-=-=-=-=");
+  const sig = req.headers["stripe-signature"];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-    // 🛑 Ignore unwanted webhook URLs
-    const url = req.originalUrl || req.url;
-    if (
-        url.includes("/mobile/stripe/webhook") ||
-        url.includes("/mobile/top-up/stripe/webhook")
-    ) {
-        // console.log("⚠️ Ignoring mobile webhook route for payment_intent.succeeded");
-        return res.status(200).send("IGNORED");
-    }
+  let event: Stripe.Event;
 
-    const sig = req.headers["stripe-signature"];
-    const endpointSecret = "whsec_PZq4rvtZ45yjKsdWNLvI6AZfXUt39vyE";
-    let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig!, endpointSecret);
+  } catch (err: any) {
+    // ❌ Signature failed → still tell Stripe we received it
+    console.error("Webhook signature error:", err.message);
+    return res.status(200).send("INVALID_SIGNATURE_ACK");
+  }
 
-    try {
-        event = stripe.webhooks.constructEvent(req.body, sig!, endpointSecret);
-    } catch (err: any) {
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
+  try {
     const transactionRepo = AppDataSource.getRepository(Transaction);
 
     if (event.type === "payment_intent.succeeded") {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
-        const transaction = await transactionRepo.findOne({
-            where: { transactionId: paymentIntent.id },
-        });
+      const transaction = await transactionRepo.findOne({
+        where: { transactionId: paymentIntent.id },
+      });
 
-        if (!transaction) return res.status(404).send("Transaction not found");
-        if (transaction?.source !== "WEB") {
-            console.error("❌ [WEBHOOK] No transaction found for Web Payment Intent:", paymentIntent.id);
-            return res.status(404).send("Transaction not found");
-        }
+      if (!transaction) {
+        console.warn("Transaction not found:", paymentIntent.id);
+        return res.status(200).send("TX_NOT_FOUND_ACK");
+      }
 
-        // Mark successful
-        transaction.status = "SUCCESS";
-        transaction.response = JSON.stringify(paymentIntent);
+      if (transaction.source !== "WEB") {
+        console.warn("Ignoring non-WEB transaction:", paymentIntent.id);
+        return res.status(200).send("NON_WEB_ACK");
+      }
 
-        await transactionRepo.save(transaction);
-
-        return res.status(200).send("OK");
+      transaction.status = "SUCCESS";
+      transaction.response = JSON.stringify(paymentIntent);
+      await transactionRepo.save(transaction);
     }
 
-    return res.json({ received: true });
+    return res.status(200).json({ received: true });
+  } catch (err) {
+    // ❌ Internal error → still ACK Stripe
+    console.error("Webhook processing error:", err);
+    return res.status(200).send("PROCESSING_ERROR_ACK");
+  }
 };
+
 
 
 /**

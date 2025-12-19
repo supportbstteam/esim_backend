@@ -45,14 +45,14 @@ export const initiateMobileTransaction = async (req: any, res: Response) => {
         const customer = await stripe.customers.create({
             name: (user?.firstName + user?.lastName).toString() || "N/A",
             email: user?.email || "N/A",
-            phone: user?.phone || "N/A" , // make sure this field exists in your DB
+            phone: user?.phone || "N/A", // make sure this field exists in your DB
         });
 
         // 🟢 Create PaymentIntent
         const paymentIntent = await stripe.paymentIntents.create({
             amount: Math.round(amount * 100),
             currency: "usd",
-            customer:customer?.id,
+            customer: customer?.id,
             metadata: {
                 userId: user.id,
                 cartId: cart.id,
@@ -95,7 +95,7 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
 
     if (!sig) {
         console.error("❌ [WEBHOOK] Missing Stripe signature header");
-        return res.status(400).send("Missing Stripe signature");
+        return res.status(200).send("SIGNATURE_ERROR_ACK");
     }
 
     // console.log("🧩 [WEBHOOK] Signature header found:", sig.slice(0, 20) + "...");
@@ -109,7 +109,7 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
         // console.log("✅ [WEBHOOK] Stripe event verified successfully:", event.type);
     } catch (err: any) {
         console.error("❌ [WEBHOOK] Signature verification failed:", err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+        return res.status(200).send("TX_NOT_FOUND_ACK");
     }
 
     const transactionRepo = AppDataSource.getRepository(Transaction);
@@ -137,12 +137,12 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
 
             if (!transaction) {
                 console.error("❌ [WEBHOOK] No transaction found for PaymentIntent:", paymentIntent.id);
-                return res.status(404).send("Transaction not found");
+                return res.status(200).send("TX_NOT_FOUND_ACK");
             }
 
             if (transaction?.source !== "MOBILE") {
                 console.error("❌ [WEBHOOK] No transaction found for Mobile Payment Intent:", paymentIntent.id);
-                return res.status(404).send("Transaction not found");
+                return res.status(200).send("NON_MOBILE_ACK");
             }
 
             // console.log("✅ [WEBHOOK] Transaction found:", transaction.id);
@@ -163,7 +163,7 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
             // 🔹 Step 7: Mark cart checked out
             if (!transaction?.cart) {
                 console.error("❌ [WEBHOOK] No cart found in transaction");
-                return res.status(404).json({ message: "Cart not found" });
+                return res.status(200).send("TX_CART_NOT_FOUND_ACK");
             }
 
             transaction.cart.isCheckedOut = true;
@@ -199,8 +199,8 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
         res.json({ received: true });
 
     } catch (err: any) {
-        console.error("💥 [WEBHOOK] Internal processing error:", err.message);
-        console.error(err.stack);
-        return res.status(500).json({ message: "Internal server error", error: err.message });
+        // 5️⃣ Internal crash → still ACK
+        console.error("💥 [MOBILE WEBHOOK] Internal error:", err);
+        return res.status(200).send("INTERNAL_ERROR_ACK");
     }
 };

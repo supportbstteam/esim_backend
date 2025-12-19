@@ -139,7 +139,7 @@ export const handleMobileTopUpStripeWebhook = async (req: any, res: Response) =>
     // const endpointSecret =  "whsec_24bd7ce3b2fa8fab6a5e647d12eb2df6ad1b95619f7ed7ca96c42d1d3c2ae4f0";
     const endpointSecret = process.env.STRIPE_MOBILE_TOPUP_WEBHOOK_SECRET || "";
 
-    if (!sig) return res.status(400).send("Missing Stripe signature");
+    if (!sig) return res.status(200).send("SIGNATURE_ERROR_ACK");;
 
     let event: Stripe.Event;
     try {
@@ -147,7 +147,7 @@ export const handleMobileTopUpStripeWebhook = async (req: any, res: Response) =>
         console.log("✅ Stripe signature verified:", event.type);
     } catch (err: any) {
         console.error("❌ Signature verification failed:", err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+        return res.status(200).send("SIGNATURE_ERROR_ACK");
     }
 
     if (event.type !== "payment_intent.succeeded") {
@@ -188,7 +188,7 @@ export const handleMobileTopUpStripeWebhook = async (req: any, res: Response) =>
         }
 
         if (!user) {
-            return res.status(400).json({ message: "User not found" });
+            return res.status(200).send("USER_NOT_FOUND");
         }
 
         const planId = esim.plans[0]?.id;
