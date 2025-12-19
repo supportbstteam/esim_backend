@@ -537,6 +537,7 @@ export const sendRefundClaimEmail = async (
       planName?: string;
       quantity: number;
       esimCreated: number;
+      amount: number;
     }[];
   }
 ) => {
@@ -575,6 +576,7 @@ export const sendRefundClaimEmail = async (
             <td>${item.planName || "Unknown Plan"}</td>
             <td>${item.quantity}</td>
             <td>${item.esimCreated}</td>
+            <td>$ ${item?.amount}</td>
           </tr>
         `
         )
@@ -594,8 +596,8 @@ export const sendRefundClaimEmail = async (
 
         <h3>User Details</h3>
         <table style="width:100%; border-collapse:collapse;">
-          <tr><td><b>Name</b></td><td>${user.firstName} ${user.lastName}</td></tr>
-          <tr><td><b>Email</b></td><td>${user.email}</td></tr>
+          <tr><td><b>Name</b></td><td>${order?.name}</td></tr>
+          <tr><td><b>Email</b></td><td>${order.email}</td></tr>
         </table>
 
         <h3 style="margin-top:15px;">Order Details</h3>
@@ -615,6 +617,7 @@ export const sendRefundClaimEmail = async (
             <th>Plan</th>
             <th>Quantity</th>
             <th>eSIMs Created</th>
+            <th>Amount</th>
           </tr>
           ${refundPlansHTML}
         </table>
