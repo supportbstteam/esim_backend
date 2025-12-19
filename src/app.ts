@@ -3,56 +3,38 @@ import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
 import bodyParser from "body-parser";
-import { errorHandler } from "./middlewares/error.handler";
-import adminRouter from "./routes/admin/admin.route";
-import userRouter from "./routes/user/user.route";
-import { auth } from "./middlewares/auth.handler";
-import { AppDataSource } from "./data-source";
-import cron from "node-cron";
-import { postSchedularImportPlans } from "./controllers/admin/adminSchedulerController";
-
-// webhooks
-import { handleMobileStripeWebhook } from "./controllers/stripe/MobileCartStripe.controllers";
-import { handleMobileTopUpStripeWebhook } from "./controllers/stripe/MobileTopUpStripe.controllers";
-import { handleStripeWebhook } from "./controllers/stripe/CartStrip.controller";
-import notificationContentRoute from "./routes/notifications/notificationContent.routes"
-import { testNotificationController } from "./controllers/notifications/testNotification";
-import { ALLOWED_PATH_ORIGINS } from "./utils/allowedCors";
 import path from "path";
 import os from "os";
 
+import { errorHandler } from "./middlewares/error.handler";
+import { auth } from "./middlewares/auth.handler";
+import adminRouter from "./routes/admin/admin.route";
+import userRouter from "./routes/user/user.route";
+import notificationContentRoute from "./routes/notifications/notificationContent.routes";
+import { testNotificationController } from "./controllers/notifications/testNotification";
+import { ALLOWED_PATH_ORIGINS } from "./utils/allowedCors";
+
+// Stripe webhooks
+import { handleMobileStripeWebhook } from "./controllers/stripe/MobileCartStripe.controllers";
+import { handleMobileTopUpStripeWebhook } from "./controllers/stripe/MobileTopUpStripe.controllers";
+import { handleStripeWebhook } from "./controllers/stripe/CartStrip.controller";
+
 const app = express();
 
-// ======= Third-party middleware =======
+/* =====================================================
+   1️⃣ LOGGING & SECURITY
+===================================================== */
 app.use(morgan("dev"));
-// app.use(helmet());
+
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
 
-
-// app.use(
-//   cors({
-//     origin: (origin, callback) => {
-//       console.log("Incoming Origin:", origin);
-
-//       // Allow Postman, mobile apps, server-to-server (no origin)
-//       if (!origin) return callback(null, true);
-
-//       if (ALLOWED_PATH_ORIGINS.includes(origin)) {
-//         return callback(null, true);
-//       }
-
-//       return callback(new Error("Not allowed by CORS"));
-//     },
-//     credentials: true,
-//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-//     allowedHeaders: ["Content-Type", "Authorization"],
-//   })
-// );
-
+/* =====================================================
+   2️⃣ CORS — MUST BE FIRST (VERY IMPORTANT)
+===================================================== */
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -74,9 +56,15 @@ app.use(
   })
 );
 
-const uploadsDir = path.join(os.homedir(), "Desktop", "uploadsimg");
 
-// ⚠️ IMPORTANT: Register webhook BEFORE express.json() to keep raw body
+/* =====================================================
+   3️⃣ PRE-FLIGHT HANDLER (CRITICAL FOR VERCEL)
+===================================================== */
+// app.options("*", cors());
+
+/* =====================================================
+   4️⃣ STRIPE WEBHOOKS (RAW BODY ONLY)
+===================================================== */
 app.post(
   "/api/user/transactions/stripe/webhook",
   bodyParser.raw({ type: "application/json" }),
@@ -95,64 +83,41 @@ app.post(
   handleMobileTopUpStripeWebhook
 );
 
-// ✅ Apply JSON/body parsers for all OTHER routes (after webhook)
+/* =====================================================
+   5️⃣ BODY PARSERS (AFTER WEBHOOKS)
+===================================================== */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ======= Routes =======
-app.get("/", (req, res) => res.send("Hello from Node + TypeORM + MySQL!"));
-app.get("/api", (req, res) =>
-  res.send("Hello from Node + TypeORM + MySQL! with our Esim products")
-);
+/* =====================================================
+   6️⃣ ROUTES
+===================================================== */
+app.get("/", (_req, res) => {
+  res.send("Hello from Node + TypeORM + MySQL!");
+});
+
+app.get("/api", (_req, res) => {
+  res.send("Hello from Node + TypeORM + MySQL! with our Esim products");
+});
 
 app.post("/notifications/test", testNotificationController);
 
-app.get("/api/entities", (req, res) => {
-  const entities = AppDataSource.entityMetadatas.map((e) => ({
-    name: e.name,
-    tableName: e.tableName,
-    columns: e.columns.map((c) => c.propertyName),
-  }));
-  res.json({ message: "Loaded entities", count: entities.length, entities });
-});
-
+/* =====================================================
+   7️⃣ STATIC FILES
+===================================================== */
+const uploadsDir = path.join(os.homedir(), "Desktop", "uploadsimg");
 app.use("/api/uploadsimg", express.static(uploadsDir));
-app.use("/api/admin", auth, adminRouter);
-app.use("/api/user", userRouter);
+
+/* =====================================================
+   8️⃣ API ROUTES
+===================================================== */
+app.use("/api/admin", auth, adminRouter); // auth-protected
+app.use("/api/user", userRouter);         // user routes
 app.use("/api/notification-content", notificationContentRoute);
 
+/* =====================================================
+   9️⃣ ERROR HANDLER (LAST)
+===================================================== */
 app.use(errorHandler);
 
-// ======= Initialize DB and then Start Everything =======
-// AppDataSource.initialize()
-//   .then(() => {
-//     // console.log("✅ Database connected.");
-
-//     // 🕒 Start cron after DB is ready
-//     cron.schedule(
-//       "0 0 * * *", // ⏰ Every day at 00:00
-//       async () => {
-//         // console.log("🕛 Running scheduler (Europe/Istanbul): Importing 3rd-party plans...");
-//         try {
-//           await postSchedularImportPlans();
-//           // console.log("✅ Scheduler completed successfully");
-//         } catch (err) {
-//           console.error("❌ Scheduler failed:", err);
-//         }
-//       },
-//       {
-//         timezone: "Europe/Istanbul", // 👈 ensures midnight Turkey time
-//       }
-//     );
-
-//     // 🚀 Start the server
-//     app.listen(4000, "0.0.0.0", () => // console.log("🚀 Server running on port 4000"));
-//   })
-//   .catch((err) => {
-//     console.error("❌ DB initialization failed:", err);
-//   });
-
 export default app;
-
-
-// stripe listen --forward-to localhost:4000/api/user/transactions/mobile/top-up/stripe/webhook
