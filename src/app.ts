@@ -3,8 +3,8 @@ import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
 import bodyParser from "body-parser";
-import path from "path";
-import os from "os";
+// import path from "path";
+// import os from "os";
 
 import { errorHandler } from "./middlewares/error.handler";
 import { auth } from "./middlewares/auth.handler";
