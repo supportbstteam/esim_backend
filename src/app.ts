@@ -38,20 +38,19 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      console.log("🌍 Incoming Origin:", origin);
+      console.log("Incoming Origin:", origin);
 
-      // Allow server-to-server, Postman, Stripe
+      // Allow Postman, mobile apps, server-to-server (no origin)
       if (!origin) return callback(null, true);
 
-      if (ALLOWED_PATH_ORIGINS.has(origin)) {
+      if (ALLOWED_PATH_ORIGINS.includes(origin)) {
         return callback(null, true);
       }
 
-      // IMPORTANT: do NOT throw error
-      return callback(null, false);
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
