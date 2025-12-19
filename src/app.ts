@@ -36,22 +36,33 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      console.log("Incoming Origin:", origin);
+      console.log("🌍 Incoming Origin:", origin);
 
-      // Allow Postman, mobile apps, server-to-server (no origin)
+      // Allow server-to-server, mobile apps, Stripe, Postman
       if (!origin) return callback(null, true);
 
+      // Exact match
       if (ALLOWED_PATH_ORIGINS.includes(origin)) {
         return callback(null, true);
       }
 
-      return callback(new Error("Not allowed by CORS"));
+      // Allow OneSignal subdomains
+      if (origin.endsWith(".onesignal.com")) {
+        return callback(null, true);
+      }
+
+      // ❗ DO NOT THROW ERROR
+      return callback(null, false);
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// 👇 THIS LINE IS MANDATORY
+app.options("*", cors());
+
 
 const uploadsDir = path.join(os.homedir(), "Desktop", "uploadsimg");
 
