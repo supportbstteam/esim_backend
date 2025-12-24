@@ -233,10 +233,9 @@ export const sendRefundEmails = async (userEmail: string, adminEmail: string, re
         <tr><td><b>User:</b></td><td>${refund.user.firstName} ${refund.user.lastName}</td></tr>
         <tr><td><b>Email:</b></td><td>${refund.user.email}</td></tr>
         <tr><td><b>Order ID:</b></td><td>${refund.order.id}</td></tr>
-        <tr><td><b>Transaction ID:</b></td><td>${refund.transaction.id}</td></tr>
+        <tr><td><b>Transaction ID:</b></td><td>${refund.transaction?.transactionId}</td></tr>
         <tr><td><b>Status:</b></td><td>${refund.status}</td></tr>
       </table>
-      <p><a href="${process.env.ADMIN_DASHBOARD_URL || "#"}" style="color: #0070f3;">View Refund</a></p>
     `
   );
   const mail: any = await adminMailNotfication();
@@ -396,8 +395,8 @@ export const sendOrderEmail = async (
     ? `
       <ul>
         ${order.esims
-          .map(
-            (e: any, idx: number) => `
+      .map(
+        (e: any, idx: number) => `
               <li style="margin-bottom: 10px;">
                 <strong>${idx + 1}. ${e.productName || "Unnamed Plan"}</strong><br/>
                 ICCID: ${e.iccid || "N/A"}<br/>
@@ -405,8 +404,8 @@ export const sendOrderEmail = async (
                 Price: ${e.currency || "$"} ${e.price || "0.00"}<br/>
               </li>
             `
-          )
-          .join("")}
+      )
+      .join("")}
       </ul>
     `
     : "<p>No eSIM details available.</p>";
@@ -432,23 +431,22 @@ export const sendOrderEmail = async (
     <h3>📄 eSIM Details</h3>
     ${esimListHTML}
 
-    ${
-      status !== "COMPLETED"
-        ? `
+    ${status !== "COMPLETED"
+      ? `
     <hr />
 
     <h3>⚠️ Errors / Failed Items</h3>
     <pre style="background:#f8f8f8;padding:10px;border-radius:6px;border:1px solid #ddd;white-space:pre-wrap;">
 ${order.errorMessage || "No detailed error provided."}
     </pre>`
-        : ""
+      : ""
     }
 
     <hr />
 
     <h3>🛠 Internal Information</h3>
     <p><strong>Order ID:</strong> ${order.id}</p>
-    <p><strong>Transaction ID:</strong> ${order.transaction?.id || "N/A"}</p>
+    <p><strong>Transaction ID:</strong> ${order?.transaction?.transactionId || "N/A"}</p>
 
     <p style="margin-top: 20px; font-size: 13px; color: #777;">
       Sent on ${moment().format("DD/MM/YYYY [at] hh:mm A")}

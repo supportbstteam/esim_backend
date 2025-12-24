@@ -13,9 +13,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/stripe": "^8.0.416",
-    "axios": "^1.12.2",
+    "axios": "^1.13.2",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "express": "^5.1.0",
@@ -42,6 +43,7 @@
     "@types/multer": "^2.0.0",
     "@types/node": "^24.5.2",
     "@types/nodemailer": "^7.0.2",
+    "@types/paypal__checkout-server-sdk": "^1.0.8",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"

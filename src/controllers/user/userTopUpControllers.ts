@@ -137,6 +137,7 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
                 status: true,
                 message: "Top-up successful",
                 orderId: order.id,
+                orderCode: order?.orderCode,
                 data: response.data,
             });
         }

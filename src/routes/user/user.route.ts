@@ -14,6 +14,7 @@ import { thirdPartyAuthMiddleware } from "../../middlewares/thirdPartyApi.handle
 import userCartRoute from "./userCart.route"
 import userTransactionRoute from "./userTransaction.route"
 import esimUsage from "./userESimUsage.route"
+import userPaypal from "./user.paypal.route"
 import { getAllTestimonials } from "../../controllers/admin/adminTestimonials.controllers";
 import { claimRefund } from "../../controllers/refundControllers";
 import { initiateMobileTransaction } from "../../controllers/stripe/MobileCartStripe.controllers";
@@ -23,6 +24,7 @@ import { registerDevice } from "../../controllers/device.controller";
 import { registerPlayerId } from "../../controllers/notifications/createPlayerId.controller";
 import notificationRoute from "./userNotification.route"
 import { getAllPages, getPage } from "../../controllers/pages/getPage.controllers";
+
 const router = Router();
 
 router.post("/devices/register", auth, registerPlayerId); // create notification playerId
@@ -55,6 +57,9 @@ router.use("/top-up", auth, topUpPlanRoute);
 
 router.use("/e-sim", auth, esimRoute);
 // router.use("/auth", userAuthRoute);
+
+// paypal
+router.use("/paypal", userPaypal);
 
 
 router.get("/cms/pages/:page", getPage);
@@ -92,6 +97,7 @@ router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
 router.get("/order-list", auth, getOrderListByUser);
 router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
 router.post("/claim", auth, claimRefund);
+
 
 
 router.use("/add-to-cart", auth, userCartRoute);

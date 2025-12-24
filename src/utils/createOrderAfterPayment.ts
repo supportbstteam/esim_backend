@@ -207,6 +207,7 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
           activated: mainOrder.activated,
           esims: createdEsims,
           orderCode: mainOrder.orderCode,
+          transaction
         },
         (mainOrder?.status === "COMPLETED")
           ? "COMPLETED"

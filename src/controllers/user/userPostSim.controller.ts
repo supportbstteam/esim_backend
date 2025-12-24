@@ -315,6 +315,7 @@ export const postOrder = async (req: any, res: Response) => {
       activated: mainOrder.activated,
       esims: createdEsims,
       orderCode: mainOrder.orderCode,
+      transaction
     };
 
     const statusTag:any = mainOrder.status;
@@ -380,6 +381,7 @@ export const postOrder = async (req: any, res: Response) => {
         activated: false,
         esims: [],
         orderCode: mainOrder.orderCode,
+        transaction
       };
 
       try {
