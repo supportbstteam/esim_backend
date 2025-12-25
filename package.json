@@ -18,6 +18,7 @@
     "@types/stripe": "^8.0.416",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.2",
+    "braintree": "^3.35.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
@@ -35,6 +36,7 @@
     "typeorm": "^0.3.27"
   },
   "devDependencies": {
+    "@types/braintree": "^3.4.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/helmet": "^0.0.48",

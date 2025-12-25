@@ -1,8 +1,11 @@
 // src/index.ts
+import dns from "dns";
 import "reflect-metadata";
 import "dotenv/config";
 import app from "./app";
 import { AppDataSource } from "./data-source";
+
+dns.setDefaultResultOrder("ipv4first");
 
 const PORT = Number(process.env.PORT) || 4000;
 

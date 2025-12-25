@@ -6,110 +6,138 @@ import { Transaction, TransactionStatus } from "../entity/Transactions.entity";
 import { Cart } from "../entity/Carts.entity";
 import { TopUpPlan } from "../entity/Topup.entity";
 import { User } from "../entity/User.entity";
+import { CartItem } from "../entity/CartItem.entity";
 
 export const createPaypalOrder = async (req: any, res: Response) => {
   try {
-    const user = req.user;
     const { amount, cartId, topupId } = req.body;
+    const user = req.user;
 
     const numericAmount = Number(amount);
-
-    if (!numericAmount || isNaN(numericAmount) || numericAmount <= 0) {
+    if (!numericAmount || numericAmount <= 0) {
       return res.status(400).json({ message: "Invalid amount" });
     }
 
-    const transactionRepo: any = AppDataSource.getRepository(Transaction);
-    const cartrepo = AppDataSource.getRepository(Cart);
+    if ((!cartId && !topupId) || (cartId && topupId)) {
+      return res.status(400).json({
+        message: "Either cartId or topupId is required (not both)",
+      });
+    }
+
+    const transactionRepo = AppDataSource.getRepository(Transaction);
+    const cartRepo = AppDataSource.getRepository(Cart);
+    const cartItemRepo = AppDataSource.getRepository(CartItem);
     const topupRepo = AppDataSource.getRepository(TopUpPlan);
-    const userRepo = AppDataSource.getRepository(User);
 
-    let cart: Cart | null = null;
-    let topup: TopUpPlan | null = null;
+    let items: any[] = [];
+    let description = "";
 
-    // const user = userRep 
-    console.log("-=-=-=-= user- -=-=-=-=",user);
-
-    /* -------------------- Validate Input -------------------- */
-    if (!cartId && !topupId) {
-      return res.status(400).json({
-        message: "Either cartId or topupId is required",
-      });
-    }
-
-    if (cartId && topupId) {
-      return res.status(400).json({
-        message: "Only one of cartId or topupId is allowed",
-      });
-    }
-
-    /* -------------------- Fetch Source -------------------- */
+    /* ---------------- Fetch source ---------------- */
     if (cartId) {
-      cart = await cartrepo.findOne({
-        where: {
-          id: cartId,
-          user: { id: user.id },
-        },
+      const cart = await cartRepo.findOne({
+        where: { id: cartId, user: { id: user.id } },
       });
+      if (!cart) return res.status(404).json({ message: "Cart not found" });
 
-      if (!cart) {
-        return res.status(404).json({ message: "Cart not found" });
+      const cartItems = await cartItemRepo.find({
+        where: { cart: { id: cartId } },
+        relations: ["plan"],
+      });
+      if (!cartItems.length) {
+        return res.status(404).json({ message: "Cart items not found" });
       }
+
+      items = cartItems.map((i) => ({
+        name: i.plan.name,
+        description: `${i.plan.data}GB · ${i.plan.validityDays} days`,
+        quantity: String(i.quantity),
+        unit_amount: {
+          currency_code: "USD",
+          value: Number(i.plan.price).toFixed(2),
+        },
+        category: "DIGITAL_GOODS",
+      }));
+
+      description = "eSIM purchase";
     }
 
     if (topupId) {
-      topup = await topupRepo.findOne({
-        where: { id: topupId },
-      });
-
+      const topup = await topupRepo.findOne({ where: { id: topupId } });
       if (!topup) {
         return res.status(404).json({ message: "Top-up plan not found" });
       }
+
+      items = [
+        {
+          name: topup.title,
+          description: `${topup.dataLimit}GB Top-up`,
+          quantity: "1",
+          unit_amount: {
+            currency_code: "USD",
+            value: Number(topup.price).toFixed(2),
+          },
+          category: "DIGITAL_GOODS",
+        },
+      ];
+
+      description = "eSIM top-up";
     }
 
-    /* -------------------- Create Transaction -------------------- */
+    const itemTotal = items.reduce(
+      (sum, i) => sum + Number(i.unit_amount.value) * Number(i.quantity),
+      0
+    );
+
+    /* ---------------- Create transaction ---------------- */
     const transaction = transactionRepo.create({
       user,
       paymentGateway: "PAYPAL",
-      amount: numericAmount,
+      amount: itemTotal,
       status: TransactionStatus.PENDING,
       source: "WEB",
-      cart: cart ?? null,
-      TopUpPlan: topup ?? null,
     });
-
-
     await transactionRepo.save(transaction);
 
-    // 2️⃣ Create PayPal order
+    /* ---------------- Create PayPal order ---------------- */
     const request = new paypal.orders.OrdersCreateRequest();
     request.prefer("return=representation");
 
     request.requestBody({
       intent: "CAPTURE",
-
       application_context: {
         brand_name: "E-SIM AERO",
         user_action: "PAY_NOW",
-        shipping_preference: "NO_SHIPPING", // ✅ removes shipping address
+        shipping_preference: "NO_SHIPPING",
       },
-
       purchase_units: [
         {
+          reference_id: transaction.id,
+          description,
           amount: {
             currency_code: "USD",
-            value: numericAmount.toFixed(2),
+            value: itemTotal.toFixed(2),
+            breakdown: {
+              item_total: {
+                currency_code: "USD",
+                value: itemTotal.toFixed(2),
+              },
+              shipping: { currency_code: "USD", value: "0.00" },
+              handling: { currency_code: "USD", value: "0.00" },
+              tax_total: { currency_code: "USD", value: "0.00" },
+              insurance: { currency_code: "USD", value: "0.00" },
+              shipping_discount: { currency_code: "USD", value: "0.00" },
+              discount: { currency_code: "USD", value: "0.00" },
+            },
           },
+          items,
         },
       ],
     });
 
     const order = await paypalClient.execute(request);
 
-    // 3️⃣ Save PayPal order ID
     transaction.transactionId = order.result.id;
     await transactionRepo.save(transaction);
-
-    console.log("-=-=-=-=-=- transaction -=-=-=-=-=", transaction);
 
     return res.json({
       paypalOrderId: order.result.id,
@@ -120,7 +148,6 @@ export const createPaypalOrder = async (req: any, res: Response) => {
     return res.status(500).json({ message: "Failed to create PayPal order" });
   }
 };
-
 
 export const capturePaypalOrder = async (req: Request, res: Response) => {
   try {

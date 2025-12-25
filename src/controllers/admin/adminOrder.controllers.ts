@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { Order, OrderType } from "../../entity/order.entity";
 import { User } from "../../entity/User.entity";
 import { AppDataSource } from "../../data-source";
+import { Esim } from "../../entity/Esim.entity";
+import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
 // Get all orders (with optional pagination)
 export const getAllOrders = async (req: Request, res: Response) => {
@@ -175,11 +177,26 @@ export const deleteOrder = async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
         const orderRepo = AppDataSource.getRepository(Order);
+        const esimRepo = AppDataSource.getRepository(Esim);
         const order = await orderRepo.findOne({ where: { id } });
 
         if (!order) {
             return res.status(404).json({ message: "Order not found" });
         }
+
+        const esim = await esimRepo.find({
+            where: {
+                order: {
+                    id: order.id,
+                },
+            },
+        });
+
+        if (!esim) {
+            return res.status(404).json({ message: "Esim not found" });
+        }
+
+        console.log("-=-=-=- esim topup -==-=-==-=-", esim);
 
         // Soft delete approach: mark as deleted instead of removing from DB
         // You can add a column `isDeleted` in Order entity if not present
@@ -188,6 +205,7 @@ export const deleteOrder = async (req: Request, res: Response) => {
 
         // Or if hard delete is acceptable:
         await orderRepo.remove(order);
+        await esimRepo.remove(esim);
 
         return res.status(200).json({ message: "Order deleted successfully" });
     } catch (err: any) {
