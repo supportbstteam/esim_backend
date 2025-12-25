@@ -31,10 +31,12 @@ export const createPaypalOrder = async (req: any, res: Response) => {
 
     let items: any[] = [];
     let description = "";
+    let cart: Cart | null = null;
+    let topup: TopUpPlan | null = null;
 
     /* ---------------- Fetch source ---------------- */
     if (cartId) {
-      const cart = await cartRepo.findOne({
+      cart = await cartRepo.findOne({
         where: { id: cartId, user: { id: user.id } },
       });
       if (!cart) return res.status(404).json({ message: "Cart not found" });
@@ -62,7 +64,7 @@ export const createPaypalOrder = async (req: any, res: Response) => {
     }
 
     if (topupId) {
-      const topup = await topupRepo.findOne({ where: { id: topupId } });
+      topup = await topupRepo.findOne({ where: { id: topupId } });
       if (!topup) {
         return res.status(404).json({ message: "Top-up plan not found" });
       }
@@ -95,6 +97,8 @@ export const createPaypalOrder = async (req: any, res: Response) => {
       amount: itemTotal,
       status: TransactionStatus.PENDING,
       source: "WEB",
+      cart: cart || undefined,
+      topupPlan: topup || undefined,
     });
     await transactionRepo.save(transaction);
 
