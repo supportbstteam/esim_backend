@@ -18,6 +18,7 @@ import { ALLOWED_PATH_ORIGINS } from "./utils/allowedCors";
 import { handleMobileStripeWebhook } from "./controllers/stripe/MobileCartStripe.controllers";
 import { handleMobileTopUpStripeWebhook } from "./controllers/stripe/MobileTopUpStripe.controllers";
 import { handleStripeWebhook } from "./controllers/stripe/CartStrip.controller";
+import { paypalWebhook } from "./controllers/paypal.webhook.controllers";
 
 const app = express();
 
@@ -64,11 +65,14 @@ app.use(
 /* =====================================================
    4️⃣ STRIPE WEBHOOKS (RAW BODY ONLY)
 ===================================================== */
+
 app.post(
   "/api/user/transactions/stripe/webhook",
   bodyParser.raw({ type: "application/json" }),
   handleStripeWebhook
 );
+
+app.post("/paypal/webhook", bodyParser.raw({ type: "application/json" }), paypalWebhook);
 
 app.post(
   "/api/user/transactions/mobile/stripe/webhook",

@@ -48,11 +48,14 @@ export class Transaction {
     @Column({ type: "varchar", length: 100 })
     paymentGateway!: string;
 
-    @Column({ type: "varchar", length: 100, unique: true, nullable:true })
+    @Column({ type: "varchar", length: 100, unique: true, nullable: true })
     transactionId!: string;
 
     @Column({ type: "decimal", precision: 10, scale: 2 })
     amount!: number;
+
+    @Column({ type: "json", nullable: true })
+    gatewayResponse?: any;
 
     @Column({ type: "varchar", length: 20, default: TransactionStatus.PENDING })
     status!: string;
@@ -60,7 +63,7 @@ export class Transaction {
     @Column({ type: "text", nullable: true })
     response?: string;
 
-    @Column({ type: "varchar", length: 20, default: "WEB", nullable:true })
+    @Column({ type: "varchar", length: 20, default: "WEB", nullable: true })
     source !: "WEB" | "MOBILE";
 
     @OneToMany(() => Charges, (charge) => charge.transaction, { cascade: true })
