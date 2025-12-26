@@ -308,8 +308,8 @@ export const createPaypalOrderMobile = async (req: any, res: Response) => {
         shipping_preference: "NO_SHIPPING",
 
         // 🔑 MOBILE REDIRECTS (used by WebView)
-        return_url: "https://mobile.yourdomain.com/paypal-success",
-        cancel_url: "https://mobile.yourdomain.com/paypal-cancel",
+        return_url: `${process.env.BACKEND_URL}/user/paypal/processing`,
+        cancel_url: `${process.env.BACKEND_URL}/user/paypal/cancel`,
       },
       purchase_units: [
         {
