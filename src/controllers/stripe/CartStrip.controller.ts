@@ -14,6 +14,7 @@ import { sendOrderEmail } from "../../utils/email";
 
 import axios from "axios";
 import { createOrderAfterPayment } from "../../utils/createOrderAfterPayment";
+import { processMobileTopUp } from "../../utils/TopupBusinessLogic";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
     apiVersion: "2025-09-30.clover" as any,
@@ -100,50 +101,50 @@ export const initiateTransaction = async (req: any, res: Response) => {
  * Handle Stripe webhook
  */
 export const handleStripeWebhook = async (req: Request, res: Response) => {
-  const sig = req.headers["stripe-signature"];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+    const sig = req.headers["stripe-signature"];
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-  let event: Stripe.Event;
+    let event: Stripe.Event;
 
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig!, endpointSecret);
-  } catch (err: any) {
-    // ❌ Signature failed → still tell Stripe we received it
-    console.error("Webhook signature error:", err.message);
-    return res.status(200).send("INVALID_SIGNATURE_ACK");
-  }
-
-  try {
-    const transactionRepo = AppDataSource.getRepository(Transaction);
-
-    if (event.type === "payment_intent.succeeded") {
-      const paymentIntent = event.data.object as Stripe.PaymentIntent;
-
-      const transaction = await transactionRepo.findOne({
-        where: { transactionId: paymentIntent.id },
-      });
-
-      if (!transaction) {
-        console.warn("Transaction not found:", paymentIntent.id);
-        return res.status(200).send("TX_NOT_FOUND_ACK");
-      }
-
-      if (transaction.source !== "WEB") {
-        console.warn("Ignoring non-WEB transaction:", paymentIntent.id);
-        return res.status(200).send("NON_WEB_ACK");
-      }
-
-      transaction.status = "SUCCESS";
-      transaction.response = JSON.stringify(paymentIntent);
-      await transactionRepo.save(transaction);
+    try {
+        event = stripe.webhooks.constructEvent(req.body, sig!, endpointSecret);
+    } catch (err: any) {
+        // ❌ Signature failed → still tell Stripe we received it
+        console.error("Webhook signature error:", err.message);
+        return res.status(200).send("INVALID_SIGNATURE_ACK");
     }
 
-    return res.status(200).json({ received: true });
-  } catch (err) {
-    // ❌ Internal error → still ACK Stripe
-    console.error("Webhook processing error:", err);
-    return res.status(200).send("PROCESSING_ERROR_ACK");
-  }
+    try {
+        const transactionRepo = AppDataSource.getRepository(Transaction);
+
+        if (event.type === "payment_intent.succeeded") {
+            const paymentIntent = event.data.object as Stripe.PaymentIntent;
+
+            const transaction = await transactionRepo.findOne({
+                where: { transactionId: paymentIntent.id },
+            });
+
+            if (!transaction) {
+                console.warn("Transaction not found:", paymentIntent.id);
+                return res.status(200).send("TX_NOT_FOUND_ACK");
+            }
+
+            if (transaction.source !== "WEB") {
+                console.warn("Ignoring non-WEB transaction:", paymentIntent.id);
+                return res.status(200).send("NON_WEB_ACK");
+            }
+
+            transaction.status = "SUCCESS";
+            transaction.response = JSON.stringify(paymentIntent);
+            await transactionRepo.save(transaction);
+        }
+
+        return res.status(200).json({ received: true });
+    } catch (err) {
+        // ❌ Internal error → still ACK Stripe
+        console.error("Webhook processing error:", err);
+        return res.status(200).send("PROCESSING_ERROR_ACK");
+    }
 };
 
 
@@ -398,6 +399,84 @@ export const initiateTopUpTransaction = async (req: any, res: Response) => {
         console.error("TopUp Transaction Error:", err);
         return res.status(500).json({
             message: "Internal server error",
+            error: err.message,
+        });
+    }
+};
+
+export const createOrderByMobile = async (req: any, res: Response) => {
+    const transactionRepo = AppDataSource.getRepository(Transaction);
+    // const cartRepo = AppDataSource.getRepository(Cart);
+
+    const { id, role } = req.user
+    if (!id && role === "user") {
+        return res.status(403).json({ message: "Forbidden" });
+    }
+
+    try {
+        const transactionId = req.params.id;
+
+        if (!transactionId) {
+            return res.status(400).json({ message: "Transaction ID is required" });
+        }
+
+        // 1️⃣ Fetch transaction (single source of truth)
+        const transaction = await transactionRepo.findOne({
+            where: { id: transactionId },
+            relations: [
+                "user",
+                "cart",
+                "cart.items",
+                "cart.items.plan",
+                "cart.items.plan.country",
+                "topupPlan",
+            ],
+        });
+
+        if (!transaction) {
+            return res.status(404).json({ message: "Transaction not found" });
+        }
+
+        // console.log("-=-=--=-= transaction -=-=-==-=",transaction);
+
+        if (transaction.source !== "MOBILE") {
+            return res.status(400).json({ message: "Invalid transaction source" });
+        }
+
+        transaction.status = "SUCCESS"
+        await transactionRepo.save(transaction);
+
+        // 2️⃣ Route to correct flow
+        if (transaction.topupPlan) {
+            // 🔹 MOBILE TOP-UP FLOW
+            await processMobileTopUp({
+                transactionId: transaction.transactionId,
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Top-up processing triggered",
+            });
+        }
+
+        // 🔹 NORMAL eSIM PURCHASE FLOW
+        const result = await createOrderAfterPayment(
+            { ...transaction, cart: transaction.cart },
+            id
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Order created successfully",
+            data: result,
+        });
+
+    } catch (err: any) {
+        console.error("❌ [createOrderByMobile] Error:", err.message);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to process mobile order",
             error: err.message,
         });
     }

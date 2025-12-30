@@ -10,7 +10,7 @@ import { getValidThirdPartyToken } from "../middlewares/tokenTruism.service";
 import { sendUserNotification } from "./userNotification";
 
 export const createOrderAfterPayment = async (transaction: Transaction, userId: string) => {
-  // console.log("🟣 [createOrderAfterPayment] Start | Transaction:", transaction?.id, "| User:", userId);
+  console.log("🟣 [createOrderAfterPayment] Start | Transaction:", transaction);
 
   const cartRepo = AppDataSource.getRepository(Cart);
   const orderRepo = AppDataSource.getRepository(Order);
