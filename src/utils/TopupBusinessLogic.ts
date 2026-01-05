@@ -13,51 +13,68 @@ import axios from "axios";
 
 
 export async function processMobileTopUp({
-    id,
-    transactionId
-}: any) {
+    transactionId,
+}: any): Promise<{ success: boolean; order?: Order; message?: string }> {
     const transactionRepo = AppDataSource.getRepository(Transaction);
-    const esimRepo = AppDataSource.getRepository(Esim);
     const orderRepo = AppDataSource.getRepository(Order);
+    const esimRepo = AppDataSource.getRepository(Esim);
     const esimTopUpRepo = AppDataSource.getRepository(EsimTopUp);
 
     const transaction = await transactionRepo.findOne({
-        where: { id, transactionId },
+        where: { transactionId },
         relations: ["user", "topupPlan", "esim", "esim.country", "esim.plans"],
     });
 
-    if (!transaction || transaction.source !== "MOBILE") return;
+    if (!transaction || transaction.source !== "MOBILE") {
+        return { success: false, message: "Invalid transaction" };
+    }
+
+    console.log("🔎 Transaction debug:", {
+        hasUser: !!transaction.user,
+        hasTopUpPlan: !!transaction?.topupPlan,
+        hasEsim: !!transaction.esim,
+    });
+
+    const existingOrder = await orderRepo.findOne({
+        where: { transaction: { id: transaction.id } },
+    });
+
+    if (existingOrder) {
+        return { success: true, order: existingOrder };
+    }
 
     const { user, topupPlan: topUp, esim } = transaction;
-    if (!user || !esim || !esim.plans?.length) return;
 
-    // 1️⃣ Mark transaction success
-    transaction.status = TransactionStatus.SUCCESS;
-    // transaction.response = JSON.stringify(transaction.response);
-    await transactionRepo.save(transaction);
+    if (!user || !esim || !topUp) {
+        return {
+            success: false,
+            message: "Missing required data",
+        };
+    }
 
-    // 2️⃣ Create / fetch order
     const order = await getOrCreateTopUpOrder(transaction, user, esim);
 
-    // 3️⃣ Call provider
     const providerResult = await callTopUpProvider(esim, topUp);
 
-    if (!topUp) {
-        console.warn("⚠️ No top-up plan linked to transaction:", transaction.id);
-        return;
-    }
-
     if (!providerResult.success) {
-        await handleTopUpFailure(order, transaction, esimTopUpRepo, esim, topUp, providerResult.message);
-        await triggerTopUpFailureNotifications(user, order, esim);
-        return;
+        await handleTopUpFailure(
+            order,
+            transaction,
+            esimTopUpRepo,
+            esim,
+            topUp,
+            providerResult.message
+        );
+
+        return { success: false, message: providerResult.message };
     }
 
-
-    // 4️⃣ Provider success
     await finalizeTopUpSuccess(order, esim, topUp, esimRepo, esimTopUpRepo);
     await triggerTopUpSuccessNotifications(user, order, esim, topUp);
+
+    return { success: true, order };
 }
+
 
 async function callTopUpProvider(esim: any, topUp: any) {
     try {

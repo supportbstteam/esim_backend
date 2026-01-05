@@ -443,23 +443,26 @@ export const createOrderByMobile = async (req: any, res: Response) => {
             return res.status(400).json({ message: "Invalid transaction source" });
         }
 
-        if (transaction.isPaypalOrderConfirmed) {
-            return res.status(400).json({
-                message: "Payment already confirmed",
-            });
+        // if (transaction.isPaypalOrderConfirmed) {
+        //     return res.status(400).json({
+        //         message: "Payment already confirmed",
+        //     });
+        // }
+
+        if (transaction?.cart) {
+            if (transaction?.cart?.isCheckedOut) {
+                return res.status(400).json({ message: "Transaction already checked out" });
+            }
+
+            if (transaction?.cart?.isDeleted) {
+                return res.status(400).json({ message: "Cart has been deleted" });
+            }
+
+            if (transaction?.cart?.isError) {
+                return res.status(400).json({ message: "Transaction has errors" });
+            }
         }
 
-        if (transaction?.cart?.isCheckedOut) {
-            return res.status(400).json({ message: "Transaction already checked out" });
-        }
-
-        if (transaction?.cart?.isDeleted) {
-            return res.status(400).json({ message: "Cart has been deleted" });
-        }
-
-        if (transaction?.cart?.isError) {
-            return res.status(400).json({ message: "Transaction has errors" });
-        }
 
         transaction.status = "SUCCESS"
         transaction.isPaypalOrderConfirmed = true
@@ -472,19 +475,20 @@ export const createOrderByMobile = async (req: any, res: Response) => {
                 transactionId: transaction.transactionId,
             });
 
-            // if (!result.success) {
-            //     return res.status(400).json({
-            //         success: false,
-            //         message: result.message,
-            //     });
-            // }
+            console.log("🔹 Mobile Top-Up Result:", result);
 
-            // return res.status(200).json({
-            //     success: true,
-            //     message: "Top-up successful",
-            //     data: result.order,
-            // });
+            if (!result.success) {
+                return res.status(400).json({
+                    success: false,
+                    message: result.message,
+                });
+            }
 
+            return res.status(200).json({
+                success: true,
+                message: "Top-up successful",
+                data: result.order,
+            });
         }
 
         // 🔹 NORMAL eSIM PURCHASE FLOW
