@@ -35,6 +35,17 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
     const validCartItems = latestCart.items.filter((i) => !i.isDeleted && i.plan);
     if (!validCartItems.length) throw new Error("No valid cart items found");
 
+    const isCart = await orderRepo.find({
+      where: {
+        transaction,
+
+      }
+    })
+
+    if (isCart.length > 0) {
+      return { isExists: true, summary: null };
+    }
+
     // console.log(`🛒 Valid Cart Found | Items: ${validCartItems.length}`);
 
     // 🔹 Step 2: Create new order
@@ -190,7 +201,7 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
         successCount,
         failedCount,
         orderId: mainOrder?.id,
-        
+
       },
     });
 

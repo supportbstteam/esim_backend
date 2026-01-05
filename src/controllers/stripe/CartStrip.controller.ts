@@ -443,6 +443,18 @@ export const createOrderByMobile = async (req: any, res: Response) => {
             return res.status(400).json({ message: "Invalid transaction source" });
         }
 
+        if (transaction?.cart?.isCheckedOut) {
+            return res.status(400).json({ message: "Transaction already checked out" });
+        }
+
+        if (transaction?.cart?.isDeleted) {
+            return res.status(400).json({ message: "Cart has been deleted" });
+        }
+
+        if (transaction?.cart?.isError) {
+            return res.status(400).json({ message: "Transaction has errors" });
+        }
+
         transaction.status = "SUCCESS"
         await transactionRepo.save(transaction);
 
@@ -464,6 +476,14 @@ export const createOrderByMobile = async (req: any, res: Response) => {
             { ...transaction, cart: transaction.cart },
             id
         );
+
+        if (result.isExists) {
+            return res.status(200).json({
+                success: true,
+                message: "Order already exists",
+                data: result,
+            });
+        }
 
         return res.status(200).json({
             success: true,
