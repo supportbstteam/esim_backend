@@ -46,6 +46,11 @@ export const paypalWebhook = async (req: Request, res: Response) => {
                 return res.sendStatus(200);
             }
 
+            if (transaction?.status === TransactionStatus.SUCCESS) {
+                console.warn("⚠️ Transaction already successful:", paypalOrderId);
+                return res.sendStatus(200);
+            }
+
             if (transaction.status !== TransactionStatus.SUCCESS) {
                 transaction.status = TransactionStatus.SUCCESS;
                 transaction.gatewayResponse = event;
