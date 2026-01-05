@@ -7,10 +7,11 @@ import { Cart } from "../entity/Carts.entity";
 import { TopUpPlan } from "../entity/Topup.entity";
 import { User } from "../entity/User.entity";
 import { CartItem } from "../entity/CartItem.entity";
+import { Esim } from "../entity/Esim.entity";
 
 export const createPaypalOrder = async (req: any, res: Response) => {
   try {
-    const { amount, cartId, topupId } = req.body;
+    const { amount, cartId, topupId, esimId } = req.body;
     const user = req.user;
 
     const numericAmount = Number(amount);
@@ -24,10 +25,17 @@ export const createPaypalOrder = async (req: any, res: Response) => {
       });
     }
 
+    if ((topupId && !esimId) || (cartId && topupId)) {
+      return res.status(400).json({
+        message: "Either esimId is required (not both)",
+      });
+    }
+
     const transactionRepo = AppDataSource.getRepository(Transaction);
     const cartRepo = AppDataSource.getRepository(Cart);
     const cartItemRepo = AppDataSource.getRepository(CartItem);
     const topupRepo = AppDataSource.getRepository(TopUpPlan);
+    const esimRepo = AppDataSource.getRepository(Esim);
 
     let items: any[] = [];
     let description = "";
@@ -69,6 +77,9 @@ export const createPaypalOrder = async (req: any, res: Response) => {
         return res.status(404).json({ message: "Top-up plan not found" });
       }
 
+
+
+
       items = [
         {
           name: topup.title,
@@ -90,6 +101,14 @@ export const createPaypalOrder = async (req: any, res: Response) => {
       0
     );
 
+    const esim = await esimRepo.findOne({
+      where: { id: esimId }
+    });
+
+    if (!esim) {
+      return res.status(404).json({ message: "eSIM not found" });
+    }
+
     /* ---------------- Create transaction ---------------- */
     const transaction = transactionRepo.create({
       user,
@@ -99,6 +118,7 @@ export const createPaypalOrder = async (req: any, res: Response) => {
       source: "WEB",
       cart: cart || undefined,
       topupPlan: topup || undefined,
+      esim: esim || undefined,
     });
     await transactionRepo.save(transaction);
 

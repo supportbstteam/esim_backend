@@ -26,19 +26,7 @@ export async function processMobileTopUp({
         relations: ["user", "topupPlan", "esim", "esim.country", "esim.plans"],
     });
 
-
     if (!transaction || transaction.source !== "MOBILE") return;
-
-    const isExists = await orderRepo.find({
-        where: {
-            transaction: transaction
-        }
-    });
-
-    if (isExists.length > 0) {
-        console.log("⚠️ Order already exists for transaction:", transaction.id);
-        return;
-    }
 
     const { user, topupPlan: topUp, esim } = transaction;
     if (!user || !esim || !esim.plans?.length) return;

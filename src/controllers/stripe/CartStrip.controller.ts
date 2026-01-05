@@ -468,14 +468,23 @@ export const createOrderByMobile = async (req: any, res: Response) => {
         // 2️⃣ Route to correct flow
         if (transaction.topupPlan) {
             // 🔹 MOBILE TOP-UP FLOW
-            await processMobileTopUp({
+            const result = await processMobileTopUp({
                 transactionId: transaction.transactionId,
             });
 
-            return res.status(200).json({
-                success: true,
-                message: "Top-up processing triggered",
-            });
+            // if (!result.success) {
+            //     return res.status(400).json({
+            //         success: false,
+            //         message: result.message,
+            //     });
+            // }
+
+            // return res.status(200).json({
+            //     success: true,
+            //     message: "Top-up successful",
+            //     data: result.order,
+            // });
+
         }
 
         // 🔹 NORMAL eSIM PURCHASE FLOW
