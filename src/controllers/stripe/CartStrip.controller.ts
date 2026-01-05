@@ -443,9 +443,9 @@ export const createOrderByMobile = async (req: any, res: Response) => {
             return res.status(400).json({ message: "Invalid transaction source" });
         }
 
-        if (transaction.status !== TransactionStatus.SUCCESS) {
+        if (transaction.isPaypalOrderConfirmed) {
             return res.status(400).json({
-                message: "Payment not confirmed yet",
+                message: "Payment already confirmed",
             });
         }
 
@@ -461,8 +461,9 @@ export const createOrderByMobile = async (req: any, res: Response) => {
             return res.status(400).json({ message: "Transaction has errors" });
         }
 
-        // transaction.status = "SUCCESS"
-        // await transactionRepo.save(transaction);
+        transaction.status = "SUCCESS"
+        transaction.isPaypalOrderConfirmed = true
+        await transactionRepo.save(transaction);
 
         // 2️⃣ Route to correct flow
         if (transaction.topupPlan) {

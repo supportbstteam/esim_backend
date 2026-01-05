@@ -25,42 +25,49 @@ export const paypalWebhook = async (req: Request, res: Response) => {
 
         console.log("✅ PayPal webhook received:", eventType);
 
-        const transactionRepo = AppDataSource.getRepository(Transaction);
-
-        // ---- PAYMENT COMPLETED ----
-        if (eventType === "PAYMENT.CAPTURE.COMPLETED") {
-            const paypalOrderId =
-                event.resource.supplementary_data.related_ids.order_id;
-
-            const transaction = await transactionRepo.findOne({
-                where: { transactionId: paypalOrderId },
-            });
-
-            if (!transaction) {
-                console.warn("⚠️ Transaction not found:", paypalOrderId);
-                return res.sendStatus(200);
-            }
-
-            if (transaction?.source !== "MOBILE") {
-                console.warn("⚠️ Transaction not from mobile:", paypalOrderId);
-                return res.sendStatus(200);
-            }
-
-            // if (transaction?.status === TransactionStatus.SUCCESS) {
-            //     console.warn("⚠️ Transaction already successful:", paypalOrderId);
-            //     return res.sendStatus(200);
-            // }
-
-            if (transaction.status !== TransactionStatus.SUCCESS) {
-                transaction.status = TransactionStatus.SUCCESS;
-                transaction.gatewayResponse = event;
-                await transactionRepo.save(transaction);
-            }
+        if (eventType !== "PAYMENT.CAPTURE.COMPLETED") {
+            return res.sendStatus(200);
         }
 
-        res.sendStatus(200);
+        const paypalOrderId =
+            event.resource?.supplementary_data?.related_ids?.order_id ||
+            event.resource?.invoice_id ||
+            event.resource?.custom_id ||
+            event.resource?.id;
+
+        if (!paypalOrderId) {
+            console.error("❌ No PayPal identifier found");
+            return res.sendStatus(200);
+        }
+
+        console.log("🔑 PayPal ID:", paypalOrderId);
+
+        const transactionRepo = AppDataSource.getRepository(Transaction);
+
+        const transaction = await transactionRepo.findOne({
+            where: { transactionId: paypalOrderId },
+            lock: { mode: "pessimistic_write" },
+        });
+
+        if (!transaction) {
+            console.warn("⚠️ Transaction not found:", paypalOrderId);
+            return res.sendStatus(200);
+        }
+
+        if (transaction.source !== "MOBILE") {
+            return res.sendStatus(200);
+        }
+
+        transaction.status = TransactionStatus.SUCCESS;
+        transaction.gatewayResponse = event;
+
+        await transactionRepo.save(transaction);
+
+        console.log("✅ Transaction updated to SUCCESS:", paypalOrderId);
+
+        return res.sendStatus(200);
     } catch (err) {
-        console.error("PayPal webhook error:", err);
-        res.sendStatus(500);
+        console.error("❌ PayPal webhook error:", err);
+        return res.sendStatus(500);
     }
 };

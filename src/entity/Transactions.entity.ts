@@ -63,6 +63,9 @@ export class Transaction {
     @Column({ type: "text", nullable: true })
     response?: string;
 
+    @Column({ type: "boolean", nullable: true })
+    isPaypalOrderConfirmed?: boolean;
+
     @Column({ type: "varchar", length: 20, default: "WEB", nullable: true })
     source !: "WEB" | "MOBILE";
 
