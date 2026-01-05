@@ -224,7 +224,7 @@ export const capturePaypalOrder = async (req: Request, res: Response) => {
 
 export const createPaypalOrderMobile = async (req: any, res: Response) => {
   try {
-    const { amount, cartId, topupId } = req.body;
+    const { amount, cartId, topupId, esimId } = req.body;
     const user = req.user;
 
     const numericAmount = Number(amount);
@@ -242,10 +242,17 @@ export const createPaypalOrderMobile = async (req: any, res: Response) => {
       });
     }
 
+    if (topupId && !esimId) {
+      return res.status(400).json({
+        message: "esimId is required ",
+      });
+    }
+
     const transactionRepo = AppDataSource.getRepository(Transaction);
     const cartRepo = AppDataSource.getRepository(Cart);
     const cartItemRepo = AppDataSource.getRepository(CartItem);
     const topupRepo = AppDataSource.getRepository(TopUpPlan);
+    const esimRepo = AppDataSource.getRepository(Esim);
 
     let items: any[] = [];
     let description = "";
@@ -299,6 +306,16 @@ export const createPaypalOrderMobile = async (req: any, res: Response) => {
       description = "eSIM top-up";
     }
 
+    
+
+    const esim = await esimRepo.findOne({
+      where: { id: esimId }
+    });
+
+    if (!esim) {
+      return res.status(404).json({ message: "eSIM not found" });
+    }
+
     const itemTotal = items.reduce(
       (sum, i) => sum + Number(i.unit_amount.value) * Number(i.quantity),
       0
@@ -313,6 +330,7 @@ export const createPaypalOrderMobile = async (req: any, res: Response) => {
       source: "MOBILE",
       cart: cart || undefined,
       topupPlan: topup || undefined,
+      esim: esim || undefined,
     });
     await transactionRepo.save(transaction);
 
