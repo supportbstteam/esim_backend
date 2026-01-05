@@ -25,9 +25,9 @@ export const createPaypalOrder = async (req: any, res: Response) => {
       });
     }
 
-    if ((topupId && !esimId) || (cartId && topupId)) {
+    if (topupId && !esimId) {
       return res.status(400).json({
-        message: "Either esimId is required (not both)",
+        message: "esimId is required ",
       });
     }
 
