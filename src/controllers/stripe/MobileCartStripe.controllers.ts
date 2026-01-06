@@ -88,7 +88,7 @@ export const initiateMobileTransaction = async (req: any, res: Response) => {
  */
 export const handleMobileStripeWebhook = async (req: Request, res: Response) => {
     // console.log("-=-=-=-=-=- hello mobile-hook calling -=-=-=-=-=")
-    // console.log("🚀 [WEBHOOK] Mobile Stripe webhook received");
+    console.log("🚀 [WEBHOOK] Mobile Stripe webhook received");
 
     const sig = req.headers["stripe-signature"];
     const endpointSecret = process.env.STRIPE_MOBILE_WEBHOOK_SECRET || "";
@@ -98,15 +98,15 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
         return res.status(200).send("SIGNATURE_ERROR_ACK");
     }
 
-    // console.log("🧩 [WEBHOOK] Signature header found:", sig.slice(0, 20) + "...");
+    console.log("🧩 [WEBHOOK] Signature header found:", sig.slice(0, 20) + "...");
 
     let event: Stripe.Event;
 
     // 🔹 Step 1: Verify the webhook signature
     try {
-        // console.log("🔐 [WEBHOOK] Verifying webhook signature...");
+        console.log("🔐 [WEBHOOK] Verifying webhook signature...");
         event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-        // console.log("✅ [WEBHOOK] Stripe event verified successfully:", event.type);
+        console.log("✅ [WEBHOOK] Stripe event verified successfully:", event.type);
     } catch (err: any) {
         console.error("❌ [WEBHOOK] Signature verification failed:", err.message);
         return res.status(200).send("TX_NOT_FOUND_ACK");
@@ -117,19 +117,19 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
 
     try {
         // 🔹 Step 2: Log incoming event
-        // console.log("📩 [WEBHOOK] Received Stripe event:", event.type);
+        console.log("📩 [WEBHOOK] Received Stripe event:", event.type);
 
         // 🔹 Step 3: Handle successful payment
         if (event.type === "payment_intent.succeeded") {
-            // console.log("💰 [WEBHOOK] Payment succeeded — processing order creation...");
+            console.log("💰 [WEBHOOK] Payment succeeded — processing order creation...");
 
             const paymentIntent = event.data.object as Stripe.PaymentIntent;
-            // console.log("🆔 [WEBHOOK] PaymentIntent ID:", paymentIntent.id);
-            // console.log("💵 [WEBHOOK] Amount received (cents):", paymentIntent.amount);
-            // console.log("📦 [WEBHOOK] Metadata:", paymentIntent.metadata);
+            console.log("🆔 [WEBHOOK] PaymentIntent ID:", paymentIntent.id);
+            console.log("💵 [WEBHOOK] Amount received (cents):", paymentIntent.amount);
+            console.log("📦 [WEBHOOK] Metadata:", paymentIntent.metadata);
 
             // 🔹 Step 4: Fetch transaction
-            // console.log("🔍 [WEBHOOK] Searching for matching transaction...");
+            console.log("🔍 [WEBHOOK] Searching for matching transaction...");
             const transaction = await transactionRepo.findOne({
                 where: { transactionId: paymentIntent.id },
                 relations: ["user", "cart", "cart.items", "cart.items.plan", "cart.items.plan.country"],
@@ -145,20 +145,20 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
                 return res.status(200).send("NON_MOBILE_ACK");
             }
 
-            // console.log("✅ [WEBHOOK] Transaction found:", transaction.id);
-            // console.log("👤 [WEBHOOK] User:", transaction.user?.email); added .
-            // console.log("🛒 [WEBHOOK] Cart ID:", transaction.cart?.id);
+            console.log("✅ [WEBHOOK] Transaction found:", transaction.id);
+            console.log("👤 [WEBHOOK] User:", transaction.user?.email);  // added .
+            console.log("🛒 [WEBHOOK] Cart ID:", transaction.cart?.id);
 
             // 🔹 Step 5: Mark transaction success
             transaction.status = TransactionStatus.SUCCESS;
             transaction.response = JSON.stringify(paymentIntent);
             await transactionRepo.save(transaction);
-            // console.log("✅ [WEBHOOK] Transaction status updated to SUCCESS");
+            console.log("✅ [WEBHOOK] Transaction status updated to SUCCESS");
 
             // 🔹 Step 6: Create the order
-            // console.log("🧩 [WEBHOOK] Creating order from transaction...");
+            console.log("🧩 [WEBHOOK] Creating order from transaction...");
             await createOrderAfterPayment(transaction, transaction.user?.id || "");
-            // console.log("🎉 [WEBHOOK] Order successfully created for mobile transaction");
+            console.log("🎉 [WEBHOOK] Order successfully created for mobile transaction");
 
             // 🔹 Step 7: Mark cart checked out
             if (!transaction?.cart) {
@@ -169,9 +169,9 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
             transaction.cart.isCheckedOut = true;
             transaction.cart.isProcessing = true;
             await cartRepo.save(transaction.cart);
-            // console.log("🛒 [WEBHOOK] Cart marked as checked out");
+            console.log("🛒 [WEBHOOK] Cart marked as checked out");
 
-            // console.log("✅ [WEBHOOK] Mobile webhook handling complete");
+            console.log("✅ [WEBHOOK] Mobile webhook handling complete");
             return res.status(200).json({ received: true });
         }
 
@@ -195,7 +195,7 @@ export const handleMobileStripeWebhook = async (req: Request, res: Response) => 
         }
 
         // 🔹 Step 9: Unknown event types
-        // console.log("ℹ️ [WEBHOOK] Ignoring event type:", event.type);
+        console.log("ℹ️ [WEBHOOK] Ignoring event type:", event.type);
         res.json({ received: true });
 
     } catch (err: any) {
