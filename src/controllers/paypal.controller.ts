@@ -25,11 +25,11 @@ export const createPaypalOrder = async (req: any, res: Response) => {
       });
     }
 
-    if (topupId && !esimId) {
-      return res.status(400).json({
-        message: "esimId is required ",
-      });
-    }
+    // if (topupId && !esimId) {
+    //   return res.status(400).json({
+    //     message: "esimId is required ",
+    //   });
+    // }
 
     const transactionRepo = AppDataSource.getRepository(Transaction);
     const cartRepo = AppDataSource.getRepository(Cart);
@@ -101,13 +101,13 @@ export const createPaypalOrder = async (req: any, res: Response) => {
       0
     );
 
-    const esim = await esimRepo.findOne({
-      where: { id: esimId }
-    });
+    // const esim = await esimRepo.findOne({
+    //   where: { id: esimId }
+    // });
 
-    if (!esim) {
-      return res.status(404).json({ message: "eSIM not found" });
-    }
+    // if (!esim) {
+    //   return res.status(404).json({ message: "eSIM not found" });
+    // }
 
     /* ---------------- Create transaction ---------------- */
     const transaction = transactionRepo.create({
@@ -118,7 +118,7 @@ export const createPaypalOrder = async (req: any, res: Response) => {
       source: "WEB",
       cart: cart || undefined,
       topupPlan: topup || undefined,
-      esim: esim || undefined,
+      // esim: esim || undefined,
     });
     await transactionRepo.save(transaction);
 
