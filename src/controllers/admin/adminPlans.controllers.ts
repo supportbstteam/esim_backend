@@ -113,30 +113,82 @@ export const getPlans = async (req: Request, res: Response) => {
 
 // GET a single plan by ID
 export const getPlanById = async (req: Request, res: Response) => {
-
-    // // console.log("------ params ------", req.params?.)
     try {
-        const planRepo = AppDataSource.getRepository(Plan);
         const { planId } = req.params;
 
+        if (!planId) {
+            return res.status(400).json({ message: "Plan id is required" });
+        }
 
+        const planRepo = AppDataSource.getRepository(Plan);
 
-        // Query by UUID id instead of numeric planId
-        const plan = await planRepo.findOne({
-            where: { id: planId, isDeleted: false, isActive: true },
-            relations: ["country"],
-        });
+        const plan = await planRepo
+            .createQueryBuilder("plan")
+            .innerJoin("plan.country", "country")
+            .select([
+                "plan.id AS id",
+                "plan.title AS title",
+                "plan.name AS name",
+                "plan.data AS data",
+                "plan.call AS callUnits", // alias to avoid SQL keyword
+                "plan.sms AS sms",
+                "plan.isUnlimited AS isUnlimited",
+                "plan.isFeatured AS isFeatured",
+                "plan.validityDays AS validityDays",
+                "plan.price AS price",
+                "plan.currency AS currency",
+                "plan.planId AS planId",
+                "plan.createdAt AS createdAt",
+                "plan.updatedAt AS updatedAt",
+                "country.id AS countryId",
+                "country.name AS countryName",
+                "country.isoCode AS iso2",
+                "country.iso3Code AS iso3",
+                "country.description AS countryDescription",
+            ])
+            .where("plan.id = :planId", { planId })
+            .andWhere("plan.isDeleted = false")
+            .andWhere("plan.isActive = true")
+            .getRawOne();
 
         if (!plan) {
             return res.status(404).json({ message: "Plan not found" });
         }
 
-        return res.status(200).json(plan);
+        return res.status(200).json({
+            success: true,
+            data: {
+                id: plan.id,
+                title: plan.title,
+                name: plan.name,
+                data: plan.data,
+                call: plan.callUnits,
+                sms: plan.sms,
+                isUnlimited: plan.isUnlimited,
+                isFeatured: plan.isFeatured,
+                validityDays: plan.validityDays,
+                price: plan.price,
+                currency: plan.currency,
+                planId: plan.planId,
+                country: {
+                    id: plan.countryId,
+                    name: plan.countryName,
+                    iso2: plan.iso2,
+                    iso3: plan.iso3,
+                    description: plan.countryDescription,
+                },
+                createdAt: plan.createdAt,
+                updatedAt: plan.updatedAt,
+            },
+        });
     } catch (err: any) {
         console.error("--- Error in getPlanById ---", err.message);
-        return res.status(500).json({ message: "Failed to fetch plan", error: err.message });
+        return res.status(500).json({
+            message: "Failed to fetch plan",
+        });
     }
 };
+
 
 
 export const updatePlan = async (req: Request, res: Response) => {

@@ -47,7 +47,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   synchronize: false,
-  logging: false,
+  logging: true,
 //   dropSchema: false,
 
   extra: {

@@ -43,6 +43,7 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
     })
 
     if (isCart.length > 0) {
+      console.log("⚠️ Order already exists for transaction:", transaction.transactionId);
       return { isExists: true, summary: null };
     }
 

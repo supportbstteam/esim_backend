@@ -1,8 +1,12 @@
 // src/entity/User.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, Index } from "typeorm";
 import { Esim } from "./Esim.entity";
 import { Cart } from "./Carts.entity";
 @Entity({ name: "users" })
+@Index(["email"])
+@Index(["isDeleted"])
+@Index(["isBlocked"])
+@Index(["isVerified"])
 export class User {
     @PrimaryGeneratedColumn("uuid")
     id!: string;
@@ -22,7 +26,7 @@ export class User {
     @Column({ type: "varchar", length: 255, unique: true })
     email!: string;
 
-    @Column({ type: "varchar", length: 255 })
+    @Column({ type: "varchar", length: 255, select: false })
     password!: string;
 
     @OneToMany(() => Esim, (esim: any) => esim.user)
@@ -37,13 +41,13 @@ export class User {
     @Column({ type: "varchar", length: 20, nullable: true })
     phone?: string;
 
-    @Column({ type:"varchar", nullable: true })
+    @Column({ type: "varchar", nullable: true })
     oneSignalPlayerId!: string | null;
 
     @Column({ type: "varchar", length: 100, nullable: true })
     country?: string;
 
-    @Column({ type: "varchar", length: 6, nullable: true })
+    @Column({ type: "varchar", length: 6, nullable: true, select: false })
     otp!: string | null;
 
     @Column({ type: "bigint", nullable: true })

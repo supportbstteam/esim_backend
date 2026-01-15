@@ -6,33 +6,30 @@ import { Plan } from "../../entity/Plans.entity";
 export const getCountryUser = async (_req: Request, res: Response) => {
     try {
         const dataSource = await getDataSource();
-        const countryRepository = dataSource.getRepository(Country);
-        const planRepository = dataSource.getRepository(Plan);
+        const countryRepo = dataSource.getRepository(Country);
 
-        // Fetch all active and non-deleted countries
-        const countries = await countryRepository.find({
-            where: { isActive: true, isDelete: false },
-            order: { name: "ASC" },
-        });
-
-        // Fetch lowest price plan for each country
-        const lowestPrices = await planRepository
-            .createQueryBuilder("plan")
-            .select("plan.countryId", "countryId")
-            .addSelect("MIN(plan.price)", "minPrice")
-            .groupBy("plan.countryId")
+        const result = await countryRepo
+            .createQueryBuilder("country")
+            .leftJoin(
+                Plan,
+                "plan",
+                "plan.countryId = country.id AND plan.isActive = true AND plan.isDeleted = false"
+            )
+            .select([
+                "country.id AS id",
+                "country.name AS name",
+                "country.isoCode AS isoCode",
+                "country.iso3Code AS iso3Code",
+                "country.imageUrl AS imageUrl",
+                "country.phoneCode AS phoneCode",
+                "country.currency AS currency",
+                "MIN(plan.price) AS price",
+            ])
+            .where("country.isActive = true")
+            .andWhere("country.isDelete = false")
+            .groupBy("country.id")
+            .orderBy("country.name", "ASC")
             .getRawMany();
-
-        // Create a map for quick lookup
-        const priceMap = new Map(
-            lowestPrices.map((p) => [p.countryId, Number(p.minPrice)])
-        );
-
-        // Attach lowest price to each country
-        const result = countries.map((country) => ({
-            ...country,
-            price: priceMap.get(country.id) || null, // null if no plan found
-        }));
 
         return res.status(200).json({
             success: true,
@@ -40,8 +37,9 @@ export const getCountryUser = async (_req: Request, res: Response) => {
         });
     } catch (err: any) {
         console.error("Error fetching countries:", err);
-        return res
-            .status(500)
-            .json({ success: false, message: "Server error" });
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+        });
     }
 };

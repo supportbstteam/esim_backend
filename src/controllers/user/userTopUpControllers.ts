@@ -1,4 +1,4 @@
-import { Response } from "express";
+import e, { Response } from "express";
 import { CartItem } from "../../entity/CartItem.entity";
 import { Cart } from "../../entity/Carts.entity";
 import { TopUpPlan } from "../../entity/Topup.entity";
@@ -11,6 +11,8 @@ import { Order, OrderType } from "../../entity/order.entity";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 // sendTopUpUserNotification
 import { sendAdminOrderNotification, sendTopUpUserNotification } from "../../utils/email";
+
+
 export const postUserTopUpOrder = async (req: any, res: Response) => {
     const { id } = req.user || {};
     const { topupId, transactionId, esimId } = req.body;
@@ -129,9 +131,13 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
 
             // console.log("Top-up successful for order:", order);
 
-            await sendAdminOrderNotification(order);
+            await sendAdminOrderNotification(order).catch(err => {
+                console.log("Error in the mail send to the Admin", err)
+            });
 
-            await sendTopUpUserNotification(order);
+            await sendTopUpUserNotification(order).catch(err => {
+                console.log("Error in the mail send to the user", err)
+            });
 
             return res.status(200).json({
                 status: true,
@@ -201,18 +207,10 @@ export const postUserTopUpOrder = async (req: any, res: Response) => {
     }
 };
 
-
-export const getUserTopUpOrderList = async () => {
-
-}
-
-export const getUserTopUpOrderListById = async () => {
-
-}
-
 export const getUserTopUpPlans = async (req: any, res: Response) => {
     const { id, role } = req.user;
-    if (role !== 'user') {
+
+    if (role !== "user") {
         return res.status(403).json({ status: false, message: "Forbidden" });
     }
 
@@ -230,34 +228,67 @@ export const getUserTopUpPlans = async (req: any, res: Response) => {
         const esimRepo = AppDataSource.getRepository(Esim);
         const topupRepo = AppDataSource.getRepository(TopUpPlan);
 
-        // 1️⃣ Fetch the eSIM to get its country
-        const esim = await esimRepo.findOne({
-            where: { id: simId },
-            relations: ["country"],
-        });
+        // 🔍 Fetch ONLY what we need from eSIM
+        const esim = await esimRepo
+            .createQueryBuilder("esim")
+            .innerJoin("esim.country", "country")
+            .select([
+                "esim.id AS id",
+                "country.id AS countryId",
+                "country.name AS countryName",
+                "country.isoCode AS isoCode",
+                "userId"
+            ])
+            .where("esim.id = :simId", { simId })
+            .getRawOne();
 
         if (!esim) {
             return res.status(404).json({ status: false, message: "eSIM not found" });
         }
 
-        const countryId = esim?.country.id;
+        // console.log("-=-=-=- user by esim -=-=-=-=", esim);
 
-        // // console.log("----- country id -----", countryId);
+        if (esim?.userId !== id)
+            return res.status(401).json({ status: false, message: "User Invalid" });
 
-        // 2️⃣ Fetch all active top-up plans for this country
-        const topUpPlans = await topupRepo.find({
-            where: { isActive: true, country: { id: countryId } },
-            order: { price: "ASC" }, // optional: sort by price
-        });
+        // 🔍 Fetch top-up plans (minimal fields)
+        const topUpPlans = await topupRepo
+            .createQueryBuilder("topup")
+            .innerJoin("topup.country", "country")
+            .select([
+                "topup.id AS id",
+                "topup.topupId AS topupId",
+                "topup.name AS name",
+                "topup.title AS title",
+                "topup.price AS price",
+                "topup.dataLimit AS dataLimit",
+                "topup.validityDays AS validityDays",
+                "topup.isUnlimited AS isUnlimited",
+                "topup.currency AS currency",
+            ])
+            .where("topup.isActive = true")
+            .andWhere("topup.isDeleted = false")
+            .andWhere("country.id = :countryId", { countryId: esim.countryId })
+            .orderBy("topup.price", "ASC")
+            .getRawMany();
 
-        // // console.log("----- topUpPlans id -----", topUpPlans);
         return res.status(200).json({
             status: true,
             data: topUpPlans,
-            esim
+            esim: {
+                id: esim.id,
+                country: {
+                    id: esim.countryId,
+                    name: esim.countryName,
+                    isoCode: esim.isoCode,
+                },
+            },
         });
     } catch (err: any) {
         console.error("Error fetching top-up plans:", err);
-        return res.status(500).json({ status: false, message: "Internal Server Error" });
+        return res.status(500).json({
+            status: false,
+            message: "Internal Server Error",
+        });
     }
 };

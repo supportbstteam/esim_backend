@@ -5,6 +5,7 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
+    Index,
 } from "typeorm";
 
 /**
@@ -15,16 +16,19 @@ export class Country {
     @PrimaryGeneratedColumn("uuid")
     id!: string;
 
-    @Column({ type: "varchar", length: 255, unique: true })
-    name!: string;
 
+    @Column({ type: "varchar", length: 255, unique: true })
+    @Index()
+    name!: string;
+    
     @Column({ type: "text", nullable: true, comment: "Detailed description of the country" })
     description?: string;
-
+    
     @Column({ type: "varchar", length: 2, unique: true })
     isoCode!: string;
-
+    
     @Column({ type: "varchar", length: 3, nullable: true })
+    @Index()
     iso3Code?: string;
 
     @Column({ type: "varchar", length: 500, nullable: true, comment: "Country flag or representative image URL" })

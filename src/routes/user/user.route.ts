@@ -31,29 +31,28 @@ router.post("/devices/register", auth, registerPlayerId); // create notification
 
 
 // Public
-router.post("/verify-otp", postCreateUser);
-router.post("/signup", postVerifyOtp);
-router.post("/login", postUserLogin);
-router.get("/details", auth, getUserDetails);
+router.post("/verify-otp", postCreateUser); // fixed
+router.post("/signup", postVerifyOtp); // fixed
+router.post("/login", postUserLogin); // fixed 
+router.get("/details", auth, getUserDetails); // fixed
 
 router.put("/update", auth, updateProfile);
 router.delete("/delete", auth, deleteAccount);
-router.post("/auth/forget-password", postForgotPassword);
-router.post("/auth/verify-password-otp", postVerifyForgotPasswordOtp);
-router.post("/auth/temp-reset-password", postResetPassword);
+router.post("/auth/forget-password", postForgotPassword); // fixed
+router.post("/auth/verify-password-otp", postVerifyForgotPasswordOtp); // fixed
+router.post("/auth/temp-reset-password", postResetPassword); // fixed
 
 // user device one signal player ID
 router.post("/device/register", registerDevice);
 
 
-router.use("/country", countryRoute);
-router.use("/plans", planRoute);
+router.use("/country", countryRoute); // fixed
+router.use("/plans", planRoute); // fixed
 
 // top up mobile + route (web)
 router.post("/transactions/mobile/top-up/stripe/initiate", auth, initiateMobileTopUpTransaction);
 router.get("/top-up/status/:transactionId", auth, getTopUpStatus);
-router.use("/top-up", auth, topUpPlanRoute);
-
+router.use("/top-up", auth, topUpPlanRoute); // fixed except the transaction
 
 router.use("/e-sim", auth, esimRoute);
 // router.use("/auth", userAuthRoute);
@@ -85,7 +84,7 @@ router.use("/query", queryRoute);
 
 // ---- e sim usage ----
 router.use("/usage", esimUsage);
-router.use("/notification",auth, notificationRoute);
+router.use("/notification", auth, notificationRoute);
 
 router.get("/testimonials", getAllTestimonials);
 
