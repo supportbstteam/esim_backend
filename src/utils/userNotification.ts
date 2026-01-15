@@ -29,13 +29,7 @@ export const sendUserNotification = async ({
   // 2️⃣ Load devices
   const devices = await deviceRepo.find({ where: { userId } });
 
-  if (!devices.length) {
-    throw new Error("No devices found for user");
-  }
-
-  const playerIds = devices.map(d => d.playerId);
-
-  // 3️⃣ Save notification in DB (before sending)
+  // 3️⃣ Save notification in DB (always)
   const notification = notificationRepo.create({
     userId,
     contentId: content.id,
@@ -45,6 +39,17 @@ export const sendUserNotification = async ({
   });
 
   await notificationRepo.save(notification);
+
+  // 🚫 No devices → skip push, return success
+  if (!devices.length) {
+    return {
+      success: true,
+      skipped: true,
+      reason: "No devices found",
+    };
+  }
+
+  const playerIds = devices.map(d => d.playerId);
 
   // 4️⃣ Send to OneSignal
   try {
@@ -69,7 +74,11 @@ export const sendUserNotification = async ({
     notification.isSent = true;
     await notificationRepo.save(notification);
 
-    return response.data;
+    return {
+      success: true,
+      skipped: false,
+      onesignal: response.data,
+    };
 
   } catch (err: any) {
     console.error("💥 OneSignal failed");
@@ -78,7 +87,8 @@ export const sendUserNotification = async ({
       console.error("OneSignal Error:", err.response.data);
     }
 
-    // ❗ DB record stays with isSent=false (retry-friendly)
+    // DB stays retry-friendly (isSent = false)
     throw err;
   }
 };
+
