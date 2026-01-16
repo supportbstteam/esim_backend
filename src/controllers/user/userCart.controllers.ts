@@ -95,10 +95,12 @@ export const addToCart = async (req: any, res: Response) => {
                 validityDays: i.plan.validityDays,
                 isDeleted: i?.isDeleted,
                 country: {
-                    id: i.plan.country.id, 
-                    name: i.plan.country.name, 
-                    currency: i.plan?.country?.currency || "USD", 
+                    id: i.plan.country.id,
+                    name: i.plan.country.name,
+                    currency: i.plan?.country?.currency || "USD",
                     phoneCode: i.plan?.country?.phoneCode,
+                    isoCode: i.plan?.country?.isoCode,
+                    iso3Code: i.plan?.country?.iso3Code,
                 },
             },
             quantity: i.quantity,
@@ -133,7 +135,7 @@ export const updateCartItem = async (req: any, res: Response) => {
             relations: ["cart", "cart.user"],
         });
         if (!cartItem) return res.status(404).json({ success: false, message: "Cart item not found." });
-        if (cartItem?.cart?.user && cartItem.cart.user.id !== userId && cartItem.cart?.user?.isBlocked && cartItem.cart.user.isDeleted ) return res.status(403).json({ success: false, message: "You are not authorized to update this item." });
+        if (cartItem?.cart?.user && cartItem.cart.user.id !== userId && cartItem.cart?.user?.isBlocked && cartItem.cart.user.isDeleted) return res.status(403).json({ success: false, message: "You are not authorized to update this item." });
 
         cartItem.quantity = quantity;
         await cartItemRepo.save(cartItem);
@@ -223,7 +225,7 @@ export const getUserCart = async (req: any, res: Response) => {
         // ✅ Find the latest active cart
         const latestCart = await cartRepo.findOne({
             where: {
-                user: { id, isBlocked:false, isDeleted:false },
+                user: { id, isBlocked: false, isDeleted: false },
                 isDeleted: false,
                 isCheckedOut: false,
                 isError: false,

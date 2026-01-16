@@ -597,7 +597,7 @@ export const getUserAllSims = async (req: any, res: Response) => {
 
     const esims = await esimRepo.find({
       where: { user: { id: userId } },
-      relations: ["country"],
+      relations: ["country", "order"],
       order: { createdAt: "DESC" },
     });
 
@@ -628,11 +628,10 @@ export const getUserAllSims = async (req: any, res: Response) => {
   }
 };
 
-
 export const getUserEsimDetails = async (req: any, res: Response) => {
   const { id: userId, role } = req.user;
   const { esimId } = req.params;
-  const thirdPartyToken = { Authorization: `Bearer ${req.thirdPartyToken}` };
+  const headers = { Authorization: `Bearer ${req.thirdPartyToken}` };
 
   if (!userId || role !== "user") {
     return res.status(401).json({ message: "Unauthorized", status: "error" });
@@ -646,14 +645,12 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
 
   try {
     const esimRepo = AppDataSource.getRepository(Esim);
-    const orderRepo = AppDataSource.getRepository(Order);
 
-    // 🔹 Find eSIM that belongs to the current user
+    // 🔹 Fetch eSIM belonging to user
     const esim = await esimRepo.findOne({
       where: { id: esimId, user: { id: userId } },
       relations: [
         "order",
-        "order.country",
         "order.transaction",
         "order.transaction.user",
         "order.transaction.charges",
@@ -667,89 +664,37 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
         .json({ message: "eSIM not found", status: "error" });
     }
 
-    // if (!esim.iccid) {
-    //   return res
-    //     .status(404)
-    //     .json({ message: "ICCID not found", status: "error" });
-    // }
+    // 🔥 Reuse shared logic (same as getUserAllSims)
+    const updatedEsim = await processEsim(esim, esimRepo, headers);
 
-    // 🔹 Fetch live eSIM data from external API
-
-    let simResponse = null;
-
-    if (esim?.iccid) {
-      simResponse = (await axios.get(
-        `${process.env.TURISM_URL}/v2/sims/${esim.iccid}/usage`,
-        { headers: thirdPartyToken }
-      )).data;
-
-    }
-
-    console.log("----- simResponse?.data?.data -----", simResponse?.data?.data);
-
-    const simData = simResponse?.data?.data || esim;
-    if (!simData) {
-      return res.status(404).json({
-        message: "Invalid response from SIM provider",
-        status: "error",
-      });
-    }
-
-    // 🔹 Extract values to update
-    const {
-      remaining_days,
-      total_data,
-      status,
-      status_text,
-      is_unlimited,
-      expired_at,
-      product_plan_id,
-      remaining_data,
-      product_status,
-    } = simData;
-
-    // 🔹 Update eSIM details in the DB (network + stats)
-    esim.networkStatus = status || esim.networkStatus;
-    esim.statusText = status_text || esim.statusText;
-
-    // Example logic: set active if status is active
-    esim.isActive = status_text?.toLowerCase() === "active";
-
-    // 🔹 Update plan details
-    // Use fallback values from DB if missing in API response
-    esim.validityDays = remaining_days ?? esim.validityDays;
-    esim.dataAmount = total_data ? total_data / 1024 : esim.dataAmount; // convert MB->GB if needed
-    esim.callAmount = 0;
-    esim.smsAmount = 0;
-
-    await esimRepo.save(esim);
-
-    // 🔹 Format and return clean eSIM details
+    // 🔹 Format response (keep same structure as before)
     const formattedOrder = {
-      ...esim.order,
+      ...updatedEsim.order,
       esims: [
         {
-          id: esim.id,
-          startDate: esim.startDate,
-          endDate: esim.endDate,
-          isActive: esim.isActive,
-          isDeleted: esim.isDeleted,
-          externalId: esim.externalId,
-          iccid: esim.iccid,
-          qrCodeUrl: esim.qrCodeUrl || "",
-          networkStatus: esim.networkStatus,
-          statusText: esim.statusText,
-          productName: esim.productName,
-          currency: esim.currency,
-          price: esim.price,
-          validityDays: esim.validityDays,
-          dataAmount: esim.dataAmount,
-          callAmount: esim.callAmount,
-          smsAmount: esim.smsAmount,
-          createdAt: esim.createdAt,
-          updatedAt: esim.updatedAt,
-          country: esim.country,
-          order: esim.order,
+          id: updatedEsim.id,
+          startDate: updatedEsim.startDate,
+          endDate: updatedEsim.endDate,
+          isActive: updatedEsim.isActive,
+          isDeleted: updatedEsim.isDeleted,
+          externalId: updatedEsim.externalId,
+          iccid: updatedEsim.iccid,
+          qrCodeUrl: updatedEsim.qrCodeUrl || "",
+          networkStatus: updatedEsim.networkStatus,
+          statusText: updatedEsim.statusText,
+          productName: updatedEsim.productName,
+          currency: updatedEsim.currency,
+          price: updatedEsim.price,
+          validityDays: updatedEsim.validityDays,
+          dataAmount: updatedEsim.dataAmount,
+          callAmount: updatedEsim.callAmount,
+          smsAmount: updatedEsim.smsAmount,
+          createdAt: updatedEsim.createdAt,
+          updatedAt: updatedEsim.updatedAt,
+          country: updatedEsim.country,
+          order: updatedEsim.order,
+          remainingData: updatedEsim.remainingData,
+          isExpiry: updatedEsim.isExpiry,
         },
       ],
     };
@@ -768,6 +713,7 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
     });
   }
 };
+
 
 export const getUserSimSummary = async (req: any, res: Response) => {
   // console.log("=== HIT getUserSimSummary route ===");

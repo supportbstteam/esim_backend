@@ -18,7 +18,7 @@ export class Country {
     @Column({ type: "varchar", length: 255, unique: true })
     name!: string;
 
-    @Column({ type: "text", nullable: true, comment: "Detailed description of the country" })
+    @Column({ type: "text", nullable: true, comment: "Detailed description of the country", select: false })
     description?: string;
 
     @Column({ type: "varchar", length: 2, unique: true })
@@ -27,7 +27,7 @@ export class Country {
     @Column({ type: "varchar", length: 3, nullable: true })
     iso3Code?: string;
 
-    @Column({ type: "varchar", length: 500, nullable: true, comment: "Country flag or representative image URL" })
+    @Column({ type: "varchar", length: 500, nullable: true, comment: "Country flag or representative image URL", select: false })
     imageUrl?: string;
 
     @Column({ type: "varchar", length: 10 })

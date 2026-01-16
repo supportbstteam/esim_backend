@@ -2,6 +2,16 @@ import { Esim } from "../entity/Esim.entity";
 import moment from "moment";
 import axios from "axios";
 
+export interface EsimUsageResult {
+  remainingData?: number;
+  totalDataGB?: number;
+  remainingDays?: number;
+  isActive?: boolean;
+  endDate?: string;
+  isExpired?: boolean;
+}
+
+
 export const processEsim = async (esim: Esim, esimRepo: any, headers: any) => {
   if (!esim.iccid) return esim;
 
@@ -76,5 +86,49 @@ export const processEsim = async (esim: Esim, esimRepo: any, headers: any) => {
   } catch (err: any) {
     console.error(`eSIM ${esim.iccid} failed:`, err.message);
     return esim;
+  }
+};
+
+export const fetchEsimUsage = async (
+  iccid: string,
+  headers: any
+): Promise<EsimUsageResult | null> => {
+  try {
+    const { data: usageRes } = await axios.get(
+      `${process.env.TURISM_URL}/v2/sims/${iccid}/usage`,
+      { headers }
+    );
+
+    const usageData = usageRes?.data?.data;
+    if (!usageData) return null;
+
+    const {
+      remaining_days,
+      total_data,
+      remaining_data,
+      expired_at,
+      status,
+    } = usageData;
+
+    let isExpired = false;
+    let endDate: string | undefined;
+
+    if (expired_at) {
+      const end = moment(expired_at, "YYYY-MM-DD HH:mm:ss");
+      isExpired = end.startOf("day").isSameOrBefore(moment().startOf("day"));
+      endDate = expired_at.slice(0, 10);
+    }
+
+    return {
+      remainingData: remaining_data,
+      totalDataGB: total_data ? total_data / 1024 : undefined,
+      remainingDays: remaining_days,
+      isActive: status === "ACTIVE",
+      endDate,
+      isExpired,
+    };
+  } catch (err: any) {
+    console.error(`Usage fetch failed for ${iccid}:`, err.message);
+    return null;
   }
 };
