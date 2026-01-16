@@ -4,7 +4,7 @@ import { AppDataSource } from "../../data-source";
 import { Page } from "../../entity/Page.entity";
 import { PageSection } from "../../entity/PageSection.entity";
 
-export const saveOrUpdatePage = async (req: Request, res: Response) => {
+export const saveOrUpdatePage = async (req:any, res: Response) => {
   const { page } = req.params;
   const { sections } = req.body;
 

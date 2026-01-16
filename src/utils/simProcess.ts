@@ -1,9 +1,6 @@
-import pLimit from "p-limit";
 import { Esim } from "../entity/Esim.entity";
 import moment from "moment";
 import axios from "axios";
-
-export const limit = pLimit(5); // 👈 tune this (5–10 is safe)
 
 export const processEsim = async (esim: Esim, esimRepo: any, headers: any) => {
   if (!esim.iccid) return esim;
@@ -24,23 +21,21 @@ export const processEsim = async (esim: Esim, esimRepo: any, headers: any) => {
       status_text,
       validity_days,
       data,
-      updated_at,
     } = showData;
 
-    // 🔹 Update common fields from /show
     esim.networkStatus = network_status ?? esim.networkStatus;
     esim.statusText = status_text ?? esim.statusText;
     esim.validityDays = validity_days ?? esim.validityDays;
     esim.dataAmount = data ?? esim.dataAmount;
 
-    // CASE 1️⃣ — NOT ACTIVE → DO NOT call /usage
+    // CASE 1️⃣ — NOT ACTIVE
     if (!data_usage && !network_status) {
       esim.isActive = false;
       await esimRepo.save(esim);
       return esim;
     }
 
-    // CASE 2️⃣ — ACTIVE → call /usage
+    // CASE 2️⃣ — ACTIVE
     if (data_usage && network_status === "ACTIVE") {
       const { data: usageRes } = await axios.get(
         `${process.env.TURISM_URL}/v2/sims/${esim.iccid}/usage`,
@@ -70,7 +65,9 @@ export const processEsim = async (esim: Esim, esimRepo: any, headers: any) => {
         const endDate = moment(expired_at, "YYYY-MM-DD HH:mm:ss");
         const today = moment();
         esim.endDate = expired_at.slice(0, 10);
-        esim.isExpiry = endDate.startOf("day").isSameOrBefore(today.startOf("day"));
+        esim.isExpiry = endDate
+          .startOf("day")
+          .isSameOrBefore(today.startOf("day"));
       }
     }
 
@@ -78,6 +75,6 @@ export const processEsim = async (esim: Esim, esimRepo: any, headers: any) => {
     return esim;
   } catch (err: any) {
     console.error(`eSIM ${esim.iccid} failed:`, err.message);
-    return esim; // fail-safe
+    return esim;
   }
 };

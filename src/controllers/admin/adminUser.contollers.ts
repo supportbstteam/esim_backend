@@ -11,7 +11,7 @@ import { Esim } from "../../entity/Esim.entity";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
 // ----------------- CREATE USER -----------------
-export const postAdminCreateUser = async (req: Request, res: Response) => {
+export const postAdminCreateUser = async (req:any, res: Response) => {
   const { firstName, lastName, email, password, role, isActive } = req.body;
 
   try {
@@ -57,7 +57,7 @@ export const postAdminCreateUser = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteAdminUser = async (req: Request, res: Response) => {
+export const deleteAdminUser = async (req:any, res: Response) => {
   const { userId } = req.params;
 
   try {
@@ -124,7 +124,7 @@ export const deleteAdminUser = async (req: Request, res: Response) => {
 
 
 // ----------------- TOGGLE BLOCK/UNBLOCK USER -----------------
-export const patchAdminToggleBlockUser = async (req: Request, res: Response) => {
+export const patchAdminToggleBlockUser = async (req:any, res: Response) => {
   const { userId } = req.params;
 
   try {
@@ -156,7 +156,7 @@ export const patchAdminToggleBlockUser = async (req: Request, res: Response) => 
 
 
 // ----------------- GET ALL USERS WITH FILTERS -----------------
-export const getAdminAllUsers = async (req: Request, res: Response) => {
+export const getAdminAllUsers = async (req:any, res: Response) => {
   try {
     const isAdmin = await checkAdmin(req, res);
     if (!isAdmin) return;
@@ -231,7 +231,7 @@ export const getAdminAllUsers = async (req: Request, res: Response) => {
 
 
 // ----------------- GET SINGLE USER DETAILS + STATS -----------------
-export const getAdminUserDetails = async (req: Request, res: Response) => {
+export const getAdminUserDetails = async (req:any, res: Response) => {
   const { userId } = req.params;
 
   try {
@@ -308,7 +308,7 @@ export const getAdminUserDetails = async (req: Request, res: Response) => {
 };
 
 // ----------------- FILTER USERS (COUNTRY + PLAN) -----------------
-export const getFilteredUsers = async (req: Request, res: Response) => {
+export const getFilteredUsers = async (req:any, res: Response) => {
   try {
     const isAdmin = await checkAdmin(req, res);
     if (!isAdmin) {
@@ -352,7 +352,7 @@ export const getFilteredUsers = async (req: Request, res: Response) => {
   }
 };
 
-export const putAdminUpdateUser = async (req: Request, res: Response) => {
+export const putAdminUpdateUser = async (req:any, res: Response) => {
   const { userId } = req.params;
   const { firstName, lastName, email, password, isActive } = req.body;
 

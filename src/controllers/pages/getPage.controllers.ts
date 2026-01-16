@@ -4,7 +4,7 @@ import { AppDataSource } from "../../data-source";
 import { Page } from "../../entity/Page.entity";
 import { PageSection } from "../../entity/PageSection.entity";
 
-export const getPage = async (req: Request, res: Response) => {
+export const getPage = async (req:any, res: Response) => {
   const { page } = req.params;
 
   const pageRepo = AppDataSource.getRepository(Page);

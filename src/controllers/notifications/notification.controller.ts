@@ -5,7 +5,7 @@ import { User } from "../../entity/User.entity";
 import { pushToDevices } from "../../service/oneSignal.service";
 import { Notification } from "../../entity/Notification.entity";
 
-export const notifyUser = async (req: Request, res: Response) => {
+export const notifyUser = async (req:any, res: Response) => {
   const { userId, title, message } = req.body;
 
   const repo = AppDataSource.getRepository(User);

@@ -5,7 +5,7 @@ import { NotificationContent } from "../../entity/NotificationContent.entity";
 const repo = AppDataSource.getRepository(NotificationContent);
 
 export const createNotificationContent = async (
-  req: Request,
+  req:any,
   res: Response
 ) => {
   try {
@@ -28,7 +28,7 @@ export const createNotificationContent = async (
 };
 
 export const listNotificationContents = async (
-  req: Request,
+  req:any,
   res: Response
 ) => {
   const contents = await repo.find({
@@ -39,7 +39,7 @@ export const listNotificationContents = async (
 };
 
 export const deleteNotificationContent = async (
-  req: Request,
+  req:any,
   res: Response
 ) => {
   const { id } = req.params;

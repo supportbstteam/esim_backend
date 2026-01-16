@@ -6,7 +6,7 @@ import { QueryFailedError } from "typeorm";
 const contentRepo = AppDataSource.getRepository(Content);
 
 // 🟢 Get content by page
-export const getContent = async (req: Request, res: Response) => {
+export const getContent = async (req:any, res: Response) => {
     const { page } = req.params;
 
     try {
@@ -30,7 +30,7 @@ export const getContent = async (req: Request, res: Response) => {
 };
 
 // 🟡 Get all content pages
-export const getAllContent = async (_req: Request, res: Response) => {
+export const getAllContent = async (_req:any, res: Response) => {
     try {
         const contents = await contentRepo.find({
             order: { updatedAt: "DESC" }, // newest first
@@ -54,7 +54,7 @@ export const getAllContent = async (_req: Request, res: Response) => {
 };
 
 // 🔵 Save or update content
-export const saveContent = async (req: Request, res: Response) => {
+export const saveContent = async (req:any, res: Response) => {
     const { page, html, title } = req.body;
 
     if (!page || !html || !title) {

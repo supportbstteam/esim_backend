@@ -7,7 +7,7 @@ import { checkAdmin } from "../../utils/checkAdmin";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
 // ✅ Get all Top-Up orders
-export const getAllTopUpOrders = async (req: Request, res: Response) => {
+export const getAllTopUpOrders = async (req:any, res: Response) => {
   try {
     const orderRepo = AppDataSource.getRepository(Order);
 
@@ -51,7 +51,7 @@ export const getAllTopUpOrders = async (req: Request, res: Response) => {
 };
 
 // ✅ Get Top-Up order by ID (same response as adminUserAllESimById)
-export const getTopUpOrderById = async (req: Request, res: Response) => {
+export const getTopUpOrderById = async (req:any, res: Response) => {
   // 🧩 Only admin can access
   if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
 
@@ -163,7 +163,7 @@ export const getTopUpOrderById = async (req: Request, res: Response) => {
 };
 
 // ✅ Get all Top-Up orders for a specific user
-export const getTopUpOrdersByUser = async (req: Request, res: Response) => {
+export const getTopUpOrdersByUser = async (req:any, res: Response) => {
     const { userId } = req.params;
 
     try {
@@ -189,7 +189,7 @@ export const getTopUpOrdersByUser = async (req: Request, res: Response) => {
 };
 
 // ✅ Update Top-Up order status or activation
-export const updateTopUpOrderStatus = async (req: Request, res: Response) => {
+export const updateTopUpOrderStatus = async (req:any, res: Response) => {
     const { id } = req.params;
     const { status, activated, errorMessage } = req.body;
 
@@ -215,7 +215,7 @@ export const updateTopUpOrderStatus = async (req: Request, res: Response) => {
 };
 
 // ✅ Delete Top-Up order (soft or hard)
-export const deleteTopUpOrder = async (req: Request, res: Response) => {
+export const deleteTopUpOrder = async (req:any, res: Response) => {
     const { id } = req.params;
 
     try {

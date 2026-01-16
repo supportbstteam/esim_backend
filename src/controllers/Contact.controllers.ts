@@ -5,7 +5,7 @@ import { Contact } from "../entity/ContactUs.entity";
 const contactRepo = AppDataSource.getRepository(Contact);
 
 // ✅ Get all contacts
-export const getContacts = async (_req: Request, res: Response) => {
+export const getContacts = async (_req:any, res: Response) => {
   try {
     const contacts = await contactRepo.find();
     return res.json(contacts);
@@ -14,7 +14,7 @@ export const getContacts = async (_req: Request, res: Response) => {
   }
 };
 
-export const createContacts = async (req: Request, res: Response) => {
+export const createContacts = async (req:any, res: Response) => {
   const queryRunner = AppDataSource.createQueryRunner();
   await queryRunner.connect();
 
@@ -56,7 +56,7 @@ export const createContacts = async (req: Request, res: Response) => {
 };
 
 // ✅ Update a single contact
-export const updateContact = async (req: Request, res: Response) => {
+export const updateContact = async (req: any, res: Response) => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -74,7 +74,7 @@ export const updateContact = async (req: Request, res: Response) => {
 };
 
 // ✅ Delete a contact
-export const deleteContact = async (req: Request, res: Response) => {
+export const deleteContact = async (req:any, res: Response) => {
   try {
     const { id } = req.params;
     const contact = await contactRepo.findOneBy({ id });

@@ -29,7 +29,7 @@ export const createTestimonial = async (req: any, res: Response) => {
 };
 
 // Get all testimonials
-export const getAllTestimonials = async (_req: Request, res: Response) => {
+export const getAllTestimonials = async (_req:any, res: Response) => {
   try {
     const testimonialRepo = AppDataSource.getRepository(Testimonial);
     const testimonials = await testimonialRepo.find({
@@ -43,7 +43,7 @@ export const getAllTestimonials = async (_req: Request, res: Response) => {
 };
 
 // Get single testimonial by ID
-export const getTestimonialById = async (req: Request, res: Response) => {
+export const getTestimonialById = async (req:any, res: Response) => {
   try {
     const { id } = req.params;
     const testimonialRepo = AppDataSource.getRepository(Testimonial);
@@ -61,7 +61,7 @@ export const getTestimonialById = async (req: Request, res: Response) => {
 };
 
 // Update testimonial
-export const updateTestimonial = async (req: Request, res: Response) => {
+export const updateTestimonial = async (req:any, res: Response) => {
   if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
   try {
     const { id } = req.params;
@@ -91,7 +91,7 @@ export const updateTestimonial = async (req: Request, res: Response) => {
 };
 
 // Delete testimonial
-export const deleteTestimonial = async (req: Request, res: Response) => {
+export const deleteTestimonial = async (req:any, res: Response) => {
   if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
   try {
     const { id } = req.params;
@@ -112,7 +112,7 @@ export const deleteTestimonial = async (req: Request, res: Response) => {
 };
 
 // Update Active/Inactive status
-export const updateTestimonialStatus = async (req: Request, res: Response) => {
+export const updateTestimonialStatus = async (req:any, res: Response) => {
   if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
 
   try {

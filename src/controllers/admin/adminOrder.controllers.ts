@@ -6,7 +6,7 @@ import { Esim } from "../../entity/Esim.entity";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 
 // Get all orders (with optional pagination)
-export const getAllOrders = async (req: Request, res: Response) => {
+export const getAllOrders = async (req:any, res: Response) => {
     try {
         const orderRepo = AppDataSource.getRepository(Order);
 
@@ -59,7 +59,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
 };
 
 // ✅ Get Order by ID (with user details included from order table)
-export const getOrderById = async (req: Request, res: Response) => {
+export const getOrderById = async (req:any, res: Response) => {
     const { id } = req.params;
 
     try {
@@ -122,7 +122,7 @@ export const getOrderById = async (req: Request, res: Response) => {
 
 
 // Get all orders for a specific user
-export const getOrderByUser = async (req: Request, res: Response) => {
+export const getOrderByUser = async (req:any, res: Response) => {
     const { userId } = req.params;
     try {
         const userRepo = AppDataSource.getRepository(User);
@@ -147,7 +147,7 @@ export const getOrderByUser = async (req: Request, res: Response) => {
 };
 
 // Update order status or activation
-export const updateOrderStatus = async (req: Request, res: Response) => {
+export const updateOrderStatus = async (req:any, res: Response) => {
     const { id } = req.params;
     const { status, activated, errorMessage } = req.body;
 
@@ -173,7 +173,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
 };
 
 // Soft-delete an order (if needed)
-export const deleteOrder = async (req: Request, res: Response) => {
+export const deleteOrder = async (req:any, res: Response) => {
     const { id } = req.params;
     try {
         const orderRepo = AppDataSource.getRepository(Order);

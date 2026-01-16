@@ -3,7 +3,7 @@ import { AppDataSource } from "../data-source";
 import { Transaction, TransactionStatus } from "../entity/Transactions.entity";
 import { verifyPaypalWebhook } from "../utils/verifyPaypalWebhook";
 
-export const paypalWebhook = async (req: Request, res: Response) => {
+export const paypalWebhook = async (req:any, res: Response) => {
     try {
         const isValid = await verifyPaypalWebhook({
             transmissionId: req.headers["paypal-transmission-id"] as string,

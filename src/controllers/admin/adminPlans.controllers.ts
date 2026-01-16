@@ -22,7 +22,7 @@ interface ApiPlan {
     country_id: string; // since Country.id is uuid
 }
 
-export const createPlan = async (req: Request, res: Response) => {
+export const createPlan = async (req:any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(Plan);
         const countryRepo = AppDataSource.getRepository(Country);
@@ -91,7 +91,7 @@ export const createPlan = async (req: Request, res: Response) => {
 
 
 // GET all plans (optionally filter by country)
-export const getPlans = async (req: Request, res: Response) => {
+export const getPlans = async (req:any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(Plan);
         const { countryId } = req.query;
@@ -112,7 +112,7 @@ export const getPlans = async (req: Request, res: Response) => {
 };
 
 // GET a single plan by ID
-export const getPlanById = async (req: Request, res: Response) => {
+export const getPlanById = async (req:any, res: Response) => {
 
     // // console.log("------ params ------", req.params?.)
     try {
@@ -139,7 +139,7 @@ export const getPlanById = async (req: Request, res: Response) => {
 };
 
 
-export const updatePlan = async (req: Request, res: Response) => {
+export const updatePlan = async (req:any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(Plan);
         const countryRepo = AppDataSource.getRepository(Country);
@@ -196,7 +196,7 @@ export const updatePlan = async (req: Request, res: Response) => {
 
 
 // DELETE a plan by ID
-export const deletePlan = async (req: Request, res: Response) => {
+export const deletePlan = async (req:any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(Plan);
         const { planId } = req.params;

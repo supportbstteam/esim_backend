@@ -173,7 +173,7 @@ export const createPaypalOrder = async (req: any, res: Response) => {
   }
 };
 
-export const capturePaypalOrder = async (req: Request, res: Response) => {
+export const capturePaypalOrder = async (req:any, res: Response) => {
   try {
     const { paypalOrderId } = req.body;
 

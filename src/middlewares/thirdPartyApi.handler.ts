@@ -4,7 +4,7 @@ import { Token } from "../entity/Token.entity";
 import { tokenTurismApi } from "../service/token.service";
 import axios from "axios";
 
-export const thirdPartyAuthMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+export const thirdPartyAuthMiddleware = async (req:any, res: Response, next: NextFunction) => {
   try {
     const tokenRepo = AppDataSource.getRepository(Token);
 

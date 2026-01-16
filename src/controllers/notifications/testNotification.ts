@@ -3,7 +3,7 @@ import { AppDataSource } from "../../data-source";
 import { UserDevice } from "../../entity/UserDevices.entity";
 import { sendUserNotification } from "../../utils/userNotification";
 
-export const testNotificationController = async (req: Request, res: Response) => {
+export const testNotificationController = async (req:any, res: Response) => {
   try {
     // ✅ SAFELY access body
     const userId = req.body?.userId;

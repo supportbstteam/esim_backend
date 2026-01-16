@@ -3,7 +3,7 @@ import { Country } from "../../entity/Country.entity";
 import { getDataSource } from "../../lib/serverless";
 import { Plan } from "../../entity/Plans.entity";
 
-export const getCountryUser = async (_req: Request, res: Response) => {
+export const getCountryUser = async (_req:any, res: Response) => {
     try {
         const dataSource = await getDataSource();
         const countryRepository = dataSource.getRepository(Country);

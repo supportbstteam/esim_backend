@@ -5,7 +5,7 @@ import { User } from "../entity/User.entity";
 
 // d246268c-4f38-47fa-ba7b-1e6aa3e31132
 
-export const registerDevice = async (req: Request, res: Response) => {
+export const registerDevice = async (req:any, res: Response) => {
   const { userId, playerId } = req.body;
 
   if (!playerId) {

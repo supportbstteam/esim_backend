@@ -3,7 +3,7 @@ import { getDataSource } from "../../lib/serverless";
 import { Plan } from "../../entity/Plans.entity";
 
 // -------------------- GET ALL USER PLANS --------------------
-export const getUserPlans = async (req: Request, res: Response) => {
+export const getUserPlans = async (req:any, res: Response) => {
   try {
     const { countryId } = req.query;
 
@@ -66,7 +66,7 @@ export const getUserPlans = async (req: Request, res: Response) => {
 };
 
 // -------------------- GET FEATURED PLANS --------------------
-export const getFeaturePlans = async (req: Request, res: Response) => {
+export const getFeaturePlans = async (req:any, res: Response) => {
   try {
     const { countryId } = req.query;
 
@@ -128,7 +128,7 @@ export const getFeaturePlans = async (req: Request, res: Response) => {
 };
 
 // -------------------- GET USER PLAN BY COUNTRY --------------------
-export const getUserPlanByCountry = async (req: Request, res: Response) => {
+export const getUserPlanByCountry = async (req:any, res: Response) => {
   const { countryId } = req.body;
 
   try {

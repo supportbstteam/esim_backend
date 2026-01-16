@@ -11,7 +11,8 @@ import { Refund } from "../../entity/Refund.entity";
 import { sendAdminOrderNotification, sendOrderEmail } from "../../utils/email";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 import moment from "moment";
-import { limit, processEsim } from "../../utils/simProcess";
+import { processEsim } from "../../utils/simProcess";
+import { runWithConcurrency } from "../../utils/limitProcess";
 
 // export const postOrder = async (req: any, res: Response) => {
 //   const requestId = `postOrder-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
@@ -607,11 +608,11 @@ export const getUserAllSims = async (req: any, res: Response) => {
       });
 
     // 🔥 Controlled parallel execution
-    const updatedEsims = await Promise.all(
-      esims.map(esim =>
-        limit(() => processEsim(esim, esimRepo, headers))
-      )
+    const tasks = esims.map(esim => () =>
+      processEsim(esim, esimRepo, headers)
     );
+
+    const updatedEsims = await runWithConcurrency(tasks, 5);
 
     return res.status(200).json({
       message: "All eSIMs fetched and updated successfully",

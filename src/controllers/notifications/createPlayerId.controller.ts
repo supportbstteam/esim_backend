@@ -4,7 +4,7 @@ import { Not } from "typeorm";
 import { AppDataSource } from "../../data-source";
 import { UserDevice } from "../../entity/UserDevices.entity";
 
-export const registerPlayerId = async (req: Request, res: Response) => {
+export const registerPlayerId = async (req:any, res: Response) => {
   try {
     /**
      * userId should come from auth middleware (JWT)

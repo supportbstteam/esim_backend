@@ -7,7 +7,7 @@ import { checkAdmin } from "../utils/checkAdmin";
 const faqRepo = AppDataSource.getRepository(Faq);
 
 // ✅ Get all active FAQs
-export const getFaqs = async (req: Request, res: Response) => {
+export const getFaqs = async (req:any, res: Response) => {
     try {
         const faqs = await faqRepo.find({
             order: { order: "ASC" },
@@ -20,7 +20,7 @@ export const getFaqs = async (req: Request, res: Response) => {
 };
 
 // ✅ Get FAQ by ID
-export const getFaqById = async (req: Request, res: Response) => {
+export const getFaqById = async (req:any, res: Response) => {
     try {
         const { id } = req.params;
         const faq = await faqRepo.findOne({ where: { id } });
@@ -32,7 +32,7 @@ export const getFaqById = async (req: Request, res: Response) => {
 };
 
 // ✅ Create one or multiple FAQs
-export const createFaq = async (req: Request, res: Response) => {
+export const createFaq = async (req:any, res: Response) => {
     try {
         const adminCheck = await checkAdmin(req, res);
         if (!adminCheck) return;
@@ -71,7 +71,7 @@ export const createFaq = async (req: Request, res: Response) => {
 };
 
 // ✅ Update FAQ (all fields required)
-export const updateFaq = async (req: Request, res: Response) => {
+export const updateFaq = async (req:any, res: Response) => {
     try {
         const adminCheck = await checkAdmin(req, res);
         if (!adminCheck) return;
@@ -103,7 +103,7 @@ export const updateFaq = async (req: Request, res: Response) => {
 };
 
 // ✅ Update FAQ active/inactive status only
-export const updateFaqStatus = async (req: Request, res: Response) => {
+export const updateFaqStatus = async (req:any, res: Response) => {
     try {
         const adminCheck = await checkAdmin(req, res);
         if (!adminCheck) return;
@@ -132,7 +132,7 @@ export const updateFaqStatus = async (req: Request, res: Response) => {
 };
 
 // ✅ Delete FAQ
-export const deleteFaq = async (req: Request, res: Response) => {
+export const deleteFaq = async (req:any, res: Response) => {
     try {
         const adminCheck = await checkAdmin(req, res);
         if (!adminCheck) return;

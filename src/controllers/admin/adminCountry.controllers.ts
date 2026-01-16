@@ -63,7 +63,7 @@ export const createCountry = async (req: any, res: Response) => {
 };
 
 // READ ALL (Admin only)
-export const getCountries = async (req: Request, res: Response) => {
+export const getCountries = async (req:any, res: Response) => {
     if (!(await checkAdmin(req, res))) return;
 
     try {
@@ -76,7 +76,7 @@ export const getCountries = async (req: Request, res: Response) => {
 };
 
 // READ ONE (Admin only)
-export const getCountryById = async (req: Request, res: Response) => {
+export const getCountryById = async (req:any, res: Response) => {
     if (!(await checkAdmin(req, res))) return;
 
     try {
@@ -94,7 +94,7 @@ export const getCountryById = async (req: Request, res: Response) => {
 };
 
 // UPDATE (Admin only)
-export const updateCountry = async (req: Request, res: Response) => {
+export const updateCountry = async (req:any, res: Response) => {
     if (!(await checkAdmin(req, res))) return;
 
     try {
@@ -122,7 +122,7 @@ export const updateCountry = async (req: Request, res: Response) => {
 };
 
 // SOFT DELETE (Admin only)
-export const deleteCountry = async (req: Request, res: Response) => {
+export const deleteCountry = async (req:any, res: Response) => {
     if (!(await checkAdmin(req, res))) return;
 
     try {

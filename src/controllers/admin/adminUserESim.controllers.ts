@@ -10,7 +10,7 @@ import { Order } from "../../entity/order.entity";
  * ✅ 1. Get all eSIMs across all users (Admin)
  * Now pulls user details from the Order entity fields
  */
-export const adminUserAllESims = async (req: Request, res: Response) => {
+export const adminUserAllESims = async (req:any, res: Response) => {
   try {
     const esimRepo = AppDataSource.getRepository(Esim);
 
@@ -52,7 +52,7 @@ export const adminUserAllESims = async (req: Request, res: Response) => {
 /**
  * ✅ 2. Get all eSIMs for a specific user (by userId)
  */
-export const adminUserAllESimById = async (req: Request, res: Response) => {
+export const adminUserAllESimById = async (req:any, res: Response) => {
   // 🧩 Only admin can access
   if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
 
@@ -152,7 +152,7 @@ export const adminUserAllESimById = async (req: Request, res: Response) => {
  * Behavior: If admin deletes eSIM → user remains untouched.
  * The foreign key (userId) in Esim becomes NULL (via onDelete: "SET NULL").
  */
-export const adminDeletingESim = async (req: Request, res: Response) => {
+export const adminDeletingESim = async (req:any, res: Response) => {
     try {
         const { esimId } = req.params;
         const esimRepo = AppDataSource.getRepository(Esim);

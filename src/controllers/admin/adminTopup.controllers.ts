@@ -8,7 +8,7 @@ import { checkAdmin } from "../../utils/checkAdmin";
 /**
  * Create/Update TopUp Plans
  */
-export const createTopupPlans = async (req: Request, res: Response) => {
+export const createTopupPlans = async (req:any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(TopUpPlan);
         const countryRepo = AppDataSource.getRepository(Country);
@@ -71,7 +71,7 @@ export const createTopupPlans = async (req: Request, res: Response) => {
 /**
  * Get all TopUp Plans (optional filter by country)
  */
-export const getTopupPlans = async (req: Request, res: Response) => {
+export const getTopupPlans = async (req:any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(TopUpPlan);
         const { countryId } = req.query;
@@ -94,7 +94,7 @@ export const getTopupPlans = async (req: Request, res: Response) => {
 /**
  * Get a TopUp Plan by ID
  */
-export const getTopupPlanById = async (req: Request, res: Response) => {
+export const getTopupPlanById = async (req:any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(TopUpPlan);
         const { id } = req.params;
@@ -118,7 +118,7 @@ export const getTopupPlanById = async (req: Request, res: Response) => {
 /**
  * Update a TopUp Plan
  */
-export const updateTopupPlan = async (req: Request, res: Response) => {
+export const updateTopupPlan = async (req:any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(TopUpPlan);
         const countryRepo = AppDataSource.getRepository(Country);
@@ -172,7 +172,7 @@ export const updateTopupPlan = async (req: Request, res: Response) => {
 /**
  * Soft Delete a TopUp Plan
  */
-export const deleteTopupPlan = async (req: Request, res: Response) => {
+export const deleteTopupPlan = async (req:any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(TopUpPlan);
         const { id } = req.params;

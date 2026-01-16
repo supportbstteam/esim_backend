@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 // Add paths to skip auth if needed
 const allowedPaths = ["/login", "/register"];
 
-export const auth = (req: Request, res: Response, next: NextFunction) => {
+export const auth = (req:any, res: Response, next: NextFunction) => {
   // ✅ Allow CORS preflight
   if (req.method === "OPTIONS") return next();
 

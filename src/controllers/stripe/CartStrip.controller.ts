@@ -100,7 +100,7 @@ export const initiateTransaction = async (req: any, res: Response) => {
 /**
  * Handle Stripe webhook
  */
-export const handleStripeWebhook = async (req: Request, res: Response) => {
+export const handleStripeWebhook = async (req:any, res: Response) => {
     const sig = req.headers["stripe-signature"];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
@@ -270,7 +270,7 @@ export const handleCODTransaction = async (req: any, res: Response) => {
  * Update transaction status
  * Can be called from frontend after successful Stripe payment
  */
-export const handleTransactionStatus = async (req: Request, res: Response) => {
+export const handleTransactionStatus = async (req:any, res: Response) => {
     const { id } = req.params;
 
     try {

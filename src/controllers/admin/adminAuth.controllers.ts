@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { generateToken } from "../../utils/generateToken";
 import { getDataSource } from "../../lib/serverless"; // singleton DataSource
 
-export const loginAdmin = async (req: Request, res: Response) => {
+export const loginAdmin = async (req:any, res: Response) => {
   const { username, password }: any = req.body;
 
   try {
@@ -33,7 +33,7 @@ export const loginAdmin = async (req: Request, res: Response) => {
   }
 };
 
-export const registerAdmin = async (req: Request, res: Response) => {
+export const registerAdmin = async (req:any, res: Response) => {
   const { name, username, password }: any = req.body;
 
   try {

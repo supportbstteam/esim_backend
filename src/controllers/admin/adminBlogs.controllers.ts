@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../../data-source";
 import { Blog } from "../../entity/Blogs.entity";
 
-export const createBlog = async (req: Request, res: Response) => {
+export const createBlog = async (req:any, res: Response) => {
     try {
         const blogRepo = AppDataSource.getRepository(Blog);
 
@@ -32,7 +32,7 @@ export const createBlog = async (req: Request, res: Response) => {
     }
 };
 
-export const getAllBlogs = async (req: Request, res: Response) => {
+export const getAllBlogs = async (req:any, res: Response) => {
     try {
         const blogRepo = AppDataSource.getRepository(Blog);
         const blogs = await blogRepo.find({
@@ -53,7 +53,7 @@ export const getAllBlogs = async (req: Request, res: Response) => {
     }
 };
 
-export const getBlogById = async (req: Request, res: Response) => {
+export const getBlogById = async (req:any, res: Response) => {
     try {
         const blogRepo = AppDataSource.getRepository(Blog);
         const { id } = req.params;
@@ -74,7 +74,7 @@ export const getBlogById = async (req: Request, res: Response) => {
     }
 };
 
-export const updateBlog = async (req: Request, res: Response) => {
+export const updateBlog = async (req:any, res: Response) => {
     try {
         const blogRepo = AppDataSource.getRepository(Blog);
         const { id } = req.params;
@@ -93,7 +93,7 @@ export const updateBlog = async (req: Request, res: Response) => {
     }
 };
 
-export const deleteBlog = async (req: Request, res: Response) => {
+export const deleteBlog = async (req:any, res: Response) => {
     try {
         const blogRepo = AppDataSource.getRepository(Blog);
         const { id } = req.params;

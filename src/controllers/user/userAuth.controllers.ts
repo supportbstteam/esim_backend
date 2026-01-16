@@ -16,7 +16,7 @@ const generateToken = (user: User) => {
 };
 
 // 📝 SIGNUP
-export const postCreateUser = async (req: Request, res: Response) => {
+export const postCreateUser = async (req:any, res: Response) => {
     let { firstName, lastName, email, password } = req.body;
 
     if (!firstName || !lastName || !email || !password) {
@@ -121,7 +121,7 @@ export const postCreateUser = async (req: Request, res: Response) => {
 // -----------------------------
 // POST USER LOGIN
 // -----------------------------
-export const postUserLogin = async (req: Request, res: Response) => {
+export const postUserLogin = async (req:any, res: Response) => {
     try {
         const { email, password } = req.body;
 
@@ -349,7 +349,7 @@ export const deleteAccount = async (req: any, res: Response) => {
 
 // export const postOtpVerification = async
 
-export const postVerifyOtp = async (req: Request, res: Response) => {
+export const postVerifyOtp = async (req:any, res: Response) => {
     try {
         const { email, otp } = req.body;
         if (!email || !otp) {
@@ -402,7 +402,7 @@ export const postVerifyOtp = async (req: Request, res: Response) => {
 };
 
 // Request body: { email: string }
-export const postForgotPassword = async (req: Request, res: Response) => {
+export const postForgotPassword = async (req:any, res: Response) => {
     try {
         const { email } = req.body;
         if (!email) return res.status(400).json({ message: "Email is required" });
@@ -440,7 +440,7 @@ export const postForgotPassword = async (req: Request, res: Response) => {
 };
 
 // Request body: { email: string, otp: string }
-export const postVerifyForgotPasswordOtp = async (req: Request, res: Response) => {
+export const postVerifyForgotPasswordOtp = async (req:any, res: Response) => {
     try {
         const { email, otp } = req.body;
         if (!email || !otp) {
@@ -470,7 +470,7 @@ export const postVerifyForgotPasswordOtp = async (req: Request, res: Response) =
 };
 
 // Request body: { email: string, password: string }
-export const postResetPassword = async (req: Request, res: Response) => {
+export const postResetPassword = async (req:any, res: Response) => {
     try {
         const { email, password } = req.body;
 

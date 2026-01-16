@@ -5,7 +5,7 @@ import { Social } from "../entity/SocialMedia.entity";
 const socialRepo = AppDataSource.getRepository(Social);
 
 // ✅ Get all socials
-export const getSocials = async (_req: Request, res: Response) => {
+export const getSocials = async (_req:any, res: Response) => {
     try {
         const socials = await socialRepo.find();
 
@@ -17,7 +17,7 @@ export const getSocials = async (_req: Request, res: Response) => {
 };
 
 // ✅ Add multiple socials
-export const createSocials = async (req: Request, res: Response) => {
+export const createSocials = async (req:any, res: Response) => {
     try {
         const socials = req.body; // expects an array of socials
         if (!Array.isArray(socials) || socials.length === 0) {
@@ -34,7 +34,7 @@ export const createSocials = async (req: Request, res: Response) => {
 };
 
 // ✅ Update a single social
-export const updateSocial = async (req: Request, res: Response) => {
+export const updateSocial = async (req:any, res: Response) => {
     try {
         const { id } = req.params;
         const updates = req.body;
@@ -52,7 +52,7 @@ export const updateSocial = async (req: Request, res: Response) => {
 };
 
 // ✅ Delete a social
-export const deleteSocial = async (req: Request, res: Response) => {
+export const deleteSocial = async (req:any, res: Response) => {
     try {
         const { id } = req.params;
         const social = await socialRepo.findOneBy({ id });
