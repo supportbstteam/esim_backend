@@ -41,21 +41,30 @@ app.use(
     origin: (origin, callback) => {
       console.log("Incoming Origin:", origin);
 
-      // Allow Postman, mobile apps, server-to-server (no origin)
+      // Allow server-to-server, mobile apps, Postman
       if (!origin) return callback(null, true);
 
       if (ALLOWED_PATH_ORIGINS.includes(origin)) {
         return callback(null, true);
       }
 
-      return callback(new Error("Not allowed by CORS"));
+      // ❗ DO NOT throw error
+      return callback(null, false);
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Stripe-Signature",
+      "Paypal-Transmission-Id",
+      "Paypal-Transmission-Time",
+      "Paypal-Cert-Url",
+      "Paypal-Auth-Algo",
+      "Paypal-Transmission-Sig"
+    ],
   })
 );
-
 
 /* =====================================================
    3️⃣ PRE-FLIGHT HANDLER (CRITICAL FOR VERCEL)
