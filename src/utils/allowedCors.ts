@@ -7,5 +7,6 @@ export const ALLOWED_PATH_ORIGINS = [
   "https://esim-admin-peach.vercel.app",
   "https://loadbalancer.turisim.com",
   "https://onesignal.com",
-  "https://api.thirdparty-esim.com"
+  "https://api.thirdparty-esim.com",
+  "http://192.168.1.12:3000",
 ];
