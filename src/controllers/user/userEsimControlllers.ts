@@ -10,6 +10,8 @@ import { CartItem } from "../../entity/CartItem.entity";
 import { Refund } from "../../entity/Refund.entity";
 import { sendAdminOrderNotification, sendOrderEmail } from "../../utils/email";
 import { EsimTopUp } from "../../entity/EsimTopUp.entity";
+import moment from "moment";
+import { limit, processEsim } from "../../utils/simProcess";
 
 // export const postOrder = async (req: any, res: Response) => {
 //   const requestId = `postOrder-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
@@ -408,11 +410,12 @@ export const getOrderDetailsByUser = async (req: any, res: Response) => {
 
       const esims = esimTopUps.map((et) => {
 
-        const topUps = et.topup ? [{...et.topup, purchasedOn:order?.transaction?.createdAt}] : [];
-        return({
-        ...et.esim,
-        topUps,
-      })});
+        const topUps = et.topup ? [{ ...et.topup, purchasedOn: order?.transaction?.createdAt }] : [];
+        return ({
+          ...et.esim,
+          topUps,
+        })
+      });
 
 
       const formattedOrder = {
@@ -477,9 +480,113 @@ export const postTransaction = async (req: any, res: Response) => {
 
 
 // -------------------- plan -------------
+// export const getUserAllSims = async (req: any, res: Response) => {
+//   const { id: userId, role } = req.user;
+//   const thirdPartyToken = { Authorization: `Bearer ${req.thirdPartyToken}` };
+
+//   if (!userId || role !== "user")
+//     return res.status(401).json({ message: "Unauthorized", status: "error" });
+
+//   try {
+//     const esimRepo = AppDataSource.getRepository(Esim);
+
+//     // 🔹 Fetch all user's eSIMs
+//     const esims = await esimRepo.find({
+//       where: { user: { id: userId } },
+//       relations: ["country"],
+//       order: { createdAt: "DESC" },
+//     });
+
+//     if (!esims.length)
+//       return res
+//         .status(404)
+//         .json({ message: "No eSIMs found for this user", status: "error" });
+
+//     const updatedEsims: any[] = [];
+
+//     // 🔁 For each eSIM, fetch live status and update DB
+//     for (const esim of esims) {
+//       if (!esim.iccid) {
+//         updatedEsims.push(esim);
+//         continue;
+//       }
+
+//       try {
+//         const { data: simResponse } = await axios.get(
+//           `${process.env.TURISM_URL}/v2/sims/${esim.iccid}/usage`,
+//           { headers: thirdPartyToken }
+//         );
+
+//         console.log("-=-=-=-= simResponse -=-=-=-=-=-", simResponse);
+
+//         const simData = simResponse?.data?.data;
+//         if (!simData) {
+//           updatedEsims.push(esim);
+//           continue;
+//         }
+
+//         // 🔹 Extract live data
+//         const {
+//           remaining_days,
+//           total_data,
+//           status,
+//           status_text,
+//           is_unlimited,
+//           remaining_data,
+//           expired_at,
+//           network_status
+//         } = simData;
+
+//         // 🔹 Update DB values
+//         esim.networkStatus = status || esim.networkStatus;
+//         esim.statusText = status_text || esim.statusText;
+//         esim.remainingData = remaining_data
+//         esim.isActive = status_text?.toLowerCase() === "active";
+
+//         esim.endDate = expired_at.slice(0, 10);
+
+//         const endDate = expired_at
+//           ? moment(expired_at, 'YYYY-MM-DD HH:mm:ss')
+//           : moment(esim?.endDate);
+
+//         const today = moment();
+
+//         esim.isExpiry = endDate.startOf('day').isSameOrBefore(today.startOf('day'));
+
+
+//         // if()
+
+//         esim.validityDays = remaining_days ?? esim.validityDays;
+//         esim.dataAmount = total_data ? total_data / 1024 : esim.dataAmount;
+
+//         await esimRepo.save(esim);
+
+//         updatedEsims.push(esim);
+//       } catch (apiErr: any) {
+//         // console.error(`Failed to update eSIM ${esim.iccid}:`, apiErr);
+//         console.error(`Failed to update eSIM ${esim.iccid}:`, apiErr.message);
+//         updatedEsims.push(esim); // still include old data if API fails
+//       }
+//     }
+
+//     // 🟢 Return final response
+//     return res.status(200).json({
+//       message: "All eSIMs fetched and updated successfully",
+//       status: "success",
+//       data: updatedEsims,
+//     });
+//   } catch (err: any) {
+//     console.error("Error fetching all eSIMs:", err);
+//     return res.status(500).json({
+//       message: "Failed to fetch all eSIMs",
+//       status: "error",
+//       error: err.message,
+//     });
+//   }
+// };
 export const getUserAllSims = async (req: any, res: Response) => {
   const { id: userId, role } = req.user;
-  const thirdPartyToken = { Authorization: `Bearer ${req.thirdPartyToken}` };
+  const headers = { Authorization: `Bearer ${req.thirdPartyToken}` };
 
   if (!userId || role !== "user")
     return res.status(401).json({ message: "Unauthorized", status: "error" });
@@ -487,82 +594,39 @@ export const getUserAllSims = async (req: any, res: Response) => {
   try {
     const esimRepo = AppDataSource.getRepository(Esim);
 
-    // 🔹 Fetch all user's eSIMs
     const esims = await esimRepo.find({
       where: { user: { id: userId } },
-      relations: ["order", "order.transaction", "order.country", "country"],
+      relations: ["country"],
       order: { createdAt: "DESC" },
     });
 
     if (!esims.length)
-      return res
-        .status(404)
-        .json({ message: "No eSIMs found for this user", status: "error" });
+      return res.status(404).json({
+        message: "No eSIMs found",
+        status: "error",
+      });
 
-    const updatedEsims: any[] = [];
+    // 🔥 Controlled parallel execution
+    const updatedEsims = await Promise.all(
+      esims.map(esim =>
+        limit(() => processEsim(esim, esimRepo, headers))
+      )
+    );
 
-    // 🔁 For each eSIM, fetch live status and update DB
-    for (const esim of esims) {
-      if (!esim.iccid) {
-        updatedEsims.push(esim);
-        continue;
-      }
-
-      try {
-        const { data: simResponse } = await axios.get(
-          `${process.env.TURISM_URL}/v2/sims/${esim.iccid}/usage`,
-          { headers: thirdPartyToken }
-        );
-
-        const simData = simResponse?.data?.data;
-        if (!simData) {
-          updatedEsims.push(esim);
-          continue;
-        }
-
-        // 🔹 Extract live data
-        const {
-          remaining_days,
-          total_data,
-          status,
-          status_text,
-          is_unlimited,
-          remaining_data,
-        } = simData;
-
-        // 🔹 Update DB values
-        esim.networkStatus = status || esim.networkStatus;
-        esim.statusText = status_text || esim.statusText;
-        esim.isActive = status_text?.toLowerCase() === "active";
-
-        esim.validityDays = remaining_days ?? esim.validityDays;
-        esim.dataAmount = total_data ? total_data / 1024 : esim.dataAmount; // MB → GB (adjust if needed)
-
-        await esimRepo.save(esim);
-
-        updatedEsims.push(esim);
-      } catch (apiErr: any) {
-        // console.error(`Failed to update eSIM ${esim.iccid}:`, apiErr);
-        console.error(`Failed to update eSIM ${esim.iccid}:`, apiErr.message);
-        updatedEsims.push(esim); // still include old data if API fails
-      }
-    }
-
-    // 🟢 Return final response
     return res.status(200).json({
       message: "All eSIMs fetched and updated successfully",
       status: "success",
       data: updatedEsims,
     });
   } catch (err: any) {
-    console.error("Error fetching all eSIMs:", err);
+    console.error("Error:", err);
     return res.status(500).json({
-      message: "Failed to fetch all eSIMs",
+      message: "Failed to fetch eSIMs",
       status: "error",
-      error: err.message,
     });
   }
 };
+
 
 export const getUserEsimDetails = async (req: any, res: Response) => {
   const { id: userId, role } = req.user;
@@ -620,7 +684,7 @@ export const getUserEsimDetails = async (req: any, res: Response) => {
 
     }
 
-    // console.log("----- simResponse?.data?.data -----", simResponse?.data?.data);
+    console.log("----- simResponse?.data?.data -----", simResponse?.data?.data);
 
     const simData = simResponse?.data?.data || esim;
     if (!simData) {

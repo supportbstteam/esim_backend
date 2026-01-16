@@ -105,6 +105,12 @@ export class Esim {
   dataAmount?: number | null;
 
   @Column({ type: "float", nullable: true })
+  remainingData?: number | null;
+
+  @Column({ type: "boolean", nullable: true })
+  isExpiry?: boolean | null;
+
+  @Column({ type: "float", nullable: true })
   callAmount?: number | null;
 
   @Column({ type: "float", nullable: true })

@@ -5,7 +5,7 @@ import { thirdPartyAuthMiddleware } from '../../middlewares/thirdPartyApi.handle
 
 const router = express.Router();
 
-router.get("/", getUserAllSims);
+router.get("/",thirdPartyAuthMiddleware, getUserAllSims);
 router.get("/:esimId",thirdPartyAuthMiddleware, getUserEsimDetails);
 router.get("/summary",thirdPartyAuthMiddleware, getUserSimSummary);
 
