@@ -51,7 +51,7 @@ export const getUserPlans = async (req:any, res: Response) => {
         id: plan.country.id,
         name: plan.country.name,
         description:plan?.country?.description,
-        ios: plan?.country?.isoCode,
+        iso2: plan?.country?.isoCode,
         iso3Code: plan?.country?.iso3Code,
       },
       createdAt: plan.createdAt,
