@@ -175,7 +175,6 @@ export const sendAdminUserVerifiedNotification = async (adminEmail: string, user
       <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
         <tr><td><b>Name:</b></td><td>${user.firstName} ${user.lastName}</td></tr>
         <tr><td><b>Email:</b></td><td>${user.email}</td></tr>
-        <tr><td><b>Country:</b></td><td>${user.country || "N/A"}</td></tr>
         <tr><td><b>Verified At:</b></td><td>${new Date().toLocaleString()}</td></tr>
       </table>
       <p>You can view the user details in the admin dashboard.</p>
