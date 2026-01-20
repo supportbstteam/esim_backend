@@ -11,7 +11,7 @@ import { auth } from "./middlewares/auth.handler";
 import adminRouter from "./routes/admin/admin.route";
 import userRouter from "./routes/user/user.route";
 import notificationContentRoute from "./routes/notifications/notificationContent.routes";
-import { testNotificationController } from "./controllers/notifications/testNotification";
+// import { testNotificationController } from "./controllers/notifications/testNotification";
 import { ALLOWED_PATH_ORIGINS } from "./utils/allowedCors";
 
 // Stripe webhooks
@@ -114,7 +114,7 @@ app.get("/api", (_req, res) => {
   res.send("Hello from Node + TypeORM + MySQL! with our Esim products");
 });
 
-app.post("/notifications/test", testNotificationController);
+// app.post("/notifications/test", testNotificationController);
 
 /* =====================================================
    7️⃣ STATIC FILES

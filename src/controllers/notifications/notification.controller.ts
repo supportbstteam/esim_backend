@@ -25,50 +25,27 @@ export const notifyUser = async (req:any, res: Response) => {
   res.json({ success: true, result: result.data });
 };
 
-export const getUserNotification = async (req: any, res: any) => {
-  const { id } = req.user;
-
-  if (!id) {
-    return res.status(401).json({
-      success: false,
-      message: "User unauthorized",
-    });
-  }
-
+export const getUserNotification = async (req: Request, res: Response) => {
   try {
-    const userRepo = AppDataSource.getRepository(User);
-    const notificationRepo = AppDataSource.getRepository(Notification);
+    const userId = (req as any).user?.id;
 
-    // ✅ validate user
-    const user = await userRepo.findOne({
-      where: {
-        id,
-        isBlocked: false,
-        isDeleted: false,
-        isVerified: true,
-      },
-    });
-
-    if (!user) {
-      return res.status(403).json({
+    if (!userId) {
+      return res.status(401).json({
         success: false,
-        message: "User forbidden",
+        message: "Unauthorized",
       });
     }
 
-    // ✅ pagination params
-    const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const limit = Math.min(
-      50,
-      Math.max(1, parseInt(req.query.limit as string) || 20)
-    );
-
+    // Pagination
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
     const skip = (page - 1) * limit;
 
-    // ✅ fetch notifications
+    const notificationRepo = AppDataSource.getRepository(Notification);
+
     const [notifications, total] =
       await notificationRepo.findAndCount({
-        where: { userId: id },
+        where: { userId },
         order: { createdAt: "DESC" },
         skip,
         take: limit,
@@ -85,8 +62,8 @@ export const getUserNotification = async (req: any, res: any) => {
       },
     });
 
-  } catch (err: any) {
-    console.error("❌ getUserNotification error:", err);
+  } catch (error) {
+    console.error("❌ getUserNotification error:", error);
 
     return res.status(500).json({
       success: false,

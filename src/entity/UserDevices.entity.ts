@@ -7,22 +7,19 @@ import {
   Index,
 } from "typeorm";
 
-@Entity({ name: "user_devices" })
+@Entity('user_devices')
 export class UserDevice {
-
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Index()
-  @Column()
+  @Column('uuid')
   userId!: string;
 
-  @Index({ unique: true })
-  @Column()
-  playerId!: string; // OneSignal player_id
+  @Column({ unique: true })
+  token!: string; // 🔥 FCM TOKEN
 
-  @Column({ default: "android" })
-  platform!: "android" | "ios";
+  @Column()
+  platform!: 'android' | 'ios';
 
   @CreateDateColumn()
   createdAt!: Date;

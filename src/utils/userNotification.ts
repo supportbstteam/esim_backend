@@ -1,8 +1,8 @@
-import axios from "axios";
+import admin from "../firebase";
 import { AppDataSource } from "../data-source";
 import { NotificationContent } from "../entity/NotificationContent.entity";
 import { UserDevice } from "../entity/UserDevices.entity";
-import { Notification } from "../entity/Notification.entity";
+import { Notification, NotificationStatus } from "../entity/Notification.entity";
 
 export const sendUserNotification = async ({
   userId,
@@ -11,13 +11,13 @@ export const sendUserNotification = async ({
 }: {
   userId: string;
   code: string;
-  data?: any;
+  data?: Record<string, any>;
 }) => {
   const contentRepo = AppDataSource.getRepository(NotificationContent);
   const deviceRepo = AppDataSource.getRepository(UserDevice);
   const notificationRepo = AppDataSource.getRepository(Notification);
 
-  // 1️⃣ Load template
+  // 1️⃣ Load notification template
   const content = await contentRepo.findOne({
     where: { code, isActive: true },
   });
@@ -26,22 +26,28 @@ export const sendUserNotification = async ({
     throw new Error(`Notification template missing: ${code}`);
   }
 
-  // 2️⃣ Load devices
-  const devices = await deviceRepo.find({ where: { userId } });
+  // 2️⃣ Load user devices (FCM tokens)
+  const devices = await deviceRepo.find({
+    where: { userId },
+  });
 
-  // 3️⃣ Save notification in DB (always)
+  // 3️⃣ Always create notification record (DB = source of truth)
   const notification = notificationRepo.create({
     userId,
     contentId: content.id,
     meta: data,
+    status: NotificationStatus.PENDING,
     isRead: false,
-    isSent: false,
   });
 
   await notificationRepo.save(notification);
 
-  // 🚫 No devices → skip push, return success
+  // 🚫 No devices → skip push but keep DB record
   if (!devices.length) {
+    notification.status = NotificationStatus.FAILED;
+    notification.error = "No registered devices";
+    await notificationRepo.save(notification);
+
     return {
       success: true,
       skipped: true,
@@ -49,46 +55,51 @@ export const sendUserNotification = async ({
     };
   }
 
-  const playerIds = devices.map(d => d.playerId);
+  const tokens = devices.map(d => d.token);
 
-  // 4️⃣ Send to OneSignal
+  // 4️⃣ Send Firebase push
   try {
-    const response = await axios.post(
-      "https://onesignal.com/api/v1/notifications",
-      {
-        app_id: process.env.ONESIGNAL_APP_ID,
-        include_player_ids: playerIds,
-        headings: { en: content.title },
-        contents: { en: content.message },
-        data,
+    const response = await admin.messaging().sendEachForMulticast({
+      tokens,
+      notification: {
+        title: content.title,
+        body: content.message ?? "",
       },
-      {
-        headers: {
-          Authorization: `Basic ${process.env.ONE_SIGNAL_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+      data: {
+        code: content.code,
+        ...(data || {}),
+        actionUrl: content.actionUrl ?? "",
+      },
+    });
 
-    // 5️⃣ Mark as sent
-    notification.isSent = true;
+    const hasFailure = response.responses.some(r => !r.success);
+
+    if (hasFailure) {
+      notification.status = NotificationStatus.FAILED;
+      notification.error = "One or more FCM tokens failed";
+    } else {
+      notification.status = NotificationStatus.SENT;
+      notification.sentAt = new Date();
+    }
+
     await notificationRepo.save(notification);
 
     return {
       success: true,
       skipped: false,
-      onesignal: response.data,
+      firebase: {
+        successCount: response.successCount,
+        failureCount: response.failureCount,
+      },
     };
 
   } catch (err: any) {
-    console.error("💥 OneSignal failed");
+    console.error("💥 Firebase push failed:", err.message);
 
-    if (err.response) {
-      console.error("OneSignal Error:", err.response.data);
-    }
+    notification.status = NotificationStatus.FAILED;
+    notification.error = err.message;
+    await notificationRepo.save(notification);
 
-    // DB stays retry-friendly (isSent = false)
     throw err;
   }
 };
-

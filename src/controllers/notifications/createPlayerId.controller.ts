@@ -1,17 +1,12 @@
-// src/controllers/device.controller.ts
 import { Request, Response } from "express";
 import { Not } from "typeorm";
 import { AppDataSource } from "../../data-source";
 import { UserDevice } from "../../entity/UserDevices.entity";
 
-export const registerPlayerId = async (req:any, res: Response) => {
+export const registerPushToken = async (req: Request, res: Response) => {
   try {
-    /**
-     * userId should come from auth middleware (JWT)
-     * NOT from request body (security risk)
-     */
     const userId = (req as any).user?.id;
-    const { playerId, platform } = req.body;
+    const { token, platform } = req.body;
 
     if (!userId) {
       return res.status(401).json({
@@ -20,49 +15,50 @@ export const registerPlayerId = async (req:any, res: Response) => {
       });
     }
 
-    if (!playerId || !platform) {
+    if (!token || !platform) {
       return res.status(400).json({
         success: false,
-        message: "playerId and platform are required",
+        message: "token and platform are required",
+      });
+    }
+
+    if (!["android", "ios"].includes(platform)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid platform",
       });
     }
 
     const deviceRepo = AppDataSource.getRepository(UserDevice);
 
     /**
-     * ✅ STEP 1: Remove OLD playerIds
-     * Handles:
-     * - app reinstall
-     * - duplicate devices
-     * - stale tokens
+     * Remove OLD tokens only for THIS USER + PLATFORM
      */
     await deviceRepo.delete({
       userId,
       platform,
-      playerId: Not(playerId),
+      token: Not(token),
     });
 
     /**
-     * ✅ STEP 2: Upsert CURRENT playerId
-     * - Same install → no duplicate
-     * - New install → replaces old
+     * Upsert CURRENT token
      */
     await deviceRepo.upsert(
       {
         userId,
-        playerId,
+        token,
         platform,
       },
-      ["playerId"]
+      ["token"]
     );
 
-    return res.json({
+    return res.status(200).json({
       success: true,
-      message: "✅ Device registered successfully",
+      message: "FCM device registered successfully",
     });
 
   } catch (error: any) {
-    console.error("❌ registerPlayerId error:", error.message);
+    console.error("❌ registerPushToken error:", error);
 
     return res.status(500).json({
       success: false,

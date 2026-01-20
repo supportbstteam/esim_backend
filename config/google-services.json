@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "219126496553",
+    "project_id": "esimaero-2437f",
+    "storage_bucket": "esimaero-2437f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219126496553:android:3d3eeeb14c673cf2dbcb38",
+        "android_client_info": {
+          "package_name": "com.simaero"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoszt8aEstgcZ1R9hdHZJUgtC6V-0X6Ko"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
