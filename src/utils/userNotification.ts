@@ -17,7 +17,9 @@ export const sendUserNotification = async ({
   const deviceRepo = AppDataSource.getRepository(UserDevice);
   const notificationRepo = AppDataSource.getRepository(Notification);
 
-  // 1️⃣ Load notification template
+  /**
+   * 1️⃣ Load notification template
+   */
   const content = await contentRepo.findOne({
     where: { code, isActive: true },
   });
@@ -26,12 +28,16 @@ export const sendUserNotification = async ({
     throw new Error(`Notification template missing: ${code}`);
   }
 
-  // 2️⃣ Load user devices (FCM tokens)
+  /**
+   * 2️⃣ Load user devices (FCM tokens)
+   */
   const devices = await deviceRepo.find({
     where: { userId },
   });
 
-  // 3️⃣ Always create notification record (DB = source of truth)
+  /**
+   * 3️⃣ Create notification record (DB = source of truth)
+   */
   const notification = notificationRepo.create({
     userId,
     contentId: content.id,
@@ -42,13 +48,12 @@ export const sendUserNotification = async ({
 
   await notificationRepo.save(notification);
 
-  // 🚫 No devices → skip push but keep DB record
+  /**
+   * 🚫 No devices → skip push
+   */
   if (!devices.length) {
     notification.status = NotificationStatus.FAILED;
     notification.error = "No registered devices";
-
-    console.log("No DEVICES FOUND");
-    
     await notificationRepo.save(notification);
 
     return {
@@ -60,7 +65,9 @@ export const sendUserNotification = async ({
 
   const tokens = devices.map(d => d.token);
 
-  // 4️⃣ Send Firebase push
+  /**
+   * 4️⃣ Send Firebase push
+   */
   try {
     const response = await admin.messaging().sendEachForMulticast({
       tokens,
@@ -75,6 +82,34 @@ export const sendUserNotification = async ({
       },
     });
 
+    /**
+     * 🧹 5️⃣ CLEAN INVALID TOKENS (CRITICAL)
+     */
+    await Promise.all(
+      response.responses.map(async (r, index) => {
+        if (!r.success) {
+          const errorCode = r.error?.code;
+
+          console.error(
+            "❌ FCM token failed:",
+            tokens[index],
+            errorCode
+          );
+
+          if (
+            errorCode === "messaging/registration-token-not-registered" ||
+            errorCode === "messaging/invalid-registration-token"
+          ) {
+            await deviceRepo.delete({ token: tokens[index] });
+            console.log("🧹 Deleted invalid FCM token");
+          }
+        }
+      })
+    );
+
+    /**
+     * 6️⃣ Update notification status
+     */
     const hasFailure = response.responses.some(r => !r.success);
 
     if (hasFailure) {
