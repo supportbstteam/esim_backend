@@ -1,58 +1,64 @@
 import { Request, Response } from "express";
+import admin from "../../firebase";
 import { AppDataSource } from "../../data-source";
 import { UserDevice } from "../../entity/UserDevices.entity";
-import { sendUserNotification } from "../../utils/userNotification";
 
-// export const testNotificationController = async (req:any, res: Response) => {
-//   try {
-//     // ✅ SAFELY access body
-//     const userId = req.body?.userId;
+export const sendTestNotification = async (req: any, res: Response) => {
+    try {
 
-//     if (!userId) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "userId is required",
-//       });
-//     }
+        // console.log("req?.user",req?.user);
+        // return res.status(200);
+        const { id: userId } = req?.user;
 
-//     const deviceRepo = AppDataSource.getRepository(UserDevice);
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized",
+            });
+        }
 
-//     // ✅ Check if user has registered device
-//     const devices = await deviceRepo.find({ where: { userId } });
+        const deviceRepo = AppDataSource.getRepository(UserDevice);
 
-//     if (!devices.length) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "No registered devices found for this user",
-//       });
-//     }
+        // 1️⃣ Fetch user's devices
+        const devices = await deviceRepo.find({
+            where: { userId },
+        });
 
-//     // ✅ Trigger test push
-//     await sendUserNotification({
-//       userId,
-//       code: "TEST_NOTIFICATION",
-//       data: {
-//         message: "Backend test notification",
-//         timestamp: new Date().toISOString(),
-//       },
-//     });
+        if (!devices.length) {
+            return res.status(404).json({
+                success: false,
+                message: "No registered devices for this user",
+            });
+        }
 
-//     return res.json({
-//       success: true,
-//       message: "✅ Test notification sent. Check your device.",
-//       devices: devices.map(d => ({
-//         playerId: d.playerId,
-//         platform: d.platform,
-//       })),
-//     });
+        const tokens = devices.map(d => d.token);
 
-//   } catch (error: any) {
-//     console.error("❌ Notification test failed:", error.message);
+        // 2️⃣ Send Firebase push
+        const response = await admin.messaging().sendEachForMulticast({
+            tokens,
+            notification: {
+                title: "🧪 Test Notification",
+                body: "Firebase push test from backend 🚀",
+            },
+            data: {
+                type: "TEST",
+                source: "MANUAL",
+            },
+        });
 
-//     return res.status(500).json({
-//       success: false,
-//       message: "Failed to send test notification",
-//       error: error.message,
-//     });
-//   }
-// };
+        return res.json({
+            success: true,
+            sentTo: tokens.length,
+            successCount: response.successCount,
+            failureCount: response.failureCount,
+        });
+
+    } catch (error: any) {
+        console.error("❌ Test notification error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};

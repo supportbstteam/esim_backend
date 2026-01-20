@@ -24,6 +24,7 @@ import { registerDevice } from "../../controllers/device.controller";
 import { registerPushToken } from "../../controllers/notifications/createPlayerId.controller";
 import notificationRoute from "./userNotification.route"
 import { getAllPages, getPage } from "../../controllers/pages/getPage.controllers";
+import { sendTestNotification } from "../../controllers/notifications/testNotification";
 
 const router = Router();
 
@@ -87,6 +88,8 @@ router.use("/usage", esimUsage);
 router.use("/notification", auth, notificationRoute);
 
 router.get("/testimonials", getAllTestimonials);
+
+router.post("/test-notification",auth, sendTestNotification);
 
 
 // -------- order ------------

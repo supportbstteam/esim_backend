@@ -46,6 +46,9 @@ export const sendUserNotification = async ({
   if (!devices.length) {
     notification.status = NotificationStatus.FAILED;
     notification.error = "No registered devices";
+
+    console.log("No DEVICES FOUND");
+    
     await notificationRepo.save(notification);
 
     return {
