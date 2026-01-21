@@ -43,17 +43,26 @@ export const getUserNotification = async (req: Request, res: Response) => {
 
     const notificationRepo = AppDataSource.getRepository(Notification);
 
-    const [notifications, total] =
-      await notificationRepo.findAndCount({
-        where: { userId },
-        order: { createdAt: "DESC" },
-        skip,
-        take: limit,
-      });
+    // Fetch paginated notifications
+    const [notifications, total] = await notificationRepo.findAndCount({
+      where: { userId },
+      order: { createdAt: "DESC" },
+      skip,
+      take: limit,
+    });
+
+    // 🔥 Count unread notifications
+    const unreadCount = await notificationRepo.count({
+      where: {
+        userId,
+        isRead: false,
+      },
+    });
 
     return res.status(200).json({
       success: true,
       data: notifications,
+      unreadCount, // 👈 added
       pagination: {
         total,
         page,
@@ -71,6 +80,7 @@ export const getUserNotification = async (req: Request, res: Response) => {
     });
   }
 };
+
 
 export const putUserNotification = async (req: any, res: any) => {
   const userId = req.user?.id;
