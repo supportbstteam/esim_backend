@@ -5,7 +5,7 @@ import { User } from "../../entity/User.entity";
 import { pushToDevices } from "../../service/oneSignal.service";
 import { Notification } from "../../entity/Notification.entity";
 
-export const notifyUser = async (req:any, res: Response) => {
+export const notifyUser = async (req: any, res: Response) => {
   const { userId, title, message } = req.body;
 
   const repo = AppDataSource.getRepository(User);
@@ -72,33 +72,54 @@ export const getUserNotification = async (req: Request, res: Response) => {
   }
 };
 
-
 export const putUserNotification = async (req: any, res: any) => {
-  const { id } = req.user;
+  const userId = req.user?.id;
   const { notificationId } = req.body;
 
-  if (!id) {
+  if (!userId) {
     return res.status(401).json({
       success: false,
-      message: "User unauthorized",
+      message: "Unauthorized user",
     });
   }
 
-  if (!notificationId)
-    return res.status(404).json({
-      message: "Bhadwe koyi notification nahi hai esa"
-    })
-  try {
-
+  if (!notificationId) {
+    return res.status(400).json({
+      success: false,
+      message: "Notification ID is required",
+    });
   }
-  catch (err) {
 
+  try {
+    const notificationRepo = AppDataSource.getRepository(Notification);
+
+    const notification = await notificationRepo.findOne({
+      where: {
+        id: notificationId,
+        user: { id: userId }, // 🔐 ownership check
+      },
+    });
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found",
+      });
+    }
+
+    notification.isRead = true;
+    await notificationRepo.save(notification);
+
+    return res.status(200).json({
+      success: true,
+      message: "Notification marked as read",
+    });
+  } catch (err) {
     console.error("❌ putUserNotification error:", err);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch notifications",
+      message: "Failed to update notification",
     });
-
   }
-}
+};
