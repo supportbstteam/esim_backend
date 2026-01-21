@@ -64,14 +64,14 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
 
     await orderRepo.save(mainOrder);
 
-    await sendUserNotification({
-      userId: user.id,
-      code: "ORDER_PLACED",
-      data: {
-        orderCode: mainOrder?.orderCode,
-        orderId: mainOrder?.id
-      },
-    });
+    // await sendUserNotification({
+    //   userId: user.id,
+    //   code: "ORDER_PLACED",
+    //   data: {
+    //     orderCode: mainOrder?.orderCode,
+    //     orderId: mainOrder?.id
+    //   },
+    // });
 
     // console.log("✅ Order created successfully:", mainOrder.id, "| Code:", mainOrder.orderCode);
 
