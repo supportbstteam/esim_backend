@@ -13,30 +13,53 @@ export const sendUserNotification = async ({
   code: string;
   data?: Record<string, any>;
 }) => {
+  console.log("🚀 sendUserNotification START", { userId, code });
+
   const contentRepo = AppDataSource.getRepository(NotificationContent);
   const deviceRepo = AppDataSource.getRepository(UserDevice);
   const notificationRepo = AppDataSource.getRepository(Notification);
 
   /**
-   * 1️⃣ Load notification template
+   * 0️⃣ Hard validation
+   */
+  if (!userId) {
+    console.error("❌ sendUserNotification: userId missing");
+    return { success: false, reason: "userId missing" };
+  }
+
+  if (!code) {
+    console.error("❌ sendUserNotification: code missing");
+    return { success: false, reason: "code missing" };
+  }
+
+  /**
+   * 1️⃣ Load notification content (MANDATORY)
    */
   const content = await contentRepo.findOne({
     where: { code, isActive: true },
   });
 
   if (!content) {
-    throw new Error(`Notification template missing: ${code}`);
+    console.error("❌ NotificationContent not found or inactive", { code });
+
+    // 🚫 Do NOT create Notification without contentId
+    return {
+      success: false,
+      reason: `Notification template not found: ${code}`,
+    };
   }
 
   /**
-   * 2️⃣ Load user devices (FCM tokens)
+   * 2️⃣ Load user devices
    */
   const devices = await deviceRepo.find({
     where: { userId },
   });
 
+  console.log(`📱 Devices found for user ${userId}:`, devices.length);
+
   /**
-   * 3️⃣ Create notification record (DB = source of truth)
+   * 3️⃣ Create notification record (DB = SOURCE OF TRUTH)
    */
   const notification = notificationRepo.create({
     userId,
@@ -49,9 +72,11 @@ export const sendUserNotification = async ({
   await notificationRepo.save(notification);
 
   /**
-   * 🚫 No devices → skip push
+   * 4️⃣ No devices → mark failed & exit
    */
-  if (!devices.length) {
+  if (devices.length === 0) {
+    console.warn("⚠️ No devices found, skipping push");
+
     notification.status = NotificationStatus.FAILED;
     notification.error = "No registered devices";
     await notificationRepo.save(notification);
@@ -59,16 +84,21 @@ export const sendUserNotification = async ({
     return {
       success: true,
       skipped: true,
-      reason: "No devices found",
+      reason: "No registered devices",
     };
   }
 
   const tokens = devices.map(d => d.token);
 
   /**
-   * 4️⃣ Send Firebase push
+   * 5️⃣ Send Firebase push
    */
   try {
+    console.log("📤 Sending Firebase push", {
+      tokens: tokens.length,
+      code: content.code,
+    });
+
     const response = await admin.messaging().sendEachForMulticast({
       tokens,
       notification: {
@@ -82,19 +112,23 @@ export const sendUserNotification = async ({
       },
     });
 
+    console.log("📬 Firebase response", {
+      successCount: response.successCount,
+      failureCount: response.failureCount,
+    });
+
     /**
-     * 🧹 5️⃣ CLEAN INVALID TOKENS (CRITICAL)
+     * 6️⃣ Clean invalid tokens
      */
     await Promise.all(
       response.responses.map(async (r, index) => {
         if (!r.success) {
           const errorCode = r.error?.code;
 
-          console.error(
-            "❌ FCM token failed:",
-            tokens[index],
-            errorCode
-          );
+          console.error("❌ Token failed", {
+            token: tokens[index],
+            errorCode,
+          });
 
           if (
             errorCode === "messaging/registration-token-not-registered" ||
@@ -108,13 +142,11 @@ export const sendUserNotification = async ({
     );
 
     /**
-     * 6️⃣ Update notification status
+     * 7️⃣ Update notification status
      */
-    const hasFailure = response.responses.some(r => !r.success);
-
-    if (hasFailure) {
+    if (response.failureCount > 0) {
       notification.status = NotificationStatus.FAILED;
-      notification.error = "One or more FCM tokens failed";
+      notification.error = "One or more devices failed";
     } else {
       notification.status = NotificationStatus.SENT;
       notification.sentAt = new Date();
@@ -132,12 +164,16 @@ export const sendUserNotification = async ({
     };
 
   } catch (err: any) {
-    console.error("💥 Firebase push failed:", err.message);
+    console.error("💥 Firebase send error", err);
 
     notification.status = NotificationStatus.FAILED;
-    notification.error = err.message;
+    notification.error = err.message || "Firebase send failed";
     await notificationRepo.save(notification);
 
-    throw err;
+    return {
+      success: false,
+      reason: "Firebase error",
+      error: err.message,
+    };
   }
 };
