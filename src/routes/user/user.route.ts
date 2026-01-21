@@ -21,7 +21,7 @@ import { initiateMobileTransaction } from "../../controllers/stripe/MobileCartSt
 import { getTopUpStatus, initiateMobileTopUpTransaction } from "../../controllers/stripe/MobileTopUpStripe.controllers";
 import { postOrder } from "../../controllers/user/userPostSim.controller";
 import { registerDevice } from "../../controllers/device.controller";
-import { registerPushToken } from "../../controllers/notifications/createPlayerId.controller";
+import { registerPushToken, removePushToken } from "../../controllers/notifications/createPlayerId.controller";
 import notificationRoute from "./userNotification.route"
 import { getAllPages, getPage } from "../../controllers/pages/getPage.controllers";
 import { sendTestNotification } from "../../controllers/notifications/testNotification";
@@ -29,6 +29,7 @@ import { sendTestNotification } from "../../controllers/notifications/testNotifi
 const router = Router();
 
 router.post("/devices/register", auth, registerPushToken); // create notification playerId
+router.delete("/devices/remove", auth, removePushToken); // remove notification playerId
 
 // Public
 router.post("/verify-otp", postCreateUser);
@@ -89,7 +90,7 @@ router.use("/notification", auth, notificationRoute);
 
 router.get("/testimonials", getAllTestimonials);
 
-router.post("/test-notification",auth, sendTestNotification);
+router.post("/test-notification", auth, sendTestNotification);
 
 
 // -------- order ------------
