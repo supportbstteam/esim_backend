@@ -197,10 +197,10 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
       userId: user?.id,
       code: statusToTemplateMap[mainOrder?.status],
       data: {
-        orderCode: mainOrder?.orderCode,
-        successCount,
-        failedCount,
-        orderId: mainOrder?.id,
+        orderCode: mainOrder?.orderCode.toString(),
+        successCount:successCount.toString(),
+        failedCount:failedCount.toString(),
+        orderId: mainOrder?.id.toString(),
       },
     });
 
