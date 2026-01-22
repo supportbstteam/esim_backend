@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { Not } from "typeorm";
 import { AppDataSource } from "../../data-source";
 import { UserDevice } from "../../entity/UserDevices.entity";
 
@@ -31,30 +30,46 @@ export const registerPushToken = async (req: Request, res: Response) => {
 
     const deviceRepo = AppDataSource.getRepository(UserDevice);
 
-    /**
-     * Remove OLD tokens only for THIS USER + PLATFORM
-     */
-    await deviceRepo.delete({
-      userId,
-      platform,
-      token: Not(token),
+    // 🔍 Check existing device for user + platform
+    const existingDevice = await deviceRepo.findOne({
+      where: { userId, platform },
     });
 
     /**
-     * Upsert CURRENT token
+     * 1️⃣ First time → create
      */
-    await deviceRepo.upsert(
-      {
+    if (!existingDevice) {
+      await deviceRepo.save({
         userId,
         token,
         platform,
-      },
-      ["token"]
-    );
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "FCM token registered (new device)",
+      });
+    }
+
+    /**
+     * 2️⃣ Same token → do nothing (IDEMPOTENT)
+     */
+    if (existingDevice.token === token) {
+      return res.status(200).json({
+        success: true,
+        message: "FCM token already registered",
+      });
+    }
+
+    /**
+     * 3️⃣ New token → update existing record
+     */
+    existingDevice.token = token;
+    await deviceRepo.save(existingDevice);
 
     return res.status(200).json({
       success: true,
-      message: "FCM device registered successfully",
+      message: "FCM token updated",
     });
 
   } catch (error: any) {
@@ -66,6 +81,7 @@ export const registerPushToken = async (req: Request, res: Response) => {
     });
   }
 };
+
 
 export const removePushToken = async (req: Request, res: Response) => {
   try {
