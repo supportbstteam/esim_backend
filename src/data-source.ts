@@ -38,7 +38,8 @@ import { UserDevice } from "./entity/UserDevices.entity";
 import { Page } from "./entity/Page.entity";
 import { PageSection } from "./entity/PageSection.entity";
 import { Image } from "./entity/Images.entity";
-
+import { Device } from "./entity/Device.entity";
+import { Brand } from "./entity/Brand.entity";
 export const AppDataSource = new DataSource({
   type: "mysql",
   host: process.env.DB_HOST,
@@ -90,7 +91,9 @@ export const AppDataSource = new DataSource({
     UserDevice,
     Page,
     PageSection,
-    Image
+    Image,
+    Device,
+    Brand
   ],
 
   migrations: [],

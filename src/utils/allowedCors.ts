@@ -9,4 +9,6 @@ export const ALLOWED_PATH_ORIGINS = [
   "https://onesignal.com",
   "https://api.thirdparty-esim.com",
   "http://192.168.1.12:3000",
+  "http://192.168.1.26:3000",
+  "http://192.168.1.22:3000",
 ];

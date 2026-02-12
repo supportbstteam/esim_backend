@@ -25,6 +25,7 @@ import { registerPushToken, removePushToken } from "../../controllers/notificati
 import notificationRoute from "./userNotification.route"
 import { getAllPages, getPage } from "../../controllers/pages/getPage.controllers";
 import { sendTestNotification } from "../../controllers/notifications/testNotification";
+import { getUserDevice } from "../../controllers/user/userDevice.controllers";
 
 const router = Router();
 
@@ -61,6 +62,8 @@ router.use("/e-sim", auth, esimRoute);
 
 // paypal
 router.use("/paypal", userPaypal);
+
+router.get('/devices', getUserDevice);
 
 
 router.get("/cms/pages/:page", getPage);

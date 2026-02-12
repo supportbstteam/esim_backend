@@ -16,8 +16,10 @@ import adminBlogs from "./adminBlogs.route"
 import adminTestimonials from "./adminTestimonial.route"
 import adminFaq from "./adminFaq.route"
 import imageUploadRoute from "../image.route"
+import devicesRoute from "./adminDevice.route"
 import { deleteTopUpOrder, getAllTopUpOrders, getTopUpOrderById, getTopUpOrdersByUser, updateTopUpOrderStatus } from '../../controllers/admin/adminTopUpOrderControllers';
 import pagesRoutes from "./adminPage.route"
+import brandsRoute from "./adminBrands.route"
 
 const router = express.Router();
 
@@ -52,6 +54,12 @@ router.delete("/orders/top-up/delete/:id", deleteTopUpOrder);
 // order
 router.use("/orders", adminOrderRouter);
 
+// device
+router.use("/devices", devicesRoute);
+
+// brands
+router.use("/brands", brandsRoute);
+
 // --------------------------------------
 
 router.use("/blogs", adminBlogs);
@@ -68,8 +76,8 @@ router.use("/e-sim", eSimRoute);
 router.use("/contact", adminContactRouter);
 router.use("/social-media", adminSocialRouter);
 router.use("/content", contentRouter);
-router.use("/cms/pages",pagesRoutes);
-router.use("/image",imageUploadRoute);
+router.use("/cms/pages", pagesRoutes);
+router.use("/image", imageUploadRoute);
 // query
 router.use("/query", queryRoute);
 
