@@ -26,6 +26,7 @@ import notificationRoute from "./userNotification.route"
 import { getAllPages, getPage } from "../../controllers/pages/getPage.controllers";
 import { sendTestNotification } from "../../controllers/notifications/testNotification";
 import { getUserDevice } from "../../controllers/user/userDevice.controllers";
+import { getUserBrands } from "../../controllers/user/userBrands.controllers";
 
 const router = Router();
 
@@ -64,6 +65,7 @@ router.use("/e-sim", auth, esimRoute);
 router.use("/paypal", userPaypal);
 
 router.get('/devices', getUserDevice);
+router.get('/brands', getUserBrands);
 
 
 router.get("/cms/pages/:page", getPage);

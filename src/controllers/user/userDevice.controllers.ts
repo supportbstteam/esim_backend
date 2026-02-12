@@ -11,12 +11,10 @@ export const getUserDevice = async (req: any, res: Response) => {
         const {
             page = "1",
             limit = "100",
-
             q,              // global search
             deviceName,     // specific filter
             mobile,         // model filter
             brand,          // brand name filter
-
             brandId,
             model,
             os,
