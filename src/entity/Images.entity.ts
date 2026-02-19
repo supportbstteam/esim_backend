@@ -1,14 +1,15 @@
-// src/entities/Image.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  ManyToMany,
 } from "typeorm";
+import { Banner } from "./Banner.entity";
 
 @Entity({ name: "images" })
 export class Image {
-  @PrimaryGeneratedColumn() // ✅ auto-increment integer
+  @PrimaryGeneratedColumn()
   id!: number;
 
   @Column()
@@ -24,7 +25,11 @@ export class Image {
   size!: number;
 
   @Column()
-  filePath!: string; // absolute path on desktop
+  filePath!: string;
+
+  // ✅ Many images can belong to many banners
+  @ManyToMany(() => Banner, (banner) => banner.sections)
+  banners!: Banner[];
 
   @CreateDateColumn()
   createdAt!: Date;

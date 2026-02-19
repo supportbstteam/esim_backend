@@ -1,0 +1,3705 @@
+{
+    "data": [
+        {
+            "number": 31,
+            "name": "EVOLVEO StrongPhone G9",
+            "model": "StrongPhone_G9",
+            "brand": "Evolveo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 32,
+            "name": "Fossil Gen 5 LTE",
+            "model": "gila",
+            "brand": "Fossil",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 33,
+            "name": "Pixel 3",
+            "model": "blueline",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 34,
+            "name": "Pixel 3a XL",
+            "model": "bonito",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 35,
+            "name": "Pixel 4a (5G)",
+            "model": "bramble",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 36,
+            "name": "Pixel 4 XL",
+            "model": "coral",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 37,
+            "name": "Pixel 3 XL",
+            "model": "crosshatch",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 38,
+            "name": "Pixel 4",
+            "model": "flame",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 39,
+            "name": "Pixel 5",
+            "model": "redfin",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 40,
+            "name": "Pixel 3a",
+            "model": "sargo",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 41,
+            "name": "Pixel 4a",
+            "model": "sunfish",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 42,
+            "name": "Pixel 2 XL",
+            "model": "taimen",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 43,
+            "name": "Pixel 2",
+            "model": "walleye",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 44,
+            "name": "HZ0010J",
+            "model": "HZ0010J",
+            "brand": "Hoozo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 45,
+            "name": "d-42A",
+            "model": "d-42A",
+            "brand": "Lenovo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 46,
+            "name": "N672",
+            "model": "hera_pro",
+            "brand": "MiTAC",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 47,
+            "name": "N630",
+            "model": "surfing_pro",
+            "brand": "MiTAC",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 48,
+            "name": "TicWatch Pro 3 Cellular\/LTE",
+            "model": "rover",
+            "brand": "Mobvoi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 49,
+            "name": "Summit 2+",
+            "model": "coralia",
+            "brand": "Montblanc",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 50,
+            "name": "motorola razr",
+            "model": "olson",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 51,
+            "name": "motorola razr 5G",
+            "model": "smith",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 52,
+            "name": "MOTOTRBO ION",
+            "model": "mkz_sdm660_64",
+            "brand": "Motorola Solutions",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 53,
+            "name": "Hammer_Explorer",
+            "model": "Hammer_Explorer",
+            "brand": "MyPhone (PL)",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 54,
+            "name": "Hammer Blade 3",
+            "model": "Hammer_Blade_3",
+            "brand": "Myphone",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 55,
+            "name": "Hammer Explorer Pro",
+            "model": "Hammer_Expl_Pro",
+            "brand": "Myphone",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 56,
+            "name": "myPhone Now eSIM",
+            "model": "myPhone_Now_eSIM",
+            "brand": "Myphone",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 58,
+            "name": "Find X3 Pro",
+            "model": "OP4F57L1",
+            "brand": "Oppo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 59,
+            "name": "OPPO Watch",
+            "model": "orca",
+            "brand": "Oppo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 60,
+            "name": "TAB-7304-16G3GS",
+            "model": "TAB-7304-16G3GS",
+            "brand": "Premier",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 61,
+            "name": "C330",
+            "model": "C330",
+            "brand": "Rakuten",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 62,
+            "name": "Rakuten Hand",
+            "model": "P710",
+            "brand": "Rakuten",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 63,
+            "name": "Rakuten BIG s",
+            "model": "gaea",
+            "brand": "Rakuten",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 64,
+            "name": "Galaxy Z Flip3 5G",
+            "model": "b2q",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 65,
+            "name": "Galaxy Z Flip",
+            "model": "bloomq",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 66,
+            "name": "Galaxy Z Flip 5G",
+            "model": "bloomxq",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 67,
+            "name": "Galaxy Note20 5G",
+            "model": "c1q",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 68,
+            "name": "Galaxy Note20",
+            "model": "c1s",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 69,
+            "name": "Galaxy Note20 Ultra 5G",
+            "model": "c2q",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 70,
+            "name": "Galaxy Note20 Ultra",
+            "model": "c2s",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 71,
+            "name": "Galaxy Watch4",
+            "model": "freshul",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 72,
+            "name": "Galaxy Watch4",
+            "model": "freshus",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 73,
+            "name": "Galaxy S21 5G",
+            "model": "o1s",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 74,
+            "name": "Galaxy S21 Ultra 5G",
+            "model": "p3s",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 75,
+            "name": "Galaxy S21+ 5G",
+            "model": "t2s",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 76,
+            "name": "Galaxy Watch4 Classic",
+            "model": "wiseul",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 77,
+            "name": "Galaxy Watch4 Classic",
+            "model": "wiseus",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 78,
+            "name": "Galaxy S20 5G",
+            "model": "x1s",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 79,
+            "name": "Galaxy S20+ 5G",
+            "model": "y2s",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 80,
+            "name": "Galaxy S20 Ultra 5G",
+            "model": "z3s",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 81,
+            "name": "AQUOS sense4 lite SH-RM15",
+            "model": "JeridL",
+            "brand": "Sharp",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 82,
+            "name": "Surface Duo",
+            "model": "duo",
+            "brand": "Surface",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 83,
+            "name": "TAG-TAB-III",
+            "model": "TAG-TAB-III",
+            "brand": "TAG-TECH",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 84,
+            "name": "X_EEA",
+            "model": "X_EEA",
+            "brand": "Teclast",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 85,
+            "name": "Active 1",
+            "model": "PQ6001",
+            "brand": "Vsmart",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 86,
+            "name": "ZR01",
+            "model": "Z7750R",
+            "brand": "ZTE",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 87,
+            "name": "EC55",
+            "model": "EC55",
+            "brand": "Zebra",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 88,
+            "name": "ET56",
+            "model": "ET56L",
+            "brand": "Zebra",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 89,
+            "name": "ET56",
+            "model": "ET56S",
+            "brand": "Zebra",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 90,
+            "name": "Zebra Technologies L10",
+            "model": "L10AW",
+            "brand": "Zebra",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 91,
+            "name": "Zebra Technologies MC2700",
+            "model": "MC2700",
+            "brand": "Zebra",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 92,
+            "name": "TC26",
+            "model": "TC26",
+            "brand": "Zebra",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 93,
+            "name": "TC57",
+            "model": "TC57",
+            "brand": "Zebra",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 94,
+            "name": "Zebra Technologies TC57x",
+            "model": "TC57X",
+            "brand": "Zebra",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 95,
+            "name": "TC77",
+            "model": "TC77",
+            "brand": "Zebra",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 96,
+            "name": "Aquaris X2",
+            "model": "zangya_sprout",
+            "brand": "bq",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 97,
+            "name": "Aquaris X2 PRO",
+            "model": "zangyapro_sprout",
+            "brand": "bq",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 103,
+            "name": "Galaxy Z Fold3",
+            "model": "SM-F926B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": "Global \/ International Model"
+        },
+        {
+            "number": 104,
+            "name": "Galaxy Z Fold3",
+            "model": "SM-F926B\/DS",
+            "brand": "Samsung",
+            "os": "android",
+            "description": "EU\/UK Model"
+        },
+        {
+            "number": 105,
+            "name": "Galaxy Z Fold3",
+            "model": "SM-F926U",
+            "brand": "Samsung",
+            "os": "android",
+            "description": "USA Model"
+        },
+        {
+            "number": 106,
+            "name": "Galaxy Z Fold3",
+            "model": "SM-F926U1",
+            "brand": "Samsung",
+            "os": "android",
+            "description": "USA model"
+        },
+        {
+            "number": 107,
+            "name": "Galaxy Z Fold3",
+            "model": "SM-F926W",
+            "brand": "Samsung",
+            "os": "android",
+            "description": "Canada model"
+        },
+        {
+            "number": 108,
+            "name": "Galaxy Z Fold3",
+            "model": "SM-F9260",
+            "brand": "Samsung",
+            "os": "android",
+            "description": "China, Hong Kong Models"
+        },
+        {
+            "number": 109,
+            "name": "Galaxy Z Fold3",
+            "model": "SM-F926N",
+            "brand": "Samsung",
+            "os": "android",
+            "description": "Korean International Version"
+        },
+        {
+            "number": 110,
+            "name": "Galaxy Z Fold2",
+            "model": "SM-F916B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": "Global\/International version"
+        },
+        {
+            "number": 111,
+            "name": "Galaxy Z Fold2",
+            "model": "SM-F916U",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 112,
+            "name": "Galaxy Z Fold2",
+            "model": "SM-F916U1",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 113,
+            "name": "Galaxy Z Fold2",
+            "model": "SM-F916N",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 114,
+            "name": "Galaxy Z Fold2",
+            "model": "SM-F9160",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 115,
+            "name": "Galaxy Z Fold2",
+            "model": "SM-F916W",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 116,
+            "name": "Galaxy Z Fold",
+            "model": "SM-F907F",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 117,
+            "name": "Galaxy Z Fold",
+            "model": "SM-F9007",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 118,
+            "name": "Galaxy Z Fold",
+            "model": "SM-F907W",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 119,
+            "name": "Galaxy Z Fold",
+            "model": "SM-F907U",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 120,
+            "name": "Galaxy Z Fold",
+            "model": "SM-F907B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 121,
+            "name": "Galaxy Z Fold",
+            "model": "SM-F907N",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 122,
+            "name": "Find X5 Pro",
+            "model": "PFEM10",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 123,
+            "name": "Find X5 Pro",
+            "model": "CPH2305",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 124,
+            "name": "Find X5 Pro",
+            "model": "PFFM20",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 125,
+            "name": "Find X5",
+            "model": "PFFM10",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 126,
+            "name": "Find X3 Pro",
+            "model": "PEEM00",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 127,
+            "name": "Find X3 Pro",
+            "model": "CPH2173",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 128,
+            "name": "Galaxy S22 Ultra 5G",
+            "model": "SM-S908B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 129,
+            "name": "Galaxy S22 Ultra 5G",
+            "model": "SM-S908B\/DS",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 130,
+            "name": "Galaxy S22 Ultra 5G",
+            "model": "SM-S908U",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 131,
+            "name": "Galaxy S22 Ultra 5G",
+            "model": "SM-S908U1",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 132,
+            "name": "Galaxy S22 Ultra 5G",
+            "model": "SM-S908W",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 133,
+            "name": "Galaxy S22 Ultra 5G",
+            "model": "SM-S908N",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 134,
+            "name": "Galaxy S22 Ultra 5G",
+            "model": "SM-S9080",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 135,
+            "name": "Galaxy S22 Ultra 5G",
+            "model": "SM-S908E",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 136,
+            "name": "Galaxy S22 Ultra 5G",
+            "model": "SM-S908E\/DS",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 137,
+            "name": "Galaxy S22+ 5G",
+            "model": "SM-S906B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 138,
+            "name": "Galaxy S22+ 5G",
+            "model": "SM-S906B\/DS",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 139,
+            "name": "Galaxy S22+ 5G",
+            "model": "SM-S906U",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 140,
+            "name": "Galaxy S22+ 5G",
+            "model": "SM-S906U1",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 141,
+            "name": "Galaxy S22+ 5G",
+            "model": "SM-S906W",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 142,
+            "name": "Galaxy S22+ 5G",
+            "model": "SM-S906N",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 143,
+            "name": "Galaxy S22+ 5G",
+            "model": "SM-S9060",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 144,
+            "name": "Galaxy S22+ 5G",
+            "model": "SM-S906E",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 145,
+            "name": "Galaxy S22+ 5G",
+            "model": "SM-S906E\/DS",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 146,
+            "name": "Galaxy S22 5G",
+            "model": "SM-S901B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 147,
+            "name": "Galaxy S22 5G",
+            "model": "SM-S901B\/DS",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 148,
+            "name": "Galaxy S22 5G",
+            "model": "SM-S901U",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 149,
+            "name": "Galaxy S22 5G",
+            "model": "SM-S901U1",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 150,
+            "name": "Galaxy S22 5G",
+            "model": "SM-S901W",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 151,
+            "name": "Galaxy S22 5G",
+            "model": "SM-S901N",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 152,
+            "name": "Galaxy S22 5G",
+            "model": "SM-S9010",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 153,
+            "name": "Galaxy S22 5G",
+            "model": "SM-S901E",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 154,
+            "name": "Galaxy S22 5G",
+            "model": "SM-S901E\/DS",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 155,
+            "name": "P40",
+            "model": "ANA-AN00",
+            "brand": "Huawei",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 156,
+            "name": "P40",
+            "model": "ANA-TN00",
+            "brand": "Huawei",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 157,
+            "name": "P40",
+            "model": "ANA-NX9",
+            "brand": "Huawei",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 158,
+            "name": "P40",
+            "model": "ANA-LX4",
+            "brand": "Huawei",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 159,
+            "name": "P40 Pro",
+            "model": "ELS-NX9",
+            "brand": "Huawei",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 160,
+            "name": "P40 Pro",
+            "model": "ELS-N04",
+            "brand": "Huawei",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 161,
+            "name": "P40 Pro",
+            "model": "ELS-AN00",
+            "brand": "Huawei",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 162,
+            "name": "P40 Pro",
+            "model": "ELS-TN00",
+            "brand": "Huawei",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 163,
+            "name": "Mate 40 Pro",
+            "model": "NOH-NX9",
+            "brand": "Huawei",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 164,
+            "name": "Mate 40 Pro",
+            "model": "NOH-AN00",
+            "brand": "Huawei",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 165,
+            "name": "X20",
+            "model": "X20",
+            "brand": "ABCTECH",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 166,
+            "name": "ZenFone Max Pro M1 (ZB602KL) (WW) \/ Max Pro M1 (ZB601KL) (IN)",
+            "model": "ASUS_X00T_2",
+            "brand": "asus",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 167,
+            "name": "ZenFone Max Pro M1 (ZB602KL) (WW) \/ Max Pro M1 (ZB601KL) (IN)",
+            "model": "ASUS_X00T_3",
+            "brand": "asus",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 168,
+            "name": "ZenFone Max Pro M1 (ZB602KL) (WW) \/ Max Pro M1 (ZB601KL) (IN)",
+            "model": "ASUS_X00T_4",
+            "brand": "asus",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 169,
+            "name": "ZenFone Max Pro M1 (ZB602KL) (WW) \/ Max Pro M1 (ZB601KL) (IN)",
+            "model": "ASUS_X00T_6",
+            "brand": "asus",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 170,
+            "name": "ZenFone Max Pro M1 (ZB602KL) (WW) \/ Max Pro M1 (ZB601KL) (IN)",
+            "model": "ASUS_X00T_8",
+            "brand": "asus",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 171,
+            "name": "ZenFone Max Pro M2 (ZB631KL) (WW) \/ Max Pro M2 (ZB630KL) (IN)",
+            "model": "ASUS_X01BD_1",
+            "brand": "asus",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 172,
+            "name": "ZenFone Max Pro M2 (ZB631KL) (WW) \/ Max Pro M2 (ZB630KL) (IN)",
+            "model": "ASUS_X01BD_2",
+            "brand": "asus",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 173,
+            "name": "BALMUDA Phone",
+            "model": "A101BM",
+            "brand": "BALMUDA",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 174,
+            "name": "B610A115",
+            "model": "B610A115",
+            "brand": "CIBER",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 175,
+            "name": "CP-G3",
+            "model": "CP-G3",
+            "brand": "Covia",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 176,
+            "name": "V30",
+            "model": "M23",
+            "brand": "DOOGEE",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 177,
+            "name": "Hardcase H620S",
+            "model": "H620SEU",
+            "brand": "Energizer",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 178,
+            "name": "arrows We A101FC",
+            "model": "A101FC",
+            "brand": "FCNT",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 179,
+            "name": "arrows BZ03",
+            "model": "BZ03",
+            "brand": "FCNT",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 180,
+            "name": "arrows N F-51C",
+            "model": "F51C",
+            "brand": "FCNT",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 181,
+            "name": "Fairphone4",
+            "model": "FP4",
+            "brand": "Fairphone",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 182,
+            "name": "Gigaset GX4 PRO",
+            "model": "GX4_PRO",
+            "brand": "Gigaset",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 183,
+            "name": "Pixel 5a 5G",
+            "model": "barbet",
+            "brand": "google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 184,
+            "name": "Pixel 6a",
+            "model": "bluejay",
+            "brand": "google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 185,
+            "name": "Pixel 7 Pro",
+            "model": "cheetah",
+            "brand": "google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 186,
+            "name": "Pixel 6",
+            "model": "oriole",
+            "brand": "google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 187,
+            "name": "Pixel 7",
+            "model": "panther",
+            "brand": "google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 188,
+            "name": "Pixel 6 Pro",
+            "model": "raven",
+            "brand": "google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 189,
+            "name": "MIELS",
+            "model": "MIELS",
+            "brand": "Hamic",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 190,
+            "name": "Hammer Blade 3",
+            "model": "Hammer_Blade_3",
+            "brand": "Hammer",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 191,
+            "name": "Hammer Blade 5G",
+            "model": "Hammer_Blade_5G",
+            "brand": "Hammer",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 192,
+            "name": "Hammer Construction",
+            "model": "Hammer_Construction",
+            "brand": "Hammer",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 193,
+            "name": "Hammer Explorer Pro",
+            "model": "Hammer_Expl_Pro",
+            "brand": "Hammer",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 194,
+            "name": "CT30XP",
+            "model": "CT30P",
+            "brand": "Honeywell",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 195,
+            "name": "CT45 XP",
+            "model": "CT45P",
+            "brand": "Honeywell",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 196,
+            "name": "CT47",
+            "model": "CT47",
+            "brand": "Honeywell",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 197,
+            "name": "EDA52",
+            "model": "EDA52",
+            "brand": "Honeywell",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 198,
+            "name": "EDA5S",
+            "model": "EDA5S",
+            "brand": "Honeywell",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 199,
+            "name": "FRI",
+            "model": "HNFRI",
+            "brand": "HONOR",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 200,
+            "name": "HONOR Magic4 Pro",
+            "model": "HNLGE",
+            "brand": "HONOR",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 201,
+            "name": "HONOR Magic5 Pro",
+            "model": "HNPGT",
+            "brand": "HONOR",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 202,
+            "name": "IS540",
+            "model": "IS540",
+            "brand": "isafemobile",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 203,
+            "name": "\u304b\u3093\u305f\u3093\u30b9\u30de\u30db\uff12",
+            "model": "A001KC",
+            "brand": "KYOCERA",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 204,
+            "name": "\u304b\u3093\u305f\u3093\u30b9\u30de\u30db2+",
+            "model": "A201KC",
+            "brand": "KYOCERA",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 205,
+            "name": "DIGNO SANGA edition",
+            "model": "KC-S304",
+            "brand": "KYOCERA",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 206,
+            "name": "DIGNO SX2",
+            "model": "KY21L-ST100",
+            "brand": "KYOCERA",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 207,
+            "name": "\u304b\u3093\u305f\u3093\u30b9\u30de\u30db3",
+            "model": "KY22L-SN300",
+            "brand": "KYOCERA",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 208,
+            "name": "DIGNO SX3",
+            "model": "KY22L-ST200",
+            "brand": "KYOCERA",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 209,
+            "name": "Android One S10",
+            "model": "S10-KC_sprout",
+            "brand": "KYOCERA",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 210,
+            "name": "Android One S9",
+            "model": "S9-KC_sprout",
+            "brand": "KYOCERA",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 211,
+            "name": "d-52C",
+            "model": "d-52C",
+            "brand": "Lenovo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 212,
+            "name": "LOGIC MV01",
+            "model": "LOGIC_MV01",
+            "brand": "LOGIC",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 213,
+            "name": "LOGIC MV02",
+            "model": "LOGIC_MV02",
+            "brand": "LOGIC",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 214,
+            "name": "moto g52j 5G",
+            "model": "cypfr",
+            "brand": "motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 215,
+            "name": "motorola razr 2022",
+            "model": "oneli",
+            "brand": "motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 216,
+            "name": "moto g53y 5G",
+            "model": "penang",
+            "brand": "motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 217,
+            "name": "Nokia G60 5G",
+            "model": "APO_sprout",
+            "brand": "Nokia",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 218,
+            "name": "Nokia X30 5G",
+            "model": "FCN_sprout",
+            "brand": "Nokia",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 219,
+            "name": "OnePlus 11 5G",
+            "model": "OP594DL1",
+            "brand": "OnePlus",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 220,
+            "name": "A77",
+            "model": "A77",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 221,
+            "name": "OPPO Reno5 A",
+            "model": "OP4F2BL1",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 222,
+            "name": "CPH2247",
+            "model": "OP4F7FL1",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 223,
+            "name": "Find X5 Pro",
+            "model": "OP52D1L1",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 224,
+            "name": "Find X5",
+            "model": "OP52D5L1",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 225,
+            "name": "A55s 5G",
+            "model": "OP52EBL1",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 226,
+            "name": "OPPO Reno7 A",
+            "model": "OP532BL1",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 227,
+            "name": "Find N2 Flip",
+            "model": "OP56CDL1",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 228,
+            "name": "A5",
+            "model": "PBBM30",
+            "brand": "OPPO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 229,
+            "name": "Rakuten Hand5G",
+            "model": "P780",
+            "brand": "Rakuten",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 230,
+            "name": "Razer Edge 5G",
+            "model": "RZ45-0460",
+            "brand": "Razer",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 231,
+            "name": "SGIN_E10M",
+            "model": "SGIN_E10M",
+            "brand": "SGIN",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 232,
+            "name": "Galaxy S23",
+            "model": "SC-51D",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 233,
+            "name": "Galaxy S23 Ultra",
+            "model": "SC-52D",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 234,
+            "name": "Galaxy Z Flip4",
+            "model": "SC-54C",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 235,
+            "name": "Galaxy Z Fold4",
+            "model": "SC-55C",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 236,
+            "name": "Galaxy A23 5G",
+            "model": "SC-56C",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 237,
+            "name": "Galaxy Z Fold4",
+            "model": "SCG16",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 238,
+            "name": "Galaxy Z Flip4",
+            "model": "SCG17",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 241,
+            "name": "Galaxy S22 Ultra",
+            "model": "b0q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 242,
+            "name": "Galaxy S22 Ultra",
+            "model": "b0s",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 243,
+            "name": "Galaxy Z Flip4",
+            "model": "b4q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 244,
+            "name": "Galaxy S23",
+            "model": "dm1q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 245,
+            "name": "Galaxy S23+",
+            "model": "dm2q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 246,
+            "name": "Galaxy S23 Ultra",
+            "model": "dm3q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 247,
+            "name": "Galaxy S22+",
+            "model": "g0q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 248,
+            "name": "Galaxy S22+",
+            "model": "g0s",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 249,
+            "name": "Galaxy S21 5G",
+            "model": "o1q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 250,
+            "name": "Galaxy S21 Ultra 5G",
+            "model": "p3q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 251,
+            "name": "Galaxy Z Fold4",
+            "model": "q4q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 252,
+            "name": "Galaxy S22",
+            "model": "r0q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 253,
+            "name": "Galaxy S22",
+            "model": "r0s",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 254,
+            "name": "Galaxy S21+ 5G",
+            "model": "t2q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 255,
+            "name": "Galaxy S20 5G",
+            "model": "x1q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 256,
+            "name": "Galaxy S20+ 5G",
+            "model": "y2q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 257,
+            "name": "Galaxy S20 Ultra 5G",
+            "model": "z3q",
+            "brand": "samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 258,
+            "name": "AQUOS wish2",
+            "model": "ANK",
+            "brand": "KDDI",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 259,
+            "name": "AQUOS sense6s",
+            "model": "BOL",
+            "brand": "KDDI",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 260,
+            "name": "AQUOS sense6",
+            "model": "Chara",
+            "brand": "RAKUTEN",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 261,
+            "name": "AQUOS sense6",
+            "model": "Chara",
+            "brand": "SHARP",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 262,
+            "name": "AQUOS sense7",
+            "model": "IVR",
+            "brand": "KDDI",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 263,
+            "name": "AQUOS sense4 lite SH-RM15",
+            "model": "JeridL",
+            "brand": "RAKUTEN",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 264,
+            "name": "AQUOS R6",
+            "model": "Judau",
+            "brand": "SG",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 265,
+            "name": "\u30b7\u30f3\u30d7\u30eb\u30b9\u30de\u30db\uff16",
+            "model": "Levil",
+            "brand": "SG",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 266,
+            "name": "AQUOS R7",
+            "model": "Mineva",
+            "brand": "SG",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 267,
+            "name": "Leitz Phone 2",
+            "model": "MinevaL",
+            "brand": "SG",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 268,
+            "name": "AQUOS sense6s",
+            "model": "Nee",
+            "brand": "RAKUTEN",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 269,
+            "name": "AQUOS sense6s",
+            "model": "Nee",
+            "brand": "SG",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 270,
+            "name": "AQUOS sense7 plus",
+            "model": "Quattro",
+            "brand": "SG",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 271,
+            "name": "AQUOS sense7",
+            "model": "Rakan",
+            "brand": "SHARP",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 272,
+            "name": "AQUOS zero6",
+            "model": "Recoa",
+            "brand": "SHARP",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 273,
+            "name": "AQUOS zero6",
+            "model": "Recoa",
+            "brand": "SG",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 274,
+            "name": "AQUOS zero6",
+            "model": "Recoa",
+            "brand": "RAKUTEN",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 275,
+            "name": "AQUOS R7",
+            "model": "SH-52C",
+            "brand": "DOCOMO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 276,
+            "name": "AQUOS sense7",
+            "model": "SH-53C",
+            "brand": "DOCOMO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 277,
+            "name": "AQUOS wish",
+            "model": "SX1",
+            "brand": "SHARP",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 278,
+            "name": "AQUOS wish",
+            "model": "SX1",
+            "brand": "SG",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 279,
+            "name": "AQUOS wish",
+            "model": "SX1",
+            "brand": "RAKUTEN",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 280,
+            "name": "AQUOS wish2",
+            "model": "SXI",
+            "brand": "SG",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 281,
+            "name": "AQUOS zero6",
+            "model": "XKH",
+            "brand": "KDDI",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 282,
+            "name": "AQUOS wish",
+            "model": "YLI",
+            "brand": "KDDI",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 283,
+            "name": "AQUOS sense6",
+            "model": "ZMJ",
+            "brand": "KDDI",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 284,
+            "name": "dtab d-51C",
+            "model": "d-51C",
+            "brand": "dtab",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 285,
+            "name": "Xperia 1 IV",
+            "model": "A201SO",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 286,
+            "name": "Xperia 10 IV",
+            "model": "A202SO",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 287,
+            "name": "Xperia Ace III",
+            "model": "A203SO",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 288,
+            "name": "Xperia 5 IV",
+            "model": "A204SO",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 289,
+            "name": "Xperia 1 IV",
+            "model": "SO-51C",
+            "brand": "docomo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 290,
+            "name": "Xperia 5 IV",
+            "model": "SO-54C",
+            "brand": "docomo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 291,
+            "name": "Xperia 1 IV",
+            "model": "SOG06",
+            "brand": "KDDI",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 292,
+            "name": "Xperia 10 IV",
+            "model": "SOG07",
+            "brand": "KDDI",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 293,
+            "name": "Xperia Ace III",
+            "model": "SOG08",
+            "brand": "KDDI",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 294,
+            "name": "Xperia 5 IV",
+            "model": "SOG09",
+            "brand": "KDDI",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 295,
+            "name": "Xperia 10 III Lite",
+            "model": "XQ-BT44",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 296,
+            "name": "Xperia 10 IV",
+            "model": "XQ-CC44",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 297,
+            "name": "Xperia 10 IV",
+            "model": "XQ-CC54",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 298,
+            "name": "Xperia 5 IV",
+            "model": "XQ-CQ44",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 299,
+            "name": "Xperia 5 IV",
+            "model": "XQ-CQ54",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 300,
+            "name": "Xperia 1 IV",
+            "model": "XQ-CT44",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 301,
+            "name": "Xperia 1 IV",
+            "model": "XQ-CT54",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 302,
+            "name": "Surface Duo 2",
+            "model": "duo2",
+            "brand": "surface",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 303,
+            "name": "TAG-TAB-III",
+            "model": "TAG-TAB-III",
+            "brand": "TAGTECH",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 304,
+            "name": "TONE_e22",
+            "model": "TONE_e22",
+            "brand": "TONE",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 305,
+            "name": "V-Z40",
+            "model": "V-Z40",
+            "brand": "VIKUSHA",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 307,
+            "name": "X90 Pro",
+            "model": "V2219",
+            "brand": "vivo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 308,
+            "name": "Xiaomi 12T Pro",
+            "model": "diting",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 309,
+            "name": "Xiaomi 13 Lite",
+            "model": "ziyi",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 310,
+            "name": "A103ZT",
+            "model": "Z6571S",
+            "brand": "ZTE",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 311,
+            "name": "A202ZT",
+            "model": "Z6575S",
+            "brand": "ZTE",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 312,
+            "name": "TC58",
+            "model": "TC58",
+            "brand": "Zebra",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 313,
+            "name": "K105_EEA",
+            "model": "K105_EEA",
+            "brand": "ZONKO",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 324,
+            "name": "RAKUTEN BIG",
+            "model": "ZR01",
+            "brand": "ZTE",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 325,
+            "name": "Galaxy A54 5G",
+            "model": "SM-A546B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 326,
+            "name": "Honor Magic4 Pro",
+            "model": "LGE-AN10",
+            "brand": "Honor",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 327,
+            "name": "Redmi Note 11 Pro 5G",
+            "model": "pissarro",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 328,
+            "name": "Honor 90",
+            "model": "REA-NX9",
+            "brand": "Honor",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 329,
+            "name": "Galaxy Fold 5",
+            "model": "SM-F946B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 330,
+            "name": "Galaxy Flip 5",
+            "model": "SM-F731B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 331,
+            "name": "Aquos Wish6",
+            "model": "SHG06",
+            "brand": "Sharp",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 332,
+            "name": "Aquos Zero6",
+            "model": "SH-Z60",
+            "brand": "Sharp",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 333,
+            "name": "Aquos Zero6",
+            "model": "A102SH",
+            "brand": "Sharp",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 334,
+            "name": "Aquos Zero6",
+            "model": "SH-RM18",
+            "brand": "Sharp",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 335,
+            "name": "Aquos Sense6",
+            "model": "AS6N",
+            "brand": "Sharp",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 336,
+            "name": "Moto G53 5G",
+            "model": "XT2335-2",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 337,
+            "name": "Razr 2022",
+            "model": "XT2251-1",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 338,
+            "name": "Razr 40 Ultra",
+            "model": "XT2321-3",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 351,
+            "name": "Galaxy S24 Ultra",
+            "model": "SM-S928",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 352,
+            "name": "Galaxy S24+",
+            "model": "SM-S926",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 353,
+            "name": "Galaxy S24",
+            "model": "SM-S921",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 354,
+            "name": "Galaxy S23 FE",
+            "model": "SM-S7110",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 355,
+            "name": "Pixel 8 Pro",
+            "model": "G1MNW",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 356,
+            "name": "Pixel 8 Pro",
+            "model": "GC3VE",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 357,
+            "name": "Pixel 8",
+            "model": "GPJ41",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 358,
+            "name": "Pixel 8",
+            "model": "GKWS6",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 359,
+            "name": "Pixel 8",
+            "model": "G9BOD",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 360,
+            "name": "Pixel Fold",
+            "model": "Pixel Fold",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 361,
+            "name": "Pixel 7a",
+            "model": "GWKK3",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 362,
+            "name": "Pixel 7a",
+            "model": "GHL1X",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 363,
+            "name": "Pixel 7a",
+            "model": "GODZO",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 364,
+            "name": "Pixel 7a",
+            "model": "G82U8",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 365,
+            "name": "Moto G54",
+            "model": "XT2343",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 366,
+            "name": "Edge 40",
+            "model": "XT2303-1",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 367,
+            "name": "Edge 40",
+            "model": "XT2303-2",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 368,
+            "name": "Edge 40 Neo",
+            "model": "MC40B",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 369,
+            "name": "Edge 40 Neo",
+            "model": "XT2307-1",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 370,
+            "name": "Edge 40 Pro",
+            "model": "XT2301-4",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 371,
+            "name": "Edge+ Plus",
+            "model": "XT2061-3",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 372,
+            "name": "Edge+ Plus (2022)",
+            "model": "MOTXT22014W",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 373,
+            "name": "Edge+ Plus (2022)",
+            "model": "XT2201DL",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 374,
+            "name": "Edge+ Plus (2022)",
+            "model": "XT2201-4",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 375,
+            "name": "Moto G53",
+            "model": "XT2335-1",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 376,
+            "name": "XR21",
+            "model": "TA-1486",
+            "brand": "Nokia",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 377,
+            "name": "OnePlus 12",
+            "model": "PJD110",
+            "brand": "OnePlus",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 378,
+            "name": "Xperia 1 V",
+            "model": "XQ-DQ54",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 379,
+            "name": "X100 Pro",
+            "model": "V2324A",
+            "brand": "vivo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 380,
+            "name": "V29",
+            "model": "V2250",
+            "brand": "vivo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 381,
+            "name": "V29 Lite 5G",
+            "model": "\u200eV2244",
+            "brand": "vivo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 394,
+            "name": "Galaxy A55",
+            "model": "SM-A556E",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 395,
+            "name": "Galaxy 24 FE",
+            "model": "SM-S721U",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 396,
+            "name": "Pixel 7",
+            "model": "GVU6C",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 397,
+            "name": "Pixel 7 Pro",
+            "model": "GP4BC",
+            "brand": "Google",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 398,
+            "name": "A35",
+            "model": "SM-A356E",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 399,
+            "name": "Surface Pro 9",
+            "model": "Pro 9",
+            "brand": "Surface",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 400,
+            "name": "Xiaomi 15",
+            "model": "dada",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 401,
+            "name": "Xiaomi 14",
+            "model": "houji",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 402,
+            "name": "Xiaomi 14 Pro",
+            "model": "shennong",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 403,
+            "name": "Xiaomi 14T",
+            "model": "degas",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 404,
+            "name": "Xiaomi 14T Pro",
+            "model": "rothko",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 405,
+            "name": "Xiaomi 13",
+            "model": "fuxi",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 406,
+            "name": "Xiaomi 13 Pro",
+            "model": "nuwa",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 407,
+            "name": "Xiaomi 13T",
+            "model": "aristotle",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 408,
+            "name": "Xiaomi 13T Pro",
+            "model": "corot",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 409,
+            "name": "Redmi Note 14 Pro",
+            "model": "obsidian",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 410,
+            "name": "Redmi Note 14 Pro+",
+            "model": "amethyst",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 411,
+            "name": "Redmi Note 13 Pro",
+            "model": "emerald",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 412,
+            "name": "Redmi Note 13 Pro+",
+            "model": "zircon",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 413,
+            "name": "X200 Pro",
+            "model": "V2413",
+            "brand": "Vivo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 414,
+            "name": "X200",
+            "model": "V2415A",
+            "brand": "Vivo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 415,
+            "name": "V40",
+            "model": "V2348",
+            "brand": "Vivo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 417,
+            "name": "V50",
+            "model": "V2427",
+            "brand": "Vivo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 418,
+            "name": "X200",
+            "model": "V2405A",
+            "brand": "Vivo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 422,
+            "name": "Galaxy A56",
+            "model": "SM-A566B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 423,
+            "name": "Galaxy A56",
+            "model": "SM-A566E",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 424,
+            "name": "Galaxy A55",
+            "model": "SM-A556B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 425,
+            "name": "Redmi Note 14 Pro+ 5G",
+            "model": "24115RA8EG",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 426,
+            "name": "15 Ultra",
+            "model": "24129PN74G",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 427,
+            "name": "Redmi Note 14 Pro 5G",
+            "model": "24090RA29G",
+            "brand": "Xiaomi",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 428,
+            "name": "X200s",
+            "model": "V2415",
+            "brand": "vivo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 429,
+            "name": "60 XE NxtPaper",
+            "model": "T705M1",
+            "brand": "TCL",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 430,
+            "name": "Xperia 1 VII",
+            "model": "XQ-FS54",
+            "brand": "Sony",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 431,
+            "name": "Aquos wish5",
+            "model": "SH-AC05",
+            "brand": "Sharp",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 432,
+            "name": "Galaxy S25",
+            "model": "SM-S931B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 433,
+            "name": "Galaxy S25",
+            "model": "SM-S931U",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 434,
+            "name": "Galaxy S25",
+            "model": "SM-S931U1",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 435,
+            "name": "Galaxy S25+",
+            "model": "SM-S936B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 436,
+            "name": "Galaxy S25+",
+            "model": "SM-S936U",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 437,
+            "name": "Galaxy S25+",
+            "model": "SM-S936U1",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 438,
+            "name": "Galaxy S25 Edge",
+            "model": "SM-S937U",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 439,
+            "name": "Galaxy S25 Edge",
+            "model": "SM-S937U1",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 440,
+            "name": "Galaxy S25 Edge",
+            "model": "SM-S937B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 441,
+            "name": "Galaxy S25 Ultra",
+            "model": "SM-S938B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 442,
+            "name": "Galaxy S25 Ultra",
+            "model": "SM-S938U",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 443,
+            "name": "Galaxy S25 Ultra",
+            "model": "SM-S938U1",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 444,
+            "name": "V3 Ultra",
+            "model": "T803D",
+            "brand": "Alcatel",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 445,
+            "name": "Galaxy Z Fold7",
+            "model": "SM-F966B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 446,
+            "name": "A36",
+            "model": "SM-A366E",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 447,
+            "name": "Galaxy Flip7",
+            "model": "SM-F766B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 448,
+            "name": "Galaxy XCover7 Pro",
+            "model": "SM-G766B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 449,
+            "name": "Galaxy Z Flip7 FE",
+            "model": "SM-F761B",
+            "brand": "Samsung",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 450,
+            "name": "SH-51F",
+            "model": "Aquos R10",
+            "brand": "Sharp",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 451,
+            "name": "RMX5070",
+            "model": "14",
+            "brand": "RealMe",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 452,
+            "name": "14 Pro+",
+            "model": "RMX5051",
+            "brand": "RealMe",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 453,
+            "name": "GT 7",
+            "model": "RMX5061",
+            "brand": "RealMe",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 454,
+            "name": "Reno14",
+            "model": "PLA110",
+            "brand": "Oppo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 455,
+            "name": "Find N5",
+            "model": "CPH2671",
+            "brand": "Oppo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 456,
+            "name": "Reno14 Pro",
+            "model": "PKZ110",
+            "brand": "Oppo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 457,
+            "name": "13T",
+            "model": "PKX110",
+            "brand": "OnePlus",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 458,
+            "name": "13R",
+            "model": "CPH2645",
+            "brand": "OnePlus",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 459,
+            "name": "Phone (3)",
+            "model": "A024",
+            "brand": "Nothing",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 460,
+            "name": "Phone Pro",
+            "model": "A059P",
+            "brand": "Nothing",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 465,
+            "name": "Magic8 Pro Air",
+            "model": "LDY-AN00",
+            "brand": "Honor",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 466,
+            "name": "Signature",
+            "model": "XT2603-2",
+            "brand": "Motorola",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 467,
+            "name": "X200T",
+            "model": "V2561",
+            "brand": "Vivo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 468,
+            "name": "Reno15",
+            "model": "CPH2825",
+            "brand": "Oppo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 469,
+            "name": "Reno15",
+            "model": "CPH2813",
+            "brand": "Oppo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 470,
+            "name": "Reno15 Pro Max",
+            "model": "CPH2811",
+            "brand": "Oppo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 471,
+            "name": "Reno15 FS",
+            "model": "CPH2801",
+            "brand": "Oppo",
+            "os": "android",
+            "description": null
+        },
+        {
+            "number": 472,
+            "name": "NxtPaper 70 Pro",
+            "model": "T807W",
+            "brand": "TCL",
+            "os": "android",
+            "description": null
+        }
+    ]
+}
+
+{
+    "data": [
+        {
+            "number": 1,
+            "name": "iPhone XS",
+            "model": "iPhone11,2",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 2,
+            "name": "iPhone XS Max",
+            "model": "iPhone11,4",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 3,
+            "name": "iPhone XS Max Global",
+            "model": "iPhone11,6",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 4,
+            "name": "iPhone XR",
+            "model": "iPhone11,8",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 5,
+            "name": "iPhone 11",
+            "model": "iPhone12,1",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 6,
+            "name": "iPhone 11 Pro",
+            "model": "iPhone12,3",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 7,
+            "name": "iPhone 11 Pro Max",
+            "model": "iPhone12,5",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 8,
+            "name": "iPhone SE 2nd Gen",
+            "model": "iPhone12,8",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 9,
+            "name": "iPhone 12 Mini",
+            "model": "iPhone13,1",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 10,
+            "name": "iPhone 12",
+            "model": "iPhone13,2",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 11,
+            "name": "iPhone 12 Pro",
+            "model": "iPhone13,3",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 12,
+            "name": "iPhone 12 Pro Max",
+            "model": "iPhone13,4",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 13,
+            "name": "iPad Pro 11 inch 3rd Gen (WiFi+Cellular)",
+            "model": "iPad8,3",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 14,
+            "name": "iPad Pro 11 inch 3rd Gen (1TB, WiFi+Cellular)",
+            "model": "iPad8,4",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 15,
+            "name": "iPad Pro 12.9 inch 3rd Gen (WiFi+Cellular)",
+            "model": "iPad8,7",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 16,
+            "name": "iPad Pro 12.9 inch 3rd Gen (1TB, WiFi+Cellular)",
+            "model": "iPad8,8",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 17,
+            "name": "iPad Pro 11 inch 4th Gen (WiFi+Cellular)",
+            "model": "iPad8,10",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 18,
+            "name": "iPad Pro 12.9 inch 4th Gen (WiFi+Cellular)",
+            "model": "iPad8,12",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 19,
+            "name": "iPad mini 5th Gen",
+            "model": "iPad11,2",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 20,
+            "name": "iPad Air 3rd Gen",
+            "model": "iPad11,4",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 21,
+            "name": "iPad 8th Gen (WiFi+Cellular)",
+            "model": "iPad11,7",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 22,
+            "name": "iPad air 4th Gen (WiFi+Cellular)",
+            "model": "iPad13,2",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 24,
+            "name": "iPad Pro 11 inch 3rd Gen",
+            "model": "iPad13,5 ",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 25,
+            "name": "iPad Pro 11 inch 3rd Gen",
+            "model": "iPad13,6",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 28,
+            "name": "iPad Pro 12.9 inch 5th Gen",
+            "model": "iPad13,9",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 29,
+            "name": "iPad Pro 12.9 inch 5th Gen",
+            "model": "iPad13,10",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 30,
+            "name": "iPad Pro 12.9 inch 5th Gen",
+            "model": "iPad13,11",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 98,
+            "name": "iPhone 13 Mini",
+            "model": "iPhone14,4",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 99,
+            "name": "iPhone 13",
+            "model": "iPhone14,5",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 100,
+            "name": "iPhone 13 Pro",
+            "model": "iPhone14,2",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 101,
+            "name": "iPhone 13 Pro Max",
+            "model": "iPhone14,3",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 102,
+            "name": "iPhone SE 3rd Gen",
+            "model": "iPhone14,6",
+            "brand": "Apple",
+            "os": "ios",
+            "description": "iPhone SE 2022"
+        },
+        {
+            "number": 314,
+            "name": "iPhone 14 Pro",
+            "model": "iPhone15,2",
+            "brand": "Apple",
+            "os": "ios",
+            "description": "The following Apple devices DO NOT have eSIM capability:\r\n          \u2022    iPhone devices from Mainland China.\r\n          \u2022    iPhone devices from Hong Kong and Macao (except for the iPhone 13 Mini, iPhone 12 Mini, iPhone SE 2020, and iPhone XS).\r\nFor iPhones and iPads purchased in TURKEY:\r\n         \u2022   If you\u2019re setting up your device for the first time after June 23, 2020, your eSIM will activate after installation. Contact your carrier if you don\u2019t have eSIM enabled."
+        },
+        {
+            "number": 315,
+            "name": "iPhone 14 Pro Max",
+            "model": "iPhone15,3",
+            "brand": "Apple",
+            "os": "ios",
+            "description": "The following Apple devices DO NOT have eSIM capability:\r\n          \u2022    iPhone devices from Mainland China.\r\n          \u2022    iPhone devices from Hong Kong and Macao (except for the iPhone 13 Mini, iPhone 12 Mini, iPhone SE 2020, and iPhone XS).\r\nFor iPhones and iPads purchased in TURKEY:\r\n         \u2022   If you\u2019re setting up your device for the first time after June 23, 2020, your eSIM will activate after installation. Contact your carrier if you don\u2019t have eSIM enabled."
+        },
+        {
+            "number": 316,
+            "name": "iPhone 14 Plus",
+            "model": "iPhone14,8",
+            "brand": "Apple",
+            "os": "ios",
+            "description": "The following Apple devices DO NOT have eSIM capability:\r\n          \u2022    iPhone devices from Mainland China.\r\n          \u2022    iPhone devices from Hong Kong and Macao (except for the iPhone 13 Mini, iPhone 12 Mini, iPhone SE 2020, and iPhone XS).\r\nFor iPhones and iPads purchased in TURKEY:\r\n         \u2022   If you\u2019re setting up your device for the first time after June 23, 2020, your eSIM will activate after installation. Contact your carrier if you don\u2019t have eSIM enabled."
+        },
+        {
+            "number": 317,
+            "name": "iPhone 14",
+            "model": "iPhone14,7",
+            "brand": "Apple",
+            "os": "ios",
+            "description": "The following Apple devices DO NOT have eSIM capability:\r\n          \u2022    iPhone devices from Mainland China.\r\n          \u2022    iPhone devices from Hong Kong and Macao (except for the iPhone 13 Mini, iPhone 12 Mini, iPhone SE 2020, and iPhone XS).\r\nFor iPhones and iPads purchased in TURKEY:\r\n         \u2022   If you\u2019re setting up your device for the first time after June 23, 2020, your eSIM will activate after installation. Contact your carrier if you don\u2019t have eSIM enabled."
+        },
+        {
+            "number": 319,
+            "name": "iPad Air 5th Gen (WiFi+Cellular)",
+            "model": "iPad13,17",
+            "brand": "Apple",
+            "os": "ios",
+            "description": "The following Apple devices DO NOT have eSIM capability:\r\n          \u2022    iPhone devices from Mainland China.\r\n          \u2022    iPhone devices from Hong Kong and Macao (except for the iPhone 13 Mini, iPhone 12 Mini, iPhone SE 2020, and iPhone XS).\r\nOnly iPad devices with Wi-Fi + Cellular features are supported.\r\nFor iPhones and iPads purchased in TURKEY:\r\n         \u2022   If you\u2019re setting up your device for the first time after June 23, 2020, your eSIM will activate after installation. Contact your carrier if you don\u2019t have eSIM enabled."
+        },
+        {
+            "number": 321,
+            "name": "iPad 10th Gen",
+            "model": "iPad13,19",
+            "brand": "Apple",
+            "os": "ios",
+            "description": "The following Apple devices DO NOT have eSIM capability:\r\n          \u2022    iPhone devices from Mainland China.\r\n          \u2022    iPhone devices from Hong Kong and Macao (except for the iPhone 13 Mini, iPhone 12 Mini, iPhone SE 2020, and iPhone XS).\r\nOnly iPad devices with Wi-Fi + Cellular features are supported.\r\nFor iPhones and iPads purchased in TURKEY:\r\n         \u2022   If you\u2019re setting up your device for the first time after June 23, 2020, your eSIM will activate after installation. Contact your carrier if you don\u2019t have eSIM enabled."
+        },
+        {
+            "number": 322,
+            "name": "iPad Pro 11 inch 4th Gen",
+            "model": "iPad14,4",
+            "brand": "Apple",
+            "os": "ios",
+            "description": "The following Apple devices DO NOT have eSIM capability:\r\n          \u2022    iPhone devices from Mainland China.\r\n          \u2022    iPhone devices from Hong Kong and Macao (except for the iPhone 13 Mini, iPhone 12 Mini, iPhone SE 2020, and iPhone XS).\r\nOnly iPad devices with Wi-Fi + Cellular features are supported.\r\nFor iPhones and iPads purchased in TURKEY:\r\n         \u2022   If you\u2019re setting up your device for the first time after June 23, 2020, your eSIM will activate after installation. Contact your carrier if you don\u2019t have eSIM enabled."
+        },
+        {
+            "number": 323,
+            "name": "iPad Pro 12.9 inch 6th Gen",
+            "model": "iPad14,6",
+            "brand": "Apple",
+            "os": "ios",
+            "description": "The following Apple devices DO NOT have eSIM capability:\r\n          \u2022    iPhone devices from Mainland China.\r\n          \u2022    iPhone devices from Hong Kong and Macao (except for the iPhone 13 Mini, iPhone 12 Mini, iPhone SE 2020, and iPhone XS).\r\nOnly iPad devices with Wi-Fi + Cellular features are supported.\r\nFor iPhones and iPads purchased in TURKEY:\r\n         \u2022   If you\u2019re setting up your device for the first time after June 23, 2020, your eSIM will activate after installation. Contact your carrier if you don\u2019t have eSIM enabled."
+        },
+        {
+            "number": 339,
+            "name": "iPhone 15 Pro Max",
+            "model": "A2849",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 340,
+            "name": "iPhone 15 Pro Max",
+            "model": "A3105",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 341,
+            "name": "iPhone 15 Pro Max",
+            "model": "A3106",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 342,
+            "name": "iPhone 15 Pro",
+            "model": "A2848",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 343,
+            "name": "iPhone 15 Pro",
+            "model": "A3101",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 344,
+            "name": "iPhone 15 Pro",
+            "model": "A3102",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 345,
+            "name": "iPhone 15 Plus",
+            "model": "A2847",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 346,
+            "name": "iPhone 15 Plus",
+            "model": "A3093",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 347,
+            "name": "iPhone 15 Plus",
+            "model": "A3094",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 348,
+            "name": "iPhone 15",
+            "model": "A2846",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 349,
+            "name": "iPhone 15",
+            "model": "A3089",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 350,
+            "name": "iPhone 15",
+            "model": "A3090",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 382,
+            "name": "iPhone 16 Pro Max",
+            "model": "A3084",
+            "brand": "Apple",
+            "os": "ios",
+            "description": "United States, Puerto Rico"
+        },
+        {
+            "number": 383,
+            "name": "iPhone 16 Pro Max",
+            "model": "A3295",
+            "brand": "Apple",
+            "os": "ios",
+            "description": "Bahrain, Canada, Iraq, Guam, Japan, Jordan, Kuwait, Mexico, Oman, Qatar, Saudi Arabia, United Arab Emirates, U.S. Virgin Islands"
+        },
+        {
+            "number": 384,
+            "name": "iPhone 16 Pro Max",
+            "model": "A3296",
+            "brand": "Apple",
+            "os": "ios",
+            "description": "other countries and regions (excluding China mainland, Hong Kong, Macao)"
+        },
+        {
+            "number": 385,
+            "name": "iPhone 16 Pro",
+            "model": "A3083",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 386,
+            "name": "iPhone 16 Pro",
+            "model": "A3292",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 387,
+            "name": "iPhone 16 Pro",
+            "model": "A3293",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 388,
+            "name": "iPhone 16 Plus",
+            "model": "A3082",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 389,
+            "name": "iPhone 16 Plus",
+            "model": "A3289",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 390,
+            "name": "iPhone 16 Plus",
+            "model": "A3290",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 391,
+            "name": "iPhone 16",
+            "model": "A3081",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 392,
+            "name": "iPhone 16",
+            "model": "A3286",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 393,
+            "name": "iPhone 16",
+            "model": "A3287",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 419,
+            "name": "iPhone 16e",
+            "model": "A3212",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 420,
+            "name": "iPhone 16e",
+            "model": "A3408",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 421,
+            "name": "iPhone 16e",
+            "model": "A3409",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 461,
+            "name": "iPhone 17",
+            "model": "A3520",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 462,
+            "name": "iPhone 17 Pro Max",
+            "model": "A3526",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 463,
+            "name": "iPhone 17 Pro",
+            "model": "A3523",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        },
+        {
+            "number": 464,
+            "name": "iPhone Air",
+            "model": "A3517",
+            "brand": "Apple",
+            "os": "ios",
+            "description": null
+        }
+    ]
+}

@@ -71,6 +71,9 @@ router.get('/brands', getUserBrands);
 router.get("/cms/pages/:page", getPage);
 router.get("/cms/pages", getAllPages);
 
+
+// router.get("/cms2/:page", getPage);
+
 router.use("/cms", useContactRoute);
 router.get("/social-media", getSocials);
 
