@@ -40,6 +40,8 @@ import { PageSection } from "./entity/PageSection.entity";
 import { Image } from "./entity/Images.entity";
 import { Device } from "./entity/Device.entity";
 import { Brand } from "./entity/Brand.entity";
+import { Banner } from "./entity/Banner.entity";
+
 export const AppDataSource = new DataSource({
   type: "mysql",
   host: process.env.DB_HOST,
@@ -81,6 +83,7 @@ export const AppDataSource = new DataSource({
     Social,
     Contact,
     Content,
+    Banner,
     Faq,
     Query,
     Notification,
