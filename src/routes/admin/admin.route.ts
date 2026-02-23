@@ -20,6 +20,7 @@ import devicesRoute from "./adminDevice.route"
 import { deleteTopUpOrder, getAllTopUpOrders, getTopUpOrderById, getTopUpOrdersByUser, updateTopUpOrderStatus } from '../../controllers/admin/adminTopUpOrderControllers';
 import pagesRoutes from "./adminPage.route"
 import brandsRoute from "./adminBrands.route"
+import bannerRoute from "./adminBanner.route"
 
 const router = express.Router();
 
@@ -78,8 +79,10 @@ router.use("/social-media", adminSocialRouter);
 router.use("/content", contentRouter);
 router.use("/cms/pages", pagesRoutes);
 router.use("/image", imageUploadRoute);
+
 // query
 router.use("/query", queryRoute);
+router.use("/banners", bannerRoute);
 
 
 

@@ -25,6 +25,7 @@ export const getPage = async (req:any, res: Response) => {
 
   return res.json({
     page: pageEntity.page,
+    id:pageEntity?.id,
     sections: pageEntity.sections.map((s) => ({
       id: s.id,
       template: s.template,

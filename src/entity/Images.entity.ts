@@ -28,8 +28,8 @@ export class Image {
   filePath!: string;
 
   // ✅ Many images can belong to many banners
-  @ManyToMany(() => Banner, (banner) => banner.sections)
-  banners!: Banner[];
+  // @ManyToMany(() => Banner, (banner) => banner.images)
+  // banners!: Banner[];
 
   @CreateDateColumn()
   createdAt!: Date;

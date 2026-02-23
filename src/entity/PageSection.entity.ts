@@ -17,8 +17,12 @@ export class PageSection {
     @Column({ nullable: true })
     template!: string; // "template1", "template2", ...
 
-    @Column("json", { nullable: true })
-    data!: any; // template data (Formik values)
+    @Column({
+        type: "json",
+        nullable: false,
+        default: () => "'{}'"
+    })
+    data!: Record<string, any>;
 
     @Column({ type: "int" })
     order!: number;

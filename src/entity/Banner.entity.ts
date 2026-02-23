@@ -6,11 +6,15 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   JoinTable,
+  OneToOne,
+  JoinColumn,
 } from "typeorm";
 import { Image } from "./Images.entity";
+import { Page } from "./Page.entity";
 
 @Entity({ name: "banners" })
 export class Banner {
+
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -20,26 +24,38 @@ export class Banner {
   @Column({ nullable: true })
   subHeading!: string;
 
-  // ✅ Many banners can have many images
-  @ManyToMany(() => Image, (image) => image.banners, {
-    cascade: true,
+
+  // FIXED NAME
+  // @ManyToMany(() => Image, (image) => image.banners, {
+  //   cascade: true,
+  // })
+  // @JoinTable({
+  //   name: "banner_images",
+  //   joinColumn: {
+  //     name: "bannerId",
+  //     referencedColumnName: "id",
+  //   },
+  //   inverseJoinColumn: {
+  //     name: "imageId",
+  //     referencedColumnName: "id",
+  //   },
+  // })
+  // images!: Image[];
+
+
+  @OneToOne(() => Page, (page) => page.banner, {
+    onDelete: "CASCADE",
   })
-  @JoinTable({
-    name: "banner_images", // junction table name
-    joinColumn: {
-      name: "bannerId",
-      referencedColumnName: "id",
-    },
-    inverseJoinColumn: {
-      name: "imageId",
-      referencedColumnName: "id",
-    },
+  @JoinColumn({
+    name: "pageId"
   })
-  sections!: Image[];
+  page!: Page;
+
 
   @CreateDateColumn()
   createdAt!: Date;
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
 }
