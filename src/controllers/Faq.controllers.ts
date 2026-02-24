@@ -7,11 +7,14 @@ import { checkAdmin } from "../utils/checkAdmin";
 const faqRepo = AppDataSource.getRepository(Faq);
 
 // ✅ Get all active FAQs
-export const getFaqs = async (req:any, res: Response) => {
+export const getFaqs = async (req: any, res: Response) => {
+
+    const { role } = req.user;
+
     try {
         const faqs = await faqRepo.find({
             order: { order: "ASC" },
-            // where: { isActive: true },
+            // where: { isActive: role === "user" ? true : false },
         });
         res.json(faqs);
     } catch (err) {
@@ -20,7 +23,7 @@ export const getFaqs = async (req:any, res: Response) => {
 };
 
 // ✅ Get FAQ by ID
-export const getFaqById = async (req:any, res: Response) => {
+export const getFaqById = async (req: any, res: Response) => {
     try {
         const { id } = req.params;
         const faq = await faqRepo.findOne({ where: { id } });
@@ -32,12 +35,12 @@ export const getFaqById = async (req:any, res: Response) => {
 };
 
 // ✅ Create one or multiple FAQs
-export const createFaq = async (req:any, res: Response) => {
+export const createFaq = async (req: any, res: Response) => {
     try {
         const adminCheck = await checkAdmin(req, res);
         if (!adminCheck) return;
 
-        const {question, answer, order, isActive} = req.body;
+        const { question, answer, order, isActive } = req.body;
 
         // const faqs = Array.isArray(req.body) ? req.body : [req.body];
 
@@ -71,7 +74,7 @@ export const createFaq = async (req:any, res: Response) => {
 };
 
 // ✅ Update FAQ (all fields required)
-export const updateFaq = async (req:any, res: Response) => {
+export const updateFaq = async (req: any, res: Response) => {
     try {
         const adminCheck = await checkAdmin(req, res);
         if (!adminCheck) return;
@@ -103,7 +106,7 @@ export const updateFaq = async (req:any, res: Response) => {
 };
 
 // ✅ Update FAQ active/inactive status only
-export const updateFaqStatus = async (req:any, res: Response) => {
+export const updateFaqStatus = async (req: any, res: Response) => {
     try {
         const adminCheck = await checkAdmin(req, res);
         if (!adminCheck) return;
@@ -132,7 +135,7 @@ export const updateFaqStatus = async (req:any, res: Response) => {
 };
 
 // ✅ Delete FAQ
-export const deleteFaq = async (req:any, res: Response) => {
+export const deleteFaq = async (req: any, res: Response) => {
     try {
         const adminCheck = await checkAdmin(req, res);
         if (!adminCheck) return;
@@ -145,5 +148,22 @@ export const deleteFaq = async (req:any, res: Response) => {
         res.json({ message: "FAQ deleted successfully" });
     } catch (err) {
         res.status(500).json({ message: "Error deleting FAQ", error: err });
+    }
+};
+
+
+// ✅ Get all active FAQs
+export const getUserFaqs = async (req: any, res: Response) => {
+
+    const { role } = req.user;
+
+    try {
+        const faqs = await faqRepo.find({
+            order: { order: "ASC" },
+            where: { isActive: true },
+        });
+        res.json(faqs);
+    } catch (err) {
+        res.status(500).json({ message: "Server error", error: err });
     }
 };

@@ -3,8 +3,8 @@ import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
 import bodyParser from "body-parser";
-// import path from "path";
-// import os from "os";
+import path from "path";
+import os from "os";
 
 import { errorHandler } from "./middlewares/error.handler";
 import { auth } from "./middlewares/auth.handler";
@@ -119,8 +119,8 @@ app.get("/api", (_req, res) => {
 /* =====================================================
    7️⃣ STATIC FILES
 ===================================================== */
-// const uploadsDir = path.join(os.homedir(), "Desktop", "uploadsimg");
-// app.use("/api/uploadsimg", express.static(uploadsDir));
+const uploadsDir = path.join(os.homedir(), "Desktop", "uploadsimg");
+app.use("/api/uploadsimg", express.static(uploadsDir));
 
 /* =====================================================
    8️⃣ API ROUTES
