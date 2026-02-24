@@ -15,7 +15,7 @@ import adminOrderRouter from "./adminOrder.route"
 import adminBlogs from "./adminBlogs.route"
 import adminTestimonials from "./adminTestimonial.route"
 import adminFaq from "./adminFaq.route"
-import imageUploadRoute from "../image.route"
+// import imageUploadRoute from "../image.route"
 import devicesRoute from "./adminDevice.route"
 import { deleteTopUpOrder, getAllTopUpOrders, getTopUpOrderById, getTopUpOrdersByUser, updateTopUpOrderStatus } from '../../controllers/admin/adminTopUpOrderControllers';
 import pagesRoutes from "./adminPage.route"
@@ -78,7 +78,7 @@ router.use("/contact", adminContactRouter);
 router.use("/social-media", adminSocialRouter);
 router.use("/content", contentRouter);
 router.use("/cms/pages", pagesRoutes);
-router.use("/image", imageUploadRoute);
+// router.use("/image", imageUploadRoute);
 
 // query
 router.use("/query", queryRoute);

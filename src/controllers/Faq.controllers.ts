@@ -155,8 +155,6 @@ export const deleteFaq = async (req: any, res: Response) => {
 // ✅ Get all active FAQs
 export const getUserFaqs = async (req: any, res: Response) => {
 
-    const { role } = req.user;
-
     try {
         const faqs = await faqRepo.find({
             order: { order: "ASC" },
