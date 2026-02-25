@@ -8,14 +8,14 @@ export const createTestimonial = async (req: any, res: Response) => {
   if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
 
   try {
-    const { name, profession, content } = req.body;
+    const { name, profession, content, active } = req.body;
 
     if (!name || !content) {
       return res.status(400).json({ message: "Name and content are required" });
     }
 
     const testimonialRepo = AppDataSource.getRepository(Testimonial);
-    const newTestimonial = testimonialRepo.create({ name, profession, content });
+    const newTestimonial = testimonialRepo.create({ name, profession, content, isActive: active ?? true });
     await testimonialRepo.save(newTestimonial);
 
     return res.status(201).json({
