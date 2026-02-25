@@ -28,22 +28,48 @@ export const createTestimonial = async (req: any, res: Response) => {
   }
 };
 
-// Get all testimonials
-export const getAllTestimonials = async (_req:any, res: Response) => {
+// Get all testimonials with pagination (default limit = 10, max = 100)
+export const getAllTestimonials = async (req: any, res: Response) => {
   try {
     const testimonialRepo = AppDataSource.getRepository(Testimonial);
-    const testimonials = await testimonialRepo.find({
+
+    // page (default = 1)
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+
+    // limit (default = 10, max = 100)
+    const limit = Math.min(parseInt(req.query.limit) || 10, 100);
+
+    const skip = (page - 1) * limit;
+
+    const [testimonials, total] = await testimonialRepo.findAndCount({
       order: { createdAt: "DESC" },
+      skip,
+      take: limit,
     });
-    return res.status(200).json({ testimonials });
+
+    return res.status(200).json({
+      testimonials,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page * limit < total,
+        hasPreviousPage: page > 1,
+      },
+    });
+
   } catch (err: any) {
     console.error("Error fetching testimonials:", err);
-    return res.status(500).json({ message: "Failed to fetch testimonials", error: err.message });
+    return res.status(500).json({
+      message: "Failed to fetch testimonials",
+      error: err.message,
+    });
   }
 };
 
 // Get single testimonial by ID
-export const getTestimonialById = async (req:any, res: Response) => {
+export const getTestimonialById = async (req: any, res: Response) => {
   try {
     const { id } = req.params;
     const testimonialRepo = AppDataSource.getRepository(Testimonial);
@@ -61,11 +87,11 @@ export const getTestimonialById = async (req:any, res: Response) => {
 };
 
 // Update testimonial
-export const updateTestimonial = async (req:any, res: Response) => {
+export const updateTestimonial = async (req: any, res: Response) => {
   if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
   try {
     const { id } = req.params;
-    const { name, profession, content } = req.body;
+    const { name, profession, content, active: isActive } = req.body;
 
     const testimonialRepo = AppDataSource.getRepository(Testimonial);
     const testimonial = await testimonialRepo.findOne({ where: { id } });
@@ -74,11 +100,17 @@ export const updateTestimonial = async (req:any, res: Response) => {
       return res.status(404).json({ message: "Testimonial not found" });
     }
 
+
+    // console.log("Updating testimonial with data:", { name, profession, content, isActive });
+
     testimonial.name = name ?? testimonial.name;
     testimonial.profession = profession ?? testimonial.profession;
     testimonial.content = content ?? testimonial.content;
+    testimonial.isActive = isActive ?? testimonial.isActive;
 
     await testimonialRepo.save(testimonial);
+
+    // console.log("Testimonial updated successfully:", testimonial);
 
     return res.status(200).json({
       message: "Testimonial updated successfully",
@@ -91,7 +123,7 @@ export const updateTestimonial = async (req:any, res: Response) => {
 };
 
 // Delete testimonial
-export const deleteTestimonial = async (req:any, res: Response) => {
+export const deleteTestimonial = async (req: any, res: Response) => {
   if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
   try {
     const { id } = req.params;
@@ -112,7 +144,7 @@ export const deleteTestimonial = async (req:any, res: Response) => {
 };
 
 // Update Active/Inactive status
-export const updateTestimonialStatus = async (req:any, res: Response) => {
+export const updateTestimonialStatus = async (req: any, res: Response) => {
   if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
 
   try {
