@@ -59,7 +59,7 @@ export const createQuery = async (req:any, res: Response) => {
           <blockquote style="border-left: 3px solid #0070f3; margin: 10px 0; padding-left: 10px;">
             ${message}
           </blockquote>
-          <p style="margin-top: 20px;">Please respond to this query from your admin panel.</p>
+          <p style="margin-top: 20px;">Please respond to this query.</p>
         `
             );
 
