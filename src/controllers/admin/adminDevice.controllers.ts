@@ -3,6 +3,7 @@ import { Device, DeviceOS } from "../../entity/Device.entity";
 import { checkAdmin } from "../../utils/checkAdmin";
 import { AppDataSource } from "../../data-source";
 import { Brand } from "../../entity/Brand.entity";
+import { Brackets } from "typeorm";
 
 export const getDevices = async (req: any, res: Response) => {
     if (!(await checkAdmin(req, res))) return;
@@ -30,11 +31,16 @@ export const getDevices = async (req: any, res: Response) => {
             .createQueryBuilder("device")
             .leftJoinAndSelect("device.brand", "brand");
 
-        // 🔍 Global search
+        // 🔍 Global search (device.name OR device.model OR brand.name)
         if (q) {
+            const search = `%${String(q).toLowerCase()}%`;
+
             qb.andWhere(
-                "(LOWER(device.model) LIKE LOWER(:q) OR LOWER(brand.name) LIKE LOWER(:q))",
-                { q: `%${q}%` }
+                new Brackets((qb2) => {
+                    qb2.where("LOWER(device.name) LIKE :search", { search })
+                        .orWhere("LOWER(device.model) LIKE :search", { search })
+                        .orWhere("LOWER(brand.name) LIKE :search", { search });
+                })
             );
         }
 
@@ -238,7 +244,7 @@ export const postAddDevice = async (req: any, res: Response) => {
         return res.status(201).json({
             message: `${prepared.length} devices processed`,
             brandsCreated: missing.length,
-            data:[],
+            data: [],
         });
 
     } catch (err: any) {
