@@ -469,12 +469,72 @@ export const createBrand = async (req: any, res: Response) => {
     }
 };
 
+export const createSingleBrand = async (req: any, res: Response) => {
+
+    if (!(await checkAdmin(req, res))) return;
+
+    try {
+        const repo = AppDataSource.getRepository(Brand);
+
+        const { name, status } = req.body;
+
+        console.log("Creating brand:", { name, status });
+
+        // Validate input
+        if (!name || typeof name !== "string") {
+            return res.status(400).json({
+                message: "Brand name is required"
+            });
+        }
+
+        const normalizedName = name.trim();
+
+        if (!normalizedName) {
+            return res.status(400).json({
+                message: "Brand name cannot be empty"
+            });
+        }
+
+        // Check duplicate (case-insensitive)
+        const existing = await repo
+            .createQueryBuilder("brand")
+            .where("LOWER(brand.name) = LOWER(:name)", { name: normalizedName })
+            .getOne();
+
+        if (existing) {
+            return res.status(409).json({
+                message: "Brand already exists",
+                brand: existing
+            });
+        }
+
+        // Create brand
+        const newBrand = repo.create({
+            name: normalizedName,
+            isActive: status ?? true   // default true
+        });
+
+        await repo.save(newBrand);
+
+        return res.status(201).json({
+            message: "Brand created successfully",
+            brand: newBrand
+        });
+
+    } catch (err: any) {
+        return res.status(500).json({
+            message: "Brand creation failed",
+            error: err.message
+        });
+    }
+};
+
 export const updateBrand = async (req: any, res: Response) => {
 
     if (!(await checkAdmin(req, res))) return;
 
     const { id } = req.params;
-    const { name } = req.body;
+    const { name, status } = req.body;
 
     if (!name || !String(name).trim())
         return res.status(400).json({ message: "Brand name required" });
@@ -501,6 +561,7 @@ export const updateBrand = async (req: any, res: Response) => {
             });
 
         brand.name = normalized;
+        brand.isActive = status ?? true;
         await repo.save(brand);
 
         return res.json({

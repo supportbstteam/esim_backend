@@ -1,5 +1,5 @@
 import express from "express";
-import { createBrand, deleteBrand, getBrands, restoreBrand, softDeleteBrand, updateBrand } from "../../controllers/admin/adminDevice.controllers";
+import { createBrand, createSingleBrand, deleteBrand, getBrands, restoreBrand, softDeleteBrand, updateBrand } from "../../controllers/admin/adminDevice.controllers";
 
 const router = express.Router();
 
@@ -13,7 +13,8 @@ router.get("/", getBrands);
 // =============================
 // POST — Create single/multiple
 // =============================
-router.post("/add", createBrand);
+router.post("/add-bulk", createBrand);
+router.post("/add", createSingleBrand);
 
 
 // =============================
