@@ -1,42 +1,26 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { AppDataSource } from "../../data-source";
-import { Device, DeviceOS } from "../../entity/Device.entity";
+import { Device } from "../../entity/Device.entity";
 
-type ClientType = "ios" | "android" | "browser";
 
-const detectClientType = (userAgent: string): ClientType => {
-    const ua = userAgent.toLowerCase();
+export const getUserDevice = async (req: any, res: Response) => {
 
-    if (ua.includes("iphone") || ua.includes("ipad")) {
-        return "ios";
-    }
-
-    if (ua.includes("android")) {
-        return "android";
-    }
-
-    return "browser";
-};
-
-export const getUserDevice = async (req: Request, res: Response) => {
     try {
         const repo = AppDataSource.getRepository(Device);
-
-        const userAgent = req.headers["user-agent"] || "";
-        const clientType = detectClientType(userAgent);
 
         const {
             page = "1",
             limit = "100",
-            q,
-            deviceName,
-            mobile,
-            brand,
+            q,              // global search
+            deviceName,     // specific filter
+            mobile,         // model filter
+            brand,          // brand name filter
             brandId,
             model,
             os,
             active,
             supportsEsim,
+
             sortBy = "createdAt",
             order = "DESC"
         } = req.query;
@@ -49,49 +33,23 @@ export const getUserDevice = async (req: Request, res: Response) => {
             .leftJoinAndSelect("device.brand", "brand");
 
         // =====================================================
-        // 🔥 AUTO FILTER (only if user didn't manually filter OS)
+        // 🔍 GLOBAL SEARCH (name + model + brand)
         // =====================================================
-
-        if (!os) {
-            if (clientType === "ios") {
-                qb.andWhere("device.os = :autoOs", {
-                    autoOs: DeviceOS.IOS,
-                });
-            }
-
-            else if (clientType === "android") {
-                qb.andWhere("device.os = :autoOs", {
-                    autoOs: DeviceOS.ANDROID,
-                });
-            }
-            else {
-                qb.andWhere("device.os IN (:...autoOsList)", {
-                    autoOsList: [DeviceOS.IOS, DeviceOS.ANDROID],
-                });
-            }
-
-            // browser → show ALL devices (no auto OS filter)
-        }
-
-        // =====================================================
-        // 🔍 GLOBAL SEARCH
-        // =====================================================
-
         if (q) {
             qb.andWhere(
                 `
                 (
-                    LOWER(device.name) LIKE LOWER(:search)
-                    OR LOWER(device.model) LIKE LOWER(:search)
-                    OR LOWER(brand.name) LIKE LOWER(:search)
+                    LOWER(device.name) LIKE LOWER(:q)
+                    OR LOWER(device.model) LIKE LOWER(:q)
+                    OR LOWER(brand.name) LIKE LOWER(:q)
                 )
                 `,
-                { search: `%${String(q).trim()}%` }
+                { q: `%${String(q).trim()}%` }
             );
         }
 
         // =====================================================
-        // 🎯 SPECIFIC FILTERS
+        // 🎯 SPECIFIC USER FILTERS
         // =====================================================
 
         if (deviceName) {
@@ -115,47 +73,40 @@ export const getUserDevice = async (req: Request, res: Response) => {
             );
         }
 
-        if (brandId) {
+        // =====================================================
+        // EXISTING FILTERS (unchanged)
+        // =====================================================
+
+        if (brandId)
             qb.andWhere("device.brandId = :brandId", { brandId });
-        }
 
-        if (model) {
+        if (model)
             qb.andWhere("device.model = :model", { model });
-        }
 
-        // Manual OS filter (explicit override)
-        if (os) {
-            qb.andWhere("device.os = :filterOs", {
-                filterOs: os,
-            });
-        }
+        if (os)
+            qb.andWhere("device.os = :os", { os });
 
-        if (active !== undefined) {
+        if (active !== undefined)
             qb.andWhere("device.isActive = :active", {
-                active: active === "true",
+                active: active === "true"
             });
-        }
 
-        if (supportsEsim !== undefined) {
+        if (supportsEsim !== undefined)
             qb.andWhere("device.supportsEsim = :supportsEsim", {
-                supportsEsim: supportsEsim === "true",
+                supportsEsim: supportsEsim === "true"
             });
-        }
 
         // =====================================================
-        // SORTING
+        // SORTING (Safe)
         // =====================================================
 
         const sortable = ["model", "createdAt", "updatedAt", "name"];
 
-        const safeSort = sortable.includes(String(sortBy))
+        const safeSort = sortable.includes(sortBy)
             ? `device.${sortBy}`
             : "device.createdAt";
 
-        qb.orderBy(
-            safeSort,
-            order === "ASC" ? "ASC" : "DESC"
-        );
+        qb.orderBy(safeSort, order === "ASC" ? "ASC" : "DESC");
 
         // =====================================================
         // PAGINATION
@@ -170,13 +121,13 @@ export const getUserDevice = async (req: Request, res: Response) => {
             limit: take,
             total,
             pages: Math.ceil(total / take),
-            data: devices,
+            data: devices
         });
 
     } catch (err: any) {
         return res.status(500).json({
             message: "Failed",
-            error: err.message,
+            error: err.message
         });
     }
 };
