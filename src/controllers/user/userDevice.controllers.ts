@@ -1,36 +1,42 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import { AppDataSource } from "../../data-source";
-import { Device } from "../../entity/Device.entity";
+import { Device, DeviceOS } from "../../entity/Device.entity";
 
 type ClientType = "ios" | "android" | "browser";
 
-export const getUserDevice = async (req: any, res: Response) => {
-    const userAgent = req.headers["user-agent"] || "Unknown Device";
-    let clientType: "ios" | "android" | "browser" = "browser";
+const detectClientType = (userAgent: string): ClientType => {
+    const ua = userAgent.toLowerCase();
 
-    if (userAgent.includes("iphone") || userAgent.includes("ipad")) {
-        clientType = "ios";
-    } else if (userAgent.includes("android")) {
-        clientType = "android";
+    if (ua.includes("iphone") || ua.includes("ipad")) {
+        return "ios";
     }
 
+    if (ua.includes("android")) {
+        return "android";
+    }
 
+    return "browser";
+};
+
+export const getUserDevice = async (req: Request, res: Response) => {
     try {
         const repo = AppDataSource.getRepository(Device);
+
+        const userAgent = req.headers["user-agent"] || "";
+        const clientType = detectClientType(userAgent);
 
         const {
             page = "1",
             limit = "100",
-            q,              // global search
-            deviceName,     // specific filter
-            mobile,         // model filter
-            brand,          // brand name filter
+            q,
+            deviceName,
+            mobile,
+            brand,
             brandId,
             model,
             os,
             active,
             supportsEsim,
-
             sortBy = "createdAt",
             order = "DESC"
         } = req.query;
@@ -43,37 +49,49 @@ export const getUserDevice = async (req: any, res: Response) => {
             .leftJoinAndSelect("device.brand", "brand");
 
         // =====================================================
-        // 🔥 AUTO FILTER BASED ON CLIENT DEVICE
+        // 🔥 AUTO FILTER (only if user didn't manually filter OS)
         // =====================================================
 
-        if (clientType === "ios") {
-            qb.andWhere("LOWER(brand.name) = :brand", { brand: "apple" });
+        if (!os) {
+            if (clientType === "ios") {
+                qb.andWhere("device.os = :autoOs", {
+                    autoOs: DeviceOS.IOS,
+                });
+            }
+
+            else if (clientType === "android") {
+                qb.andWhere("device.os = :autoOs", {
+                    autoOs: DeviceOS.ANDROID,
+                });
+            }
+            else {
+                qb.andWhere("device.os IN (:...autoOsList)", {
+                    autoOsList: [DeviceOS.IOS, DeviceOS.ANDROID],
+                });
+            }
+
+            // browser → show ALL devices (no auto OS filter)
         }
 
-        if (clientType === "android") {
-            qb.andWhere("LOWER(device.os) = :os", { os: "android" });
-        }
-
-        // If browser → no filter (show all)
-
         // =====================================================
-        // 🔍 GLOBAL SEARCH (name + model + brand)
+        // 🔍 GLOBAL SEARCH
         // =====================================================
+
         if (q) {
             qb.andWhere(
                 `
                 (
-                    LOWER(device.name) LIKE LOWER(:q)
-                    OR LOWER(device.model) LIKE LOWER(:q)
-                    OR LOWER(brand.name) LIKE LOWER(:q)
+                    LOWER(device.name) LIKE LOWER(:search)
+                    OR LOWER(device.model) LIKE LOWER(:search)
+                    OR LOWER(brand.name) LIKE LOWER(:search)
                 )
                 `,
-                { q: `%${String(q).trim()}%` }
+                { search: `%${String(q).trim()}%` }
             );
         }
 
         // =====================================================
-        // 🎯 SPECIFIC USER FILTERS
+        // 🎯 SPECIFIC FILTERS
         // =====================================================
 
         if (deviceName) {
@@ -97,40 +115,47 @@ export const getUserDevice = async (req: any, res: Response) => {
             );
         }
 
-        // =====================================================
-        // EXISTING FILTERS (unchanged)
-        // =====================================================
-
-        if (brandId)
+        if (brandId) {
             qb.andWhere("device.brandId = :brandId", { brandId });
+        }
 
-        if (model)
+        if (model) {
             qb.andWhere("device.model = :model", { model });
+        }
 
-        if (os)
-            qb.andWhere("device.os = :os", { os });
+        // Manual OS filter (explicit override)
+        if (os) {
+            qb.andWhere("device.os = :filterOs", {
+                filterOs: os,
+            });
+        }
 
-        if (active !== undefined)
+        if (active !== undefined) {
             qb.andWhere("device.isActive = :active", {
-                active: active === "true"
+                active: active === "true",
             });
+        }
 
-        if (supportsEsim !== undefined)
+        if (supportsEsim !== undefined) {
             qb.andWhere("device.supportsEsim = :supportsEsim", {
-                supportsEsim: supportsEsim === "true"
+                supportsEsim: supportsEsim === "true",
             });
+        }
 
         // =====================================================
-        // SORTING (Safe)
+        // SORTING
         // =====================================================
 
         const sortable = ["model", "createdAt", "updatedAt", "name"];
 
-        const safeSort = sortable.includes(sortBy)
+        const safeSort = sortable.includes(String(sortBy))
             ? `device.${sortBy}`
             : "device.createdAt";
 
-        qb.orderBy(safeSort, order === "ASC" ? "ASC" : "DESC");
+        qb.orderBy(
+            safeSort,
+            order === "ASC" ? "ASC" : "DESC"
+        );
 
         // =====================================================
         // PAGINATION
@@ -145,13 +170,13 @@ export const getUserDevice = async (req: any, res: Response) => {
             limit: take,
             total,
             pages: Math.ceil(total / take),
-            data: devices
+            data: devices,
         });
 
     } catch (err: any) {
         return res.status(500).json({
             message: "Failed",
-            error: err.message
+            error: err.message,
         });
     }
 };
