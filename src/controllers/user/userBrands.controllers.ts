@@ -1,45 +1,10 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../../data-source";
 import { Brand } from "../../entity/Brand.entity";
-import { DeviceOS } from "../../entity/Device.entity";
-
-type ClientType = "ios" | "android" | "browser";
-
-const detectClientType = (userAgent: string): ClientType => {
-    const ua = userAgent.toLowerCase();
-
-    // 🔹 iOS Safari / Chrome
-    if (ua.includes("iphone") || ua.includes("ipad")) {
-        return "ios";
-    }
-
-    // 🔹 React Native iOS (CFNetwork + Darwin)
-    if (ua.includes("cfnetwork") && ua.includes("darwin")) {
-        return "ios";
-    }
-
-    // 🔹 Android Browser
-    if (ua.includes("android")) {
-        return "android";
-    }
-
-    // 🔹 React Native Android (often okhttp)
-    if (ua.includes("okhttp")) {
-        return "android";
-    }
-
-    return "browser";
-};
 
 export const getUserBrands = async (req: Request, res: Response) => {
     try {
         const repo = AppDataSource.getRepository(Brand);
-
-        const userAgent = req.headers["user-agent"] || "";
-        const clientType = detectClientType(userAgent);
-
-        // console.log("=== Client Detection ===", req.headers);
-        // console.log(`Client Type: ${clientType} | User-Agent: ${userAgent}`);
 
         const {
             page = "1",
@@ -54,54 +19,16 @@ export const getUserBrands = async (req: Request, res: Response) => {
 
         const qb = repo
             .createQueryBuilder("brand")
-            .leftJoin("brand.devices", "device")
             .where("brand.isActive = true");
 
-        // =====================================================
-        // 🔥 AUTO FILTER BASED ON CLIENT TYPE
-        // =====================================================
-
-        if (clientType === "ios") {
-            // Only Apple brand
-            qb.andWhere("LOWER(brand.name) = LOWER(:apple)", {
-                apple: "Apple",
-            });
-        }
-
-        else if (clientType === "android") {
-            // Exclude Apple brand
-            qb.andWhere("LOWER(brand.name) != LOWER(:apple)", {
-                apple: "Apple",
-            });
-
-            // Optional: ensure brand has ANDROID devices
-            qb.andWhere("device.os = :androidOs", {
-                androidOs: DeviceOS.ANDROID,
-            });
-        }
-        // else {
-        //     // Only Apple brand
-        //     qb.andWhere("LOWER(brand.name) = LOWER(:apple)", {
-        //         apple: "Apple",
-        //     });
-        // }
-
-        // Browser → no brand restriction (show all)
-
-        // =====================================================
         // 🔎 Search
-        // =====================================================
-
         if (q) {
             qb.andWhere("LOWER(brand.name) LIKE LOWER(:q)", {
                 q: `%${q}%`,
             });
         }
 
-        // =====================================================
-        // 🔄 Sorting
-        // =====================================================
-
+        // 🔄 Sorting (safe whitelist)
         const sortable = ["name", "createdAt"];
         const safeSort = sortable.includes(sort)
             ? `brand.${sort}`
