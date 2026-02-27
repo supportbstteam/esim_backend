@@ -26,8 +26,8 @@ export const getUserBrands = async (req: Request, res: Response) => {
         const userAgent = req.headers["user-agent"] || "";
         const clientType = detectClientType(userAgent);
 
-
-        console.log(`Client Type: ${clientType} | User-Agent: ${userAgent}`);
+        console.log("=== Client Detection ===",req.headers);
+        // console.log(`Client Type: ${clientType} | User-Agent: ${userAgent}`);
 
         const {
             page = "1",
