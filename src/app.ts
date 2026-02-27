@@ -107,7 +107,7 @@ app.use(express.urlencoded({ extended: true }));
    6️⃣ ROUTES
 ===================================================== */
 app.get("/", (_req, res) => {
-  console.log("Hello world",_req.headers["user-agent"]);
+  // console.log("Hello world",_req.headers["user-agent"]);
   res.send("Hello from Node + TypeORM + MySQL!");
 });
 

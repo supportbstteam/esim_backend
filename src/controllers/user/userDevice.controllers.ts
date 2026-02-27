@@ -2,8 +2,18 @@ import { Response } from "express";
 import { AppDataSource } from "../../data-source";
 import { Device } from "../../entity/Device.entity";
 
+type ClientType = "ios" | "android" | "browser";
 
 export const getUserDevice = async (req: any, res: Response) => {
+    const userAgent = req.headers["user-agent"] || "Unknown Device";
+    let clientType: "ios" | "android" | "browser" = "browser";
+
+    if (userAgent.includes("iphone") || userAgent.includes("ipad")) {
+        clientType = "ios";
+    } else if (userAgent.includes("android")) {
+        clientType = "android";
+    }
+
 
     try {
         const repo = AppDataSource.getRepository(Device);
@@ -31,6 +41,20 @@ export const getUserDevice = async (req: any, res: Response) => {
         const qb = repo
             .createQueryBuilder("device")
             .leftJoinAndSelect("device.brand", "brand");
+
+        // =====================================================
+        // 🔥 AUTO FILTER BASED ON CLIENT DEVICE
+        // =====================================================
+
+        if (clientType === "ios") {
+            qb.andWhere("LOWER(brand.name) = :brand", { brand: "apple" });
+        }
+
+        if (clientType === "android") {
+            qb.andWhere("LOWER(device.os) = :os", { os: "android" });
+        }
+
+        // If browser → no filter (show all)
 
         // =====================================================
         // 🔍 GLOBAL SEARCH (name + model + brand)
