@@ -18,6 +18,9 @@ export class Image {
   @Column()
   fileName!: string;
 
+  @Column({nullable:true})
+  name!: string;
+
   @Column()
   mimeType!: string;
 
