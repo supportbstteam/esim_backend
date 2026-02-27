@@ -8,11 +8,23 @@ type ClientType = "ios" | "android" | "browser";
 const detectClientType = (userAgent: string): ClientType => {
     const ua = userAgent.toLowerCase();
 
+    // 🔹 iOS Safari / Chrome
     if (ua.includes("iphone") || ua.includes("ipad")) {
         return "ios";
     }
 
+    // 🔹 React Native iOS (CFNetwork + Darwin)
+    if (ua.includes("cfnetwork") && ua.includes("darwin")) {
+        return "ios";
+    }
+
+    // 🔹 Android Browser
     if (ua.includes("android")) {
+        return "android";
+    }
+
+    // 🔹 React Native Android (often okhttp)
+    if (ua.includes("okhttp")) {
         return "android";
     }
 
@@ -26,7 +38,7 @@ export const getUserBrands = async (req: Request, res: Response) => {
         const userAgent = req.headers["user-agent"] || "";
         const clientType = detectClientType(userAgent);
 
-        console.log("=== Client Detection ===",req.headers);
+        // console.log("=== Client Detection ===", req.headers);
         // console.log(`Client Type: ${clientType} | User-Agent: ${userAgent}`);
 
         const {
