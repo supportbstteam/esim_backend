@@ -26,6 +26,9 @@ export const getUserBrands = async (req: Request, res: Response) => {
         const userAgent = req.headers["user-agent"] || "";
         const clientType = detectClientType(userAgent);
 
+
+        console.log(`Client Type: ${clientType} | User-Agent: ${userAgent}`);
+
         const {
             page = "1",
             limit = "50",
@@ -64,6 +67,12 @@ export const getUserBrands = async (req: Request, res: Response) => {
                 androidOs: DeviceOS.ANDROID,
             });
         }
+        // else {
+        //     // Only Apple brand
+        //     qb.andWhere("LOWER(brand.name) = LOWER(:apple)", {
+        //         apple: "Apple",
+        //     });
+        // }
 
         // Browser → no brand restriction (show all)
 
