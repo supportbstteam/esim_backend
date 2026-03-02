@@ -1,9 +1,9 @@
-// // src/routes/image.routes.ts
-// import { Router } from "express";
-// import { getImages, uploadImageToDesktop } from "../controllers/ImageUploader.controllers";
-// import { desktopUpload } from "../utils/DesktopUploadImage";
+// src/routes/image.routes.ts
+import { Router } from "express";
+import { deleteAdminImage, getAdminImageById, getAdminImages, updateAdminImage, uploadImageToDesktop } from "../controllers/ImageUploader.controllers";
+import { desktopUpload } from "../utils/DesktopUploadImage";
 
-// const router = Router();
+const router = Router();
 
 // router.post(
 //     "/upload",
@@ -11,7 +11,9 @@
 //     uploadImageToDesktop
 // );
 
-// router.get("/", getImages);
-// router.get("/:id", getImages);
+router.get("/", getAdminImages);
+router.get("/:id", getAdminImageById);
+router.put("/:id", updateAdminImage);
+router.delete("/:id", deleteAdminImage);
 
-// export default router;
+export default router;
