@@ -266,7 +266,7 @@ export const getUserCart = async (req: any, res: Response) => {
     }
 };
 
-export const userRemoveCart= async(req,res)=>{
+export const userRemoveCart= async(req:any,res:Response)=>{
     const {id, role} = req.user;
 
     if(!id || role !== "user"){
