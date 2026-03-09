@@ -265,3 +265,63 @@ export const getUserCart = async (req: any, res: Response) => {
         });
     }
 };
+
+export const userRemoveCart= async(req,res)=>{
+    const {id, role} = req.user;
+
+    if(!id || role !== "user"){
+        return res.status(400).json({
+            success:false,
+            message:"Unauthorized"
+        });
+    }
+    try{
+        const cartRepo = await AppDataSource.getRepository(Cart);
+        const userRepo = await AppDataSource.getRepository(User);
+        const cartItemRepo = await AppDataSource.getRepository(CartItem);
+
+        const user = await userRepo.findOne({
+            where:{id}
+        });
+
+
+        if(!user){
+            return res.status(404).json({
+                message:"User not found",
+                success:false
+            });
+        }
+        
+        const cart = await cartRepo.findOne({
+            where: {
+                user: { id }
+            },
+            relations: ["user"],
+        });
+        
+        if (!cart) {
+            return res.status(404).json({
+                success: false,
+                message: "Cart not found",
+            });
+        }
+
+        // Delete cart (items auto-delete because of CASCADE)
+        await cartRepo.remove(cart);
+
+        return res.status(200).json({
+            success: true,
+            message: "Cart and all items removed successfully",
+        });
+
+
+    }
+    catch(err){
+
+        console.error("Erorr in the remove to cart",err);
+        return res.status(500).json({
+            success:false,
+            message:"Server while removing the cart"
+        })
+    }
+}

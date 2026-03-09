@@ -7,5 +7,6 @@ router.post("/create", addToCart);
 router.get("/", getUserCart);
 router.put("/update/:cartItemId", updateCartItem);
 router.delete("/delete/:cartItemId", removeFromCart);
+router.delete("/remove", removeFromCart);
 
 export default router;
