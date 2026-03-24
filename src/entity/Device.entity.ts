@@ -1,21 +1,21 @@
 import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    CreateDateColumn,
-    UpdateDateColumn,
-    Index,
-    Unique,
-    ManyToOne,
-    JoinColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+  Unique,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm";
 import { Brand } from "./Brand.entity";
 
 export enum DeviceOS {
-    ANDROID = "ANDROID",
-    IOS = "IOS",
-    WINDOWS = "WINDOWS",
-    OTHER = "OTHER",
+  ANDROID = "ANDROID",
+  IOS = "IOS",
+  WINDOWS = "WINDOWS",
+  OTHER = "OTHER",
 }
 
 @Entity()
@@ -24,66 +24,44 @@ export enum DeviceOS {
 @Index(["os"])
 @Index(["isActive"])
 export class Device {
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-    @PrimaryGeneratedColumn()
-    id!: number;
+  @ManyToOne(() => Brand, (brand) => brand.devices, {
+    onDelete: "CASCADE",
+    eager: true,
+  })
+  @JoinColumn({ name: "brandId" })
+  brand!: Brand;
 
-    // -----------------------------
-    // RELATION
-    // -----------------------------
+  @Column()
+  brandId!: number;
 
-    @ManyToOne(() => Brand, (brand) => brand.devices, {
-        onDelete: "CASCADE",   // 🔥 THIS IS WHAT YOU WANT
-        eager: true,           // auto-fetch brand
-    })
-    @JoinColumn({ name: "brandId" })
-    brand!: Brand;
+  @Column({ length: 160 })
+  model!: string;
 
-    @Column()
-    brandId!: number;
+  @Column({
+    type: "enum",
+    enum: DeviceOS,
+    enumName: "device_os_enum",
+  })
+  os!: DeviceOS;
 
-    // -----------------------------
-    // Device Info
-    // -----------------------------
+  @Column({ default: true })
+  supportsEsim!: boolean;
 
-    @Column({ length: 160 })
-    @Index()
-    model!: string;
+  @Column({ type: "text", nullable: true })
+  notes!: string | null;
 
-    @Column({
-        type: "enum",
-        enum: DeviceOS,
-        enumName: "device_os_enum",
-    })
-    os!: DeviceOS;
+  @Column({ type: "text", nullable: true })
+  name!: string | null;
 
-    // -----------------------------
-    // Capabilities
-    // -----------------------------
+  @Column({ default: true })
+  isActive!: boolean;
 
-    @Column({ default: true })
-    supportsEsim!: boolean;
+  @CreateDateColumn()
+  createdAt!: Date;
 
-    // -----------------------------
-    // Metadata
-    // -----------------------------
-
-    @Column({ type: "text", nullable: true })
-    notes!: string | null;
-
-    @Column({ type: "text", nullable: true })
-    name!: string | null;
-
-    @Column({ default: true })
-    isActive!: boolean;
-
-    // -----------------------------
-    // Audit
-    // -----------------------------
-
-    @CreateDateColumn()
-    createdAt!: Date;
-
-    @UpdateDateColumn()
-    updatedAt!: Date;
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }

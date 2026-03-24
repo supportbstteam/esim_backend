@@ -4,8 +4,6 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  CreateDateColumn,
-  UpdateDateColumn,
 } from "typeorm";
 import { Page } from "./Page.entity";
 
@@ -14,28 +12,28 @@ export class PageSection {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ nullable: true })
-  template!: string; // "template1", "template2", ...
+  // template name like templateBanner, template8 etc.
+  @Column({ type: "varchar", nullable: true })
+  template!: string;
 
+  // JSON data (can contain HTML inside content)
   @Column({
     type: "json",
-    nullable: false,
-    default: () => "'{}'",
+    nullable: true,
   })
-  data!: Record<string, any>;
+  data!: {
+    content?: string;
+    [key: string]: any;
+  };
 
+  // order of section on page
   @Column({ type: "int" })
   order!: number;
 
+  // relation with page
   @ManyToOne(() => Page, (page) => page.sections, {
     onDelete: "CASCADE",
     nullable: true,
   })
   page!: Page;
-
-  // @CreateDateColumn()
-  // createdAt!: Date;
-
-  // @UpdateDateColumn()
-  // updatedAt!: Date;
 }
