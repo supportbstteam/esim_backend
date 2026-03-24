@@ -53,6 +53,8 @@ export const getUserPlans = async (req: any, res: Response) => {
         description: plan?.country?.description,
         iso2: plan?.country?.isoCode,
         iso3Code: plan?.country?.iso3Code,
+
+        // seo credentials
         metaTitle: plan?.country?.metaTitle,
         metaDescription: plan?.country?.metaDescription,
         metaKeywords: plan?.country?.metaKeywords,
