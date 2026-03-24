@@ -3,7 +3,7 @@ import { getDataSource } from "../../lib/serverless";
 import { Plan } from "../../entity/Plans.entity";
 
 // -------------------- GET ALL USER PLANS --------------------
-export const getUserPlans = async (req:any, res: Response) => {
+export const getUserPlans = async (req: any, res: Response) => {
   try {
     const { countryId } = req.query;
 
@@ -50,9 +50,12 @@ export const getUserPlans = async (req:any, res: Response) => {
       country: {
         id: plan.country.id,
         name: plan.country.name,
-        description:plan?.country?.description,
+        description: plan?.country?.description,
         iso2: plan?.country?.isoCode,
         iso3Code: plan?.country?.iso3Code,
+        metaTitle: plan?.country?.metaTitle,
+        metaDescription: plan?.country?.metaDescription,
+        metaKeywords: plan?.country?.metaKeywords,
       },
       createdAt: plan.createdAt,
       updatedAt: plan.updatedAt,
@@ -61,14 +64,16 @@ export const getUserPlans = async (req:any, res: Response) => {
     return res.status(200).json({ success: true, data: formattedPlans });
   } catch (err) {
     console.error("Error fetching plans:", err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Server error", error: (err as any).message });
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: (err as any).message,
+    });
   }
 };
 
 // -------------------- GET FEATURED PLANS --------------------
-export const getFeaturePlans = async (req:any, res: Response) => {
+export const getFeaturePlans = async (req: any, res: Response) => {
   try {
     const { countryId } = req.query;
 
@@ -76,7 +81,11 @@ export const getFeaturePlans = async (req:any, res: Response) => {
     const planRepo = dataSource.getRepository(Plan);
 
     // Include only active, featured, and not deleted plans
-    let whereCondition: any = { isDeleted: false, isActive: true, isFeatured: true };
+    let whereCondition: any = {
+      isDeleted: false,
+      isActive: true,
+      isFeatured: true,
+    };
 
     if (countryId && countryId !== "all") {
       whereCondition.country = { id: countryId as string };
@@ -130,7 +139,7 @@ export const getFeaturePlans = async (req:any, res: Response) => {
 };
 
 // -------------------- GET USER PLAN BY COUNTRY --------------------
-export const getUserPlanByCountry = async (req:any, res: Response) => {
+export const getUserPlanByCountry = async (req: any, res: Response) => {
   const { countryId } = req.body;
 
   try {

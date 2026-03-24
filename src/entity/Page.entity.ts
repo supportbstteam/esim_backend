@@ -21,7 +21,7 @@ export class Page {
 
   @OneToMany(() => PageSection, (section) => section.page, {
     cascade: true,
-    nullable: true
+    nullable: true,
   })
   sections!: PageSection[];
 
@@ -30,6 +30,16 @@ export class Page {
     cascade: true,
   })
   banner!: Banner;
+
+  // SEO fields
+  @Column({ nullable: true })
+  metaTitle?: string;
+
+  @Column({ type: "text", nullable: true })
+  metaDescription?: string;
+
+  @Column("simple-array", { nullable: true })
+  metaKeywords?: string[];
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -4,7 +4,7 @@ import { AppDataSource } from "../../data-source";
 import { Page } from "../../entity/Page.entity";
 import { PageSection } from "../../entity/PageSection.entity";
 
-export const getPage = async (req:any, res: Response) => {
+export const getPage = async (req: any, res: Response) => {
   const { page } = req.params;
 
   const pageRepo = AppDataSource.getRepository(Page);
@@ -25,7 +25,11 @@ export const getPage = async (req:any, res: Response) => {
 
   return res.json({
     page: pageEntity.page,
-    id:pageEntity?.id,
+    id: pageEntity?.id,
+    // ✅ SEO fields
+    metaTitle: pageEntity.metaTitle || "",
+    metaDescription: pageEntity.metaDescription || "",
+    metaKeywords: pageEntity.metaKeywords || [],
     sections: pageEntity.sections.map((s) => ({
       id: s.id,
       template: s.template,

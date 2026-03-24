@@ -1,27 +1,39 @@
-import express from 'express'
-import { adminAuthChangePassword, adminChangeNotificationMail, adminDetails, loginAdmin, registerAdmin, updateAdminProfile } from '../../controllers/admin/adminAuth.controllers';
-import eSimPlanRoute from "./adminEPlan.route"
-import adminCountryRoute from "./adminCountry.route"
-import eSimOperatorRoute from "./adminOperator.route"
-import thirdPartyRouter from "./thirdPartyUrl.route"
-import eSimRoute from "./adminESim.route"
-import eTopupRoute from "./adminETopup.route"
-import adminUserRouter from "./adminUser.route"
-import adminContactRouter from "./adminContact.route"
-import adminSocialRouter from "./adminSocial.route"
-import contentRouter from './adminContent.route'
-import queryRoute from "./adminQuery.route"
-import adminOrderRouter from "./adminOrder.route"
-import adminBlogs from "./adminBlogs.route"
-import adminTestimonials from "./adminTestimonial.route"
-import adminFaq from "./adminFaq.route"
-import imageUploadRoute from "../image.route"
-import devicesRoute from "./adminDevice.route"
-import { deleteTopUpOrder, getAllTopUpOrders, getTopUpOrderById, getTopUpOrdersByUser, updateTopUpOrderStatus } from '../../controllers/admin/adminTopUpOrderControllers';
-import pagesRoutes from "./adminPage.route"
-import brandsRoute from "./adminBrands.route"
-import bannerRoute from "./adminBanner.route"
-
+import express from "express";
+import {
+  adminAuthChangePassword,
+  adminChangeNotificationMail,
+  adminDetails,
+  loginAdmin,
+  registerAdmin,
+  updateAdminProfile,
+} from "../../controllers/admin/adminAuth.controllers";
+import eSimPlanRoute from "./adminEPlan.route";
+import adminCountryRoute from "./adminCountry.route";
+import eSimOperatorRoute from "./adminOperator.route";
+import thirdPartyRouter from "./thirdPartyUrl.route";
+import eSimRoute from "./adminESim.route";
+import eTopupRoute from "./adminETopup.route";
+import adminUserRouter from "./adminUser.route";
+import adminContactRouter from "./adminContact.route";
+import adminSocialRouter from "./adminSocial.route";
+import contentRouter from "./adminContent.route";
+import queryRoute from "./adminQuery.route";
+import adminOrderRouter from "./adminOrder.route";
+import adminBlogs from "./adminBlogs.route";
+import adminTestimonials from "./adminTestimonial.route";
+import adminFaq from "./adminFaq.route";
+import imageUploadRoute from "../image.route";
+import devicesRoute from "./adminDevice.route";
+import {
+  deleteTopUpOrder,
+  getAllTopUpOrders,
+  getTopUpOrderById,
+  getTopUpOrdersByUser,
+  updateTopUpOrderStatus,
+} from "../../controllers/admin/adminTopUpOrderControllers";
+import pagesRoutes from "./adminPage.route";
+import brandsRoute from "./adminBrands.route";
+import bannerRoute from "./adminBanner.route";
 const router = express.Router();
 
 router.post("/login", loginAdmin);
@@ -44,13 +56,11 @@ router.use("/plans", eSimPlanRoute);
 // users
 router.use("/users", adminUserRouter);
 
-
 router.get("/orders/top-up", getAllTopUpOrders);
 router.get("/orders/top-up/:id", getTopUpOrderById);
 router.get("/orders/top-up/:userId", getTopUpOrdersByUser);
 router.patch("/orders/top-up/:id", updateTopUpOrderStatus);
 router.delete("/orders/top-up/delete/:id", deleteTopUpOrder);
-
 
 // order
 router.use("/orders", adminOrderRouter);
@@ -83,7 +93,5 @@ router.use("/images", imageUploadRoute);
 // query
 router.use("/query", queryRoute);
 router.use("/banners", bannerRoute);
-
-
 
 export default router;

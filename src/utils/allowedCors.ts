@@ -1,20 +1,8 @@
 export const ALLOWED_PATH_ORIGINS = [
-  "http://192.168.29.160:3000",
-  "http://192.168.1.13:3000",
-  "http://192.168.1.20:3000",
-  "http://192.168.29.160:3001",
+  "https://api.thirdparty-esim.com",
   "https://esim-olive.vercel.app",
   "https://esim-admin-peach.vercel.app",
   "https://loadbalancer.turisim.com",
   "https://onesignal.com",
-  "https://api.thirdparty-esim.com",
-  "http://192.168.1.12:3000",
-  "http://192.168.1.26:3000",
-  "http://192.168.1.22:3000",
-  "http://192.168.1.20",
-  "http://10.120.181.84:3000",
-  "http://10.120.181.84:3000",
-  "http://192.168.1.21:3000",
-  "http://192.168.1.44:3000",
-  "http://192.168.1.45:3000",
+  "http://192.168.29.89:3000"
 ];

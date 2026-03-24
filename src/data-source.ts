@@ -96,7 +96,7 @@ export const AppDataSource = new DataSource({
     PageSection,
     Image,
     Device,
-    Brand
+    Brand,
   ],
 
   migrations: [],

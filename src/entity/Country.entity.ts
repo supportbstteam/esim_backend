@@ -1,50 +1,68 @@
 // src/entity/Country.ts
 import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    CreateDateColumn,
-    UpdateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from "typeorm";
 
-/**
- * Country entity for MySQL using TypeORM
- */
 @Entity({ name: "countries" })
 export class Country {
-    @PrimaryGeneratedColumn("uuid")
-    id!: string;
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
-    @Column({ type: "varchar", length: 255, unique: true })
-    name!: string;
+  @Column({ type: "varchar", length: 255, unique: true })
+  name!: string;
 
-    @Column({ type: "text", nullable: true, comment: "Detailed description of the country", select: false })
-    description?: string;
+  @Column({
+    type: "text",
+    nullable: true,
+    comment: "Detailed description of the country",
+    select: false,
+  })
+  description?: string;
 
-    @Column({ type: "varchar", length: 2, unique: true })
-    isoCode!: string;
+  @Column({ type: "varchar", length: 2, unique: true })
+  isoCode!: string;
 
-    @Column({ type: "varchar", length: 3, nullable: true })
-    iso3Code?: string;
+  @Column({ type: "varchar", length: 3, nullable: true })
+  iso3Code?: string;
 
-    @Column({ type: "varchar", length: 500, nullable: true, comment: "Country flag or representative image URL", select: false })
-    imageUrl?: string;
+  @Column({
+    type: "varchar",
+    length: 500,
+    nullable: true,
+    comment: "Country flag or representative image URL",
+    select: false,
+  })
+  imageUrl?: string;
 
-    @Column({ type: "varchar", length: 10 })
-    phoneCode!: string;
+  @Column({ type: "varchar", length: 10 })
+  phoneCode!: string;
 
-    @Column({ type: "varchar", length: 50 })
-    currency!: string;
+  @Column({ type: "varchar", length: 50 })
+  currency!: string;
 
-    @Column({ type: "boolean", default: true })
-    isActive!: boolean;
+  // SEO fields
+  @Column({ type: "varchar", length: 255, nullable: true })
+  metaTitle?: string;
 
-    @Column({ type: "boolean", default: false })
-    isDelete!: boolean;
+  @Column({ type: "text", nullable: true })
+  metaDescription?: string;
 
-    @CreateDateColumn()
-    createdAt!: Date;
+  @Column("simple-array", { nullable: true })
+  metaKeywords?: string[];
 
-    @UpdateDateColumn()
-    updatedAt!: Date;
+  @Column({ type: "boolean", default: true })
+  isActive!: boolean;
+
+  @Column({ type: "boolean", default: false })
+  isDelete!: boolean;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }
