@@ -60,6 +60,7 @@ export const getUserPlans = async (req: any, res: Response) => {
       createdAt: plan.createdAt,
       updatedAt: plan.updatedAt,
     }));
+    // seo added
 
     return res.status(200).json({ success: true, data: formattedPlans });
   } catch (err) {
