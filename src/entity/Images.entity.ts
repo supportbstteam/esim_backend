@@ -18,8 +18,8 @@ export class Image {
   @Column()
   fileName!: string;
 
-  @Column({nullable:true})
-  name!: string;
+  @Column({ type: "varchar", nullable: true })
+  name?: string | null;
 
   @Column()
   mimeType!: string;

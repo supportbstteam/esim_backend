@@ -5,11 +5,11 @@ import { desktopUpload } from "../utils/DesktopUploadImage";
 
 const router = Router();
 
-// router.post(
-//     "/upload",
-//     desktopUpload.single("image"),
-//     uploadImageToDesktop
-// );
+router.post(
+    "/upload",
+    desktopUpload.single("image"),
+    uploadImageToDesktop
+);
 
 router.get("/", getAdminImages);
 router.get("/:id", getAdminImageById);
