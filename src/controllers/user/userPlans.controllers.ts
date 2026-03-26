@@ -7,6 +7,8 @@ export const getUserPlans = async (req: any, res: Response) => {
   try {
     const { countryId } = req.query;
 
+    console.log("Hello WOrld");
+
     const dataSource = await getDataSource();
     const planRepo = dataSource.getRepository(Plan);
 
@@ -50,10 +52,11 @@ export const getUserPlans = async (req: any, res: Response) => {
       country: {
         id: plan.country.id,
         name: plan.country.name,
-        description: plan?.country?.description,
+        description: plan?.country?.description || "",
         iso2: plan?.country?.isoCode,
         iso3Code: plan?.country?.iso3Code,
-
+        imageUrl:plan?.country?.imageUrl || "",
+        image:plan?.country?.imageUrl || "",
         // seo credentials
         metaTitle: plan?.country?.metaTitle,
         metaDescription: plan?.country?.metaDescription,
@@ -62,6 +65,9 @@ export const getUserPlans = async (req: any, res: Response) => {
       createdAt: plan.createdAt,
       updatedAt: plan.updatedAt,
     }));
+
+
+    console.log("formattedPlans",formattedPlans[0]);
     // seo added
 
     return res.status(200).json({ success: true, data: formattedPlans });
@@ -127,6 +133,8 @@ export const getFeaturePlans = async (req: any, res: Response) => {
         name: plan.country.name,
         iso2: plan?.country?.isoCode,
         ios3: plan?.country?.iso3Code,
+        imageUrl: plan?.country?.imageUrl,
+        image: plan?.country?.imageUrl
       },
       createdAt: plan.createdAt,
       updatedAt: plan.updatedAt,
@@ -184,6 +192,8 @@ export const getUserPlanByCountry = async (req: any, res: Response) => {
       country: {
         id: plan.country.id,
         name: plan.country.name,
+        imageUrl: plan?.country?.imageUrl,
+        image: plan?.country?.imageUrl,
       },
       createdAt: plan.createdAt,
       updatedAt: plan.updatedAt,

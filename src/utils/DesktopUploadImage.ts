@@ -12,7 +12,7 @@ const uploadDir = path.join(
   "uploadsimg",
 );
 */
-const uploadDir = path.join("/", "var", "www", "html","esimaero.com","public", "uploadsimg");
+const uploadDir = path.join("/", "var", "www", "html","esimaero.com", "uploadsimg");
 
 // Ensure directory exists
 if (!fs.existsSync(uploadDir)) {

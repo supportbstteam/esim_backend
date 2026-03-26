@@ -121,7 +121,7 @@ app.get("/api", (_req, res) => {
    7️⃣ STATIC FILES
 ===================================================== */
 //const uploadsDir = path.join(os.homedir(), "Desktop", "uploadsimg");
-const uploadsDir = path.join(os.homedir(), "var", "www", "html","esimaero.com","public", "uploadsimg");
+const uploadsDir = path.join(os.homedir(), "var", "www", "html","esimaero.com", "uploadsimg");
 
 app.use("/api/uploadsimg", express.static(uploadsDir));
 
