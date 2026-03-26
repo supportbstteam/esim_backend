@@ -5,11 +5,14 @@ import fs from "fs";
 import os from "os";
 
 // Resolve: ~/Desktop/uploadsimg
+/*
 const uploadDir = path.join(
   os.homedir(),
   "Desktop",
   "uploadsimg",
 );
+*/
+const uploadDir = path.join("/", "var", "www", "html","esimaero.com","public", "uploadsimg");
 
 // Ensure directory exists
 if (!fs.existsSync(uploadDir)) {
