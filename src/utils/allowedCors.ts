@@ -5,7 +5,7 @@ export const ALLOWED_PATH_ORIGINS = [
   "https://loadbalancer.turisim.com",
   "https://onesignal.com",
   "http://192.168.29.89:3000",
-  "https://esimaero.com",
+  "https://www.esimaero.com",
   "https://admin.esimaero.com",
   "https://api.esimaero.com"
 ];
