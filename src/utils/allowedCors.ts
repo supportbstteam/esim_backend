@@ -7,5 +7,6 @@ export const ALLOWED_PATH_ORIGINS = [
   "http://192.168.29.89:3000",
   "https://www.esimaero.com",
   "https://admin.esimaero.com",
-  "https://api.esimaero.com"
+  "https://api.esimaero.com",
+  "http://192.168.1.9:3000"
 ];
