@@ -94,7 +94,7 @@ async function refreshThirdPartyToken(): Promise<string | undefined> {
   // Call your provider auth endpoint, persist the token (in memory, redis, or env substitute),
   // return the token for the axios interceptor to retry once.
   // Example (pseudocode):
-  //
+  
   // const r = await axios.post(process.env.TURISM_AUTH_URL, { clientId, secret });
   // inMemoryThirdPartyToken = r.data.token;
   // return inMemoryThirdPartyToken;
@@ -116,7 +116,7 @@ export async function reserveAndPurchaseSim(planId: number) {
       {
         headers: { Authorization: `Bearer ${inMemoryThirdPartyToken}` },
       }
-    );
+    ); 
 
     const reserveId = reserve.data?.data?.id;
     if (!reserveId) throw new Error("Reserve failed: No reserveId");
@@ -138,7 +138,7 @@ export async function reserveAndPurchaseSim(planId: number) {
   }
 }
 
-// Main handler (reworked)
+
 // Main handler (reworked)
 export const postOrder = async (req: any, res: Response) => {
   const requestId = `postOrder-${Date.now()}-${Math.floor(Math.random() * 10000)}`;

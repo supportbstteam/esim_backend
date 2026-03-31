@@ -19,6 +19,7 @@ import { handleMobileStripeWebhook } from "./controllers/stripe/MobileCartStripe
 import { handleMobileTopUpStripeWebhook } from "./controllers/stripe/MobileTopUpStripe.controllers";
 import { handleStripeWebhook } from "./controllers/stripe/CartStrip.controller";
 import { paypalWebhook } from "./controllers/paypal.webhook.controllers";
+import { reserveSim } from "./lib/globalFunction";
 
 const app = express();
 
@@ -108,11 +109,11 @@ app.use(express.urlencoded({ extended: true }));
 ===================================================== */
 app.get("/", (_req, res) => {
   // console.log("Hello world",_req.headers["user-agent"]);
-  res.send("Hello from Node + TypeORM + MySQL!");
+  res.send("Hello from Node + TypeORM + MySQL!", );
 });
 
 app.get("/api", (_req, res) => {
-  res.send("Hello from Node + TypeORM + MySQL! with our Esim products");
+  res.send("Hello from Node + TypeORM + MySQL! with our Esim products", );
 });
 
 // app.post("/notifications/test", testNotificationController);

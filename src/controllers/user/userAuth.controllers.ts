@@ -136,6 +136,8 @@ export const postUserLogin = async (req: any, res: Response) => {
         .json({ message: "Email and password are required" });
     }
 
+    console.log("PAYPAL_MODE",process.env.PAYPAL_MODE);
+
     const userRepo = AppDataSource.getRepository(User);
     const user = await userRepo.findOneBy({ email });
 

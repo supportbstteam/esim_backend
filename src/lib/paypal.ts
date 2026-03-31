@@ -11,4 +11,6 @@ const environment =
         process.env.PAYPAL_CLIENT_SECRET!
       );
 
+
+
 export const paypalClient = new paypal.core.PayPalHttpClient(environment);

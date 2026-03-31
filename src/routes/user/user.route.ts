@@ -131,6 +131,7 @@ router.get("/testimonials", getAllTestimonials);
 
 router.post("/test-notification", auth, sendTestNotification);
 
+
 // -------- order ------------
 router.get("/orders/status/:transactionId", auth, getOrderStatus);
 router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
@@ -139,6 +140,8 @@ router.get("/order-list", auth, getOrderListByUser);
 router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
 router.post("/claim", auth, claimRefund);
 
+
+// --------------------------------------------
 router.use("/add-to-cart", auth, userCartRoute);
 
 export default router;
