@@ -1,8 +1,14 @@
 import { Router } from "express";
-import { createPlan, getPlanById, getPlans, updatePlan, deletePlan, postImportPlans, postStatusChangePlan, postAddFeaturingPlan } from "../../controllers/admin/adminPlans.controllers";
+import { createPlan, getPlanById, getPlans, updatePlan, deletePlan, postImportPlans, postStatusChangePlan, postAddFeaturingPlan, exportPlansExcel, importPlansExcel } from "../../controllers/admin/adminPlans.controllers";
+import multer from "multer";
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
+
 // always take care of the order of routes
+router.get("/export", exportPlansExcel);
+router.post("/import-excel", upload.single("file"), importPlansExcel);
+
 router.post("/create-plan", createPlan);
 router.get("/", getPlans);
 router.get("/:planId", getPlanById);

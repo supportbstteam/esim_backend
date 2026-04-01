@@ -3,6 +3,8 @@ import { AppDataSource } from "../../data-source";
 import { Plan } from "../../entity/Plans.entity";
 import { Country } from "../../entity/Country.entity";
 import { checkAdmin } from "../../utils/checkAdmin";
+import * as XLSX from "xlsx";
+
 /**
  * Controller to save plans from JSON payload
  * Expects body to be an array of plans from third-party API
@@ -22,7 +24,7 @@ interface ApiPlan {
     country_id: string; // since Country.id is uuid
 }
 
-export const createPlan = async (req:any, res: Response) => {
+export const createPlan = async (req: any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(Plan);
         const countryRepo = AppDataSource.getRepository(Country);
@@ -91,7 +93,7 @@ export const createPlan = async (req:any, res: Response) => {
 
 
 // GET all plans (optionally filter by country)
-export const getPlans = async (req:any, res: Response) => {
+export const getPlans = async (req: any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(Plan);
         const { countryId } = req.query;
@@ -112,7 +114,7 @@ export const getPlans = async (req:any, res: Response) => {
 };
 
 // GET a single plan by ID
-export const getPlanById = async (req:any, res: Response) => {
+export const getPlanById = async (req: any, res: Response) => {
 
     // // console.log("------ params ------", req.params?.)
     try {
@@ -139,7 +141,7 @@ export const getPlanById = async (req:any, res: Response) => {
 };
 
 
-export const updatePlan = async (req:any, res: Response) => {
+export const updatePlan = async (req: any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(Plan);
         const countryRepo = AppDataSource.getRepository(Country);
@@ -196,7 +198,7 @@ export const updatePlan = async (req:any, res: Response) => {
 
 
 // DELETE a plan by ID
-export const deletePlan = async (req:any, res: Response) => {
+export const deletePlan = async (req: any, res: Response) => {
     try {
         const planRepo = AppDataSource.getRepository(Plan);
         const { planId } = req.params;
@@ -305,5 +307,89 @@ export const postAddFeaturingPlan = async (req: any, res: any) => {
         return res
             .status(500)
             .json({ message: "Failed to change status", error: err.message });
+    }
+};
+
+/**
+ * Export all plans to Excel
+ */
+export const exportPlansExcel = async (req: Request, res: Response) => {
+    try {
+        const planRepo = AppDataSource.getRepository(Plan);
+        const plans = await planRepo.find({
+            where: { isDeleted: false },
+            relations: ["country"],
+        });
+
+        const data = plans.map((plan) => ({
+            ID: plan.id,
+            // PlanId: plan.planId,
+            Country: plan.country?.name || "N/A",
+            Title: plan.title,
+            PlanName: plan.name,
+            DataGB: plan.isUnlimited ? "Unlimited" : plan.data,
+            ValidityDays: plan.validityDays,
+            Price: plan.price,
+            // Currency: plan.currency,
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Plans");
+
+        const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+
+        res.setHeader("Content-Disposition", 'attachment; filename="plans.xlsx"');
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        return res.send(buffer);
+    } catch (err: any) {
+        console.error("Error exporting plans:", err);
+        return res.status(500).json({ message: "Failed to export plans", error: err.message });
+    }
+};
+
+/**
+ * Import plans from Excel and update prices
+ */
+export const importPlansExcel = async (req: any, res: Response) => {
+    try {
+        const isAdmin = await checkAdmin(req, res);
+        if (!isAdmin) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
+
+        const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const data: any[] = XLSX.utils.sheet_to_json(sheet);
+
+        const planRepo = AppDataSource.getRepository(Plan);
+        let updatedCount = 0;
+
+        for (const row of data) {
+            const id = row.ID;
+            const price = row.Price;
+
+            if (id && price !== undefined) {
+                const plan = await planRepo.findOneBy({ id });
+                if (plan) {
+                    plan.price = String(price);
+                    await planRepo.save(plan);
+                    updatedCount++;
+                }
+            }
+        }
+
+        return res.status(200).json({
+            message: `Successfully updated ${updatedCount} plans`,
+            count: updatedCount,
+        });
+    } catch (err: any) {
+        console.error("Error importing plans:", err);
+        return res.status(500).json({ message: "Failed to import plans", error: err.message });
     }
 };
