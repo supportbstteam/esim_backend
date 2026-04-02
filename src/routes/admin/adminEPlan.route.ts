@@ -3,11 +3,14 @@ import { createPlan, getPlanById, getPlans, updatePlan, deletePlan, postImportPl
 import multer from "multer";
 
 const router = Router();
+
+// do not need to make another functionality when we have made the export function already
 const upload = multer({ storage: multer.memoryStorage() });
 
 // always take care of the order of routes
 router.get("/export", exportPlansExcel);
-router.post("/import-excel", upload.single("file"), importPlansExcel);
+
+// router.post("/import-excel", upload.single("file"), importPlansExcel);
 
 router.post("/create-plan", createPlan);
 router.get("/", getPlans);

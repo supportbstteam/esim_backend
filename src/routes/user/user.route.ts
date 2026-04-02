@@ -65,7 +65,11 @@ router.post("/signup", postVerifyOtp);
 router.post("/login", postUserLogin);
 router.get("/details", auth, getUserDetails);
 
-router.put("/update",auth, desktopUpload.single("image"), updateProfile);
+// for the live server
+// router.put("/update",auth, desktopUpload.single("image"), updateProfile);
+
+// for the vercel
+router.put("/update", auth, updateProfile);
 
 router.delete("/delete", auth, deleteAccount);
 router.post("/auth/forget-password", postForgotPassword);
@@ -131,7 +135,6 @@ router.get("/testimonials", getAllTestimonials);
 
 router.post("/test-notification", auth, sendTestNotification);
 
-
 // -------- order ------------
 router.get("/orders/status/:transactionId", auth, getOrderStatus);
 router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
@@ -139,7 +142,6 @@ router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
 router.get("/order-list", auth, getOrderListByUser);
 router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
 router.post("/claim", auth, claimRefund);
-
 
 // --------------------------------------------
 router.use("/add-to-cart", auth, userCartRoute);
