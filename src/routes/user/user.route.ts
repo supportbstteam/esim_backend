@@ -52,6 +52,8 @@ import {
 import { sendTestNotification } from "../../controllers/notifications/testNotification";
 import { getUserDevice } from "../../controllers/user/userDevice.controllers";
 import { getUserBrands } from "../../controllers/user/userBrands.controllers";
+
+// uncomment for the live server
 // import { desktopUpload } from "../../utils/DesktopUploadImage";
 
 const router = Router();
@@ -65,7 +67,7 @@ router.post("/signup", postVerifyOtp);
 router.post("/login", postUserLogin);
 router.get("/details", auth, getUserDetails);
 
-// for the live server
+// uncomment for the live server
 // router.put("/update",auth, desktopUpload.single("image"), updateProfile);
 
 // for the vercel

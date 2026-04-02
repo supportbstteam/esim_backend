@@ -7,6 +7,8 @@ import {
   updateCountry,
   updateCountryStatus,
 } from "../../controllers/admin/adminCountry.controllers";
+
+// uncomment for the live server
 // import { desktopUpload } from "../../utils/DesktopUploadImage";
 
 const router = Router();

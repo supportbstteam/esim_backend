@@ -23,9 +23,7 @@ import adminBlogs from "./adminBlogs.route";
 import adminTestimonials from "./adminTestimonial.route";
 import adminFaq from "./adminFaq.route";
 
-
-// uncomment for the live server
-// import imageUploadRoute from "../image.route";
+import imageUploadRoute from "../image.route";
 
 
 
@@ -96,8 +94,7 @@ router.use("/social-media", adminSocialRouter);
 router.use("/content", contentRouter);
 router.use("/cms/pages", pagesRoutes);
 
-// uncomment for the live server
-// router.use("/images", imageUploadRoute);
+router.use("/images", imageUploadRoute);
 
 // query
 router.use("/query", queryRoute);
