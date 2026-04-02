@@ -1,15 +1,18 @@
 // src/routes/image.routes.ts
 import { Router } from "express";
 import { deleteAdminImage, getAdminImageById, getAdminImages, updateAdminImage, uploadImageToDesktop } from "../controllers/ImageUploader.controllers";
-import { desktopUpload } from "../utils/DesktopUploadImage";
+
+// uncomment for the live server
+// import { desktopUpload } from "../utils/DesktopUploadImage";
 
 const router = Router();
 
-router.post(
-    "/upload",
-    desktopUpload.single("image"),
-    uploadImageToDesktop
-);
+// uncomment for the live server
+// router.post(
+//     "/upload",
+//     desktopUpload.single("image"),
+//     uploadImageToDesktop
+// );
 
 router.get("/", getAdminImages);
 router.get("/:id", getAdminImageById);

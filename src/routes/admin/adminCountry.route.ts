@@ -7,7 +7,9 @@ import {
   updateCountry,
   updateCountryStatus,
 } from "../../controllers/admin/adminCountry.controllers";
-import { desktopUpload } from "../../utils/DesktopUploadImage";
+
+// uncomment for the live server
+// import { desktopUpload } from "../../utils/DesktopUploadImage";
 
 const router = Router();
 
@@ -17,6 +19,11 @@ router.get("/:id", getCountryById); // Get single country by ID
 router.patch("/status/:id", updateCountryStatus); // Update a country
 router.delete("/delete/:id", deleteCountry); // Delete a country
 
-router.put("/update/:id", desktopUpload.single("image"), updateCountry);
+
+// server side update image with the live server
+// router.put("/update/:id", desktopUpload.single("image"), updateCountry);
+
+// for the vercel
+router.put("/update/:id", updateCountry);
 
 export default router;
