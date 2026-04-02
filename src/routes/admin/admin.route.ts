@@ -22,7 +22,14 @@ import adminOrderRouter from "./adminOrder.route";
 import adminBlogs from "./adminBlogs.route";
 import adminTestimonials from "./adminTestimonial.route";
 import adminFaq from "./adminFaq.route";
-import imageUploadRoute from "../image.route";
+
+
+// uncomment for the live server
+// import imageUploadRoute from "../image.route";
+
+
+
+
 import devicesRoute from "./adminDevice.route";
 import {
   deleteTopUpOrder,
@@ -88,7 +95,9 @@ router.use("/contact", adminContactRouter);
 router.use("/social-media", adminSocialRouter);
 router.use("/content", contentRouter);
 router.use("/cms/pages", pagesRoutes);
-router.use("/images", imageUploadRoute);
+
+// uncomment for the live server
+// router.use("/images", imageUploadRoute);
 
 // query
 router.use("/query", queryRoute);

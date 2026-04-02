@@ -52,7 +52,7 @@ import {
 import { sendTestNotification } from "../../controllers/notifications/testNotification";
 import { getUserDevice } from "../../controllers/user/userDevice.controllers";
 import { getUserBrands } from "../../controllers/user/userBrands.controllers";
-import { desktopUpload } from "../../utils/DesktopUploadImage";
+// import { desktopUpload } from "../../utils/DesktopUploadImage";
 
 const router = Router();
 
