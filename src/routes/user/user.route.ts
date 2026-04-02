@@ -54,7 +54,7 @@ import { getUserDevice } from "../../controllers/user/userDevice.controllers";
 import { getUserBrands } from "../../controllers/user/userBrands.controllers";
 
 // uncomment for the live server
-// import { desktopUpload } from "../../utils/DesktopUploadImage";
+import { desktopUpload } from "../../utils/DesktopUploadImage";
 
 const router = Router();
 
@@ -68,7 +68,7 @@ router.post("/login", postUserLogin);
 router.get("/details", auth, getUserDetails);
 
 // uncomment for the live server
-// router.put("/update",auth, desktopUpload.single("image"), updateProfile);
+router.put("/update",auth, desktopUpload.single("image"), updateProfile);
 
 // for the vercel
 router.put("/update", auth, updateProfile);

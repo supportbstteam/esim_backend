@@ -10,7 +10,8 @@ const upload = multer({ storage: multer.memoryStorage() });
 // always take care of the order of routes dssdsd
 router.get("/export", exportPlansExcel);
 
-// router.post("/import-excel", upload.single("file"), importPlansExcel);
+// uncomment for the live server
+router.post("/import-excel", upload.single("file"), importPlansExcel);
 
 router.post("/create-plan", createPlan);
 router.get("/", getPlans);

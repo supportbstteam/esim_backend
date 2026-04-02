@@ -121,10 +121,12 @@ app.get("/api", (_req, res) => {
 /* =====================================================
    7️⃣ STATIC FILES UPLOADING
 ===================================================== */
-//const uploadsDir = path.join(os.homedir(), "Desktop", "uploadsimg");
-// const uploadsDir = path.join(os.homedir(), "var", "www", "html","esimaero.com", "uploadsimg");
+// uncomment for the live server
+// const uploadsDir = path.join(os.homedir(), "Desktop", "uploadsimg");
+const uploadsDir = path.join(os.homedir(), "var", "www", "html","esimaero.com", "uploadsimg");
 
-// app.use("/api/uploadsimg", express.static(uploadsDir));
+// uncomment for the live server
+app.use("/api/uploadsimg", express.static(uploadsDir));
 
 /* =====================================================
    8️⃣ API ROUTES

@@ -9,7 +9,7 @@ import {
 } from "../../controllers/admin/adminCountry.controllers";
 
 // uncomment for the live server
-// import { desktopUpload } from "../../utils/DesktopUploadImage";
+import { desktopUpload } from "../../utils/DesktopUploadImage";
 
 const router = Router();
 
@@ -21,7 +21,8 @@ router.delete("/delete/:id", deleteCountry); // Delete a country
 
 
 // server side update image with the live server
-// router.put("/update/:id", desktopUpload.single("image"), updateCountry);
+// uncomment for the live server
+router.put("/update/:id", desktopUpload.single("image"), updateCountry);
 
 // for the vercel
 router.put("/update/:id", updateCountry);
