@@ -19,7 +19,8 @@ export const reserveSim = async ({
 
     if (response?.data?.status === "success" && response?.data?.data === null) {
       return {
-        message: "No SIMs available for the selected plan. Please try again later.",
+        message:
+          "No SIMs available for the selected plan. Please try again later.",
         reserveId: null,
         status: "error",
       };
@@ -34,5 +35,16 @@ export const reserveSim = async ({
     return reserveId;
   } catch (err: any) {
     console.log("Error in the reserseSim", err);
+
+    const errorMessage =
+      err?.response?.data?.message ||
+      err?.message ||
+      "No SIMs available for the selected plan. Please try again later.";
+
+    return {
+      message: errorMessage,
+      reserveId: null,
+      status: "error",
+    };
   }
 };
