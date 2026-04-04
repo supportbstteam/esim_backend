@@ -35,7 +35,7 @@ export const baseTemplate = (title: string, content: string) => `
         ${content}
       </div>
       <div style="background-color: #f1f1f1; text-align: center; padding: 12px; font-size: 12px; color: #555;">
-        © ${new Date().getFullYear()} eSIM Connect | All Rights Reserved
+        © ${new Date().getFullYear()} E-SIM Aero | All Rights Reserved
       </div>
     </div>
   </div>
@@ -48,22 +48,22 @@ export const baseTemplate = (title: string, content: string) => `
  */
 export const sendOtpEmail = async (to: string, otp: string) => {
   try {
-    const subject = "🔑 Your eSIM Connect Verification Code";
+    const subject = "🔑 Your E-SIM Aero Verification Code";
 
-    const text = `Your OTP for eSIM Connect is: ${otp}. It expires in 10 minutes. If you did not request this, please ignore this email.`;
+    const text = `Your OTP for E-SIM Aero is: ${otp}. It expires in 10 minutes. If you did not request this, please ignore this email.`;
 
     const html = baseTemplate(
       "Email Verification Code",
       `
         <p>Hi there,</p>
-        <p>Use the following One-Time Password (OTP) to verify your account on <strong>eSIM Connect</strong>. It will expire in <b>10 minutes</b>.</p>
+        <p>Use the following One-Time Password (OTP) to verify your account on <strong>E-SIM Aero</strong>. It will expire in <b>10 minutes</b>.</p>
         <div style="text-align: center; margin: 20px 0;">
           <div style="display: inline-block; background: #f4f8ff; border: 1px dashed #0070f3; border-radius: 8px; padding: 15px 25px; font-size: 24px; letter-spacing: 6px; color: #0070f3; font-weight: bold;">
             ${otp}
           </div>
         </div>
         <p>If you didn’t request this OTP, please ignore this email or contact our support team immediately.</p>
-        <p style="margin-top: 25px;">Thanks,<br><strong>The eSIM Connect Team</strong></p>
+        <p style="margin-top: 25px;">Thanks,<br><strong>The E-SIM Aero Team</strong></p>
       `
     );
     const mail: any = await adminMailNotfication();
@@ -140,10 +140,10 @@ export const sendAdminOrderNotification = async (order: any) => {
 // ---------- 2️⃣(b) Welcome Email to New User ----------
 export const sendUserWelcomeEmail = async (userEmail: string, user: any) => {
   const html = baseTemplate(
-    "Welcome to eSIM Connect 🎉",
+    "Welcome to E-SIM Aero 🎉",
     `
       <p>Hi <strong>${user.firstName}</strong>,</p>
-      <p>Welcome to <strong>eSIM Connect</strong>! We're excited to have you on board.</p>
+      <p>Welcome to <strong>E-SIM Aero</strong>! We're excited to have you on board.</p>
       <p>You can now explore and purchase eSIM plans that fit your travel and connectivity needs.</p>
       <ul style="margin-top:10px;">
         <li>🌍 Global eSIM coverage</li>
@@ -151,14 +151,14 @@ export const sendUserWelcomeEmail = async (userEmail: string, user: any) => {
         <li>💳 Secure payments</li>
       </ul>
       <p style="margin-top:20px;">If you have any questions, our support team is always here to help.</p>
-      <p>Cheers,<br><strong>The eSIM Connect Team</strong></p>
+      <p>Cheers,<br><strong>The E-SIM Aero Team</strong></p>
     `
   );
   const mail: any = await adminMailNotfication();
   await transporter.sendMail({
     from: mail, // from admin
     to: userEmail,
-    subject: "👋 Welcome to eSIM Connect",
+    subject: "👋 Welcome to E-SIM Aero",
     html,
   });
 
@@ -178,7 +178,7 @@ export const sendAdminUserVerifiedNotification = async (adminEmail: string, user
         <tr><td><b>Verified At:</b></td><td>${new Date().toLocaleString()}</td></tr>
       </table>
       <p>You can view the user details in the admin dashboard.</p>
-      <p style="margin-top:20px;">– The eSIM Connect System</p>
+      <p style="margin-top:20px;">– The E-SIM Aero System</p>
     `
   );
   const mail: any = await adminMailNotfication();
@@ -246,7 +246,7 @@ export const sendRefundEmails = async (userEmail: string, adminEmail: string, re
   });
 
   await transporter.sendMail({
-    from: `"eSIM Connect Refunds" <${process.env.SMTP_USER}>`,
+    from: `"E-SIM Aero Refunds" <${process.env.SMTP_USER}>`,
     to: adminEmail,
     subject: `💰 New Refund Request - ${refund.id}`,
     html: adminHtml,
@@ -262,20 +262,20 @@ export const sendRefundEmails = async (userEmail: string, adminEmail: string, re
  */
 export const sendPasswordChangeEmail = async (to: string, name?: string) => {
   try {
-    const subject = "🔒 Your eSIM Connect Password Was Updated";
+    const subject = "🔒 Your E-SIM Aero Password Was Updated";
 
-    const text = `Hi ${name || "User"},\n\nYour password on eSIM Connect was successfully changed. If this wasn't you, please reset your password immediately or contact our support team.\n\nStay secure,\nThe eSIM Connect Team`;
+    const text = `Hi ${name || "User"},\n\nYour password on E-SIM Aero was successfully changed. If this wasn't you, please reset your password immediately or contact our support team.\n\nStay secure,\nThe E-SIM Aero Team`;
 
     const html = baseTemplate(
       "Your Password Was Updated",
       `
         <p>Hi ${name || "there"},</p>
-        <p>This is a confirmation that your <strong>eSIM Connect</strong> password has been successfully changed.</p>
+        <p>This is a confirmation that your <strong>E-SIM Aero</strong> password has been successfully changed.</p>
         <p>If this wasn’t you, please <a href="https://esimconnect.com/reset-password" style="color:#0070f3;text-decoration:none;font-weight:bold;">reset your password</a> immediately or contact our support team.</p>
         <div style="margin-top:20px; background:#fff8e1; padding:10px 15px; border-radius:6px; border-left:4px solid #ff9800;">
           <strong>Security Tip:</strong> Never share your password or OTP with anyone.
         </div>
-        <p style="margin-top:25px;">Thanks,<br><strong>The eSIM Connect Team</strong></p>
+        <p style="margin-top:25px;">Thanks,<br><strong>The E-SIM Aero Team</strong></p>
       `
     );
 
@@ -299,20 +299,20 @@ export const sendPasswordChangeEmail = async (to: string, name?: string) => {
  */
 export const sendUserBlockedEmail = async (to: string, name?: string, reason?: string) => {
   try {
-    const subject = "🚫 Your eSIM Connect Account Has Been Blocked";
+    const subject = "🚫 Your E-SIM Aero Account Has Been Blocked";
 
-    const text = `Hi ${name || "User"},\n\nYour eSIM Connect account has been blocked by our team. ${reason ? `Reason: ${reason}` : ""}\nIf you believe this was a mistake, please contact support.\n\n- eSIM Connect Team`;
+    const text = `Hi ${name || "User"},\n\nYour E-SIM Aero account has been blocked by our team. ${reason ? `Reason: ${reason}` : ""}\nIf you believe this was a mistake, please contact support.\n\n- E-SIM Aero Team`;
 
     const html = baseTemplate(
       "Your Account Has Been Blocked",
       `
         <p>Hi ${name || "there"},</p>
-        <p>Your <strong>eSIM Connect</strong> account has been <strong>temporarily blocked</strong> by our team.</p>
+        <p>Your <strong>E-SIM Aero</strong> account has been <strong>temporarily blocked</strong> by our team.</p>
         ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
         <p>If you believe this was done in error, please contact our <a href="mailto:support@esimconnect.com" style="color:#0070f3;">support team</a>.</p>
         <p>We’re here to help you resolve this as soon as possible.</p>
         <br/>
-        <p>– The eSIM Connect Team</p>
+        <p>– The E-SIM Aero Team</p>
       `
     );
     const mail: any = await adminMailNotfication();
@@ -335,20 +335,20 @@ export const sendUserBlockedEmail = async (to: string, name?: string, reason?: s
  */
 export const sendAccountDeletedEmail = async (to: string, name?: string) => {
   try {
-    const subject = "🗑️ Your eSIM Connect Account Has Been Deleted";
+    const subject = "🗑️ Your E-SIM Aero Account Has Been Deleted";
 
-    const text = `Hi ${name || "User"},\n\nYour eSIM Connect account has been permanently deleted. All associated data has been removed from our system. You can re-register anytime if you wish to use our services again.\n\nThank you for being with us.\n\n- eSIM Connect Team`;
+    const text = `Hi ${name || "User"},\n\nYour E-SIM Aero account has been permanently deleted. All associated data has been removed from our system. You can re-register anytime if you wish to use our services again.\n\nThank you for being with us.\n\n- E-SIM Aero Team`;
 
     const html = baseTemplate(
       "Your Account Has Been Deleted",
       `
         <p>Hi ${name || "there"},</p>
-        <p>We wanted to let you know that your <strong>eSIM Connect</strong> account has been permanently deleted.</p>
+        <p>We wanted to let you know that your <strong>E-SIM Aero</strong> account has been permanently deleted.</p>
         <p>All personal data and associated order information have been securely removed from our system.</p>
         <p>If you change your mind, you’re always welcome to rejoin anytime by creating a new account.</p>
         <br/>
         <p>Thanks for being part of our journey,</p>
-        <p><strong>The eSIM Connect Team</strong></p>
+        <p><strong>The E-SIM Aero Team</strong></p>
       `
     );
     const mail: any = await adminMailNotfication();
@@ -459,7 +459,7 @@ ${order.errorMessage || "No detailed error provided."}
 
     // Send to USER
     await transporter.sendMail({
-      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+      from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
       to: userEmail,
       subject,
       html,
@@ -470,7 +470,7 @@ ${order.errorMessage || "No detailed error provided."}
 
     // Send same content to ADMIN
     await transporter.sendMail({
-      from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+      from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
       to: adminEmail,
       subject,
       html, // EXACT SAME EMAIL
@@ -494,13 +494,13 @@ export const sendForgotPasswordOtpEmail = async (to: string, otp: string) => {
     const html = baseTemplate(
       "Password Reset OTP",
       `
-            <p>We received a request to reset your password for your <strong>eSIM Connect</strong> account.</p>
+            <p>We received a request to reset your password for your <strong>E-SIM Aero</strong> account.</p>
             <p>Use the following One-Time Password (OTP) to verify your identity. This OTP is valid for <b>10 minutes</b>.</p>
             <div style="background:#f4f4f4; padding:15px; text-align:center; font-size:24px; letter-spacing:4px; margin:20px 0; border-radius:5px;">
               <b>${otp}</b>
             </div>
             <p>If you did not request this password reset, please ignore this email or contact our support team immediately.</p>
-            <p style="margin-top:25px;">Thanks,<br><strong>The eSIM Connect Team</strong></p>
+            <p style="margin-top:25px;">Thanks,<br><strong>The E-SIM Aero Team</strong></p>
             `
     );
     const mail: any = await adminMailNotfication();
@@ -628,7 +628,7 @@ export const sendRefundClaimEmail = async (
           Please review this refund claim and process the eligible refund accordingly.
         </p>
 
-        <p style="margin-top:20px;">— eSIM Connect System</p>
+        <p style="margin-top:20px;">— E-SIM Aero System</p>
       `
     );
 

@@ -11,7 +11,7 @@ const queryRepository = AppDataSource.getRepository(Query);
 /* ================= USER ROUTES ================= */
 
 // 🧩 Create Query + Notify Admin
-export const createQuery = async (req:any, res: Response) => {
+export const createQuery = async (req: any, res: Response) => {
     try {
         const { firstName, lastName, email, phone, message } = req.body;
 
@@ -64,7 +64,7 @@ export const createQuery = async (req:any, res: Response) => {
             );
 
             await transporter.sendMail({
-                from: `"eSIM Connect" <${process.env.SMTP_USER}>`,
+                from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
                 to: admin.notificationMail,
                 subject: "📩 New Customer Query Submitted",
                 html,
@@ -87,7 +87,7 @@ export const createQuery = async (req:any, res: Response) => {
 };
 
 // Get all queries by email (user)
-export const getQueryByEmail = async (req:any, res: Response) => {
+export const getQueryByEmail = async (req: any, res: Response) => {
     try {
         const { email } = req.params;
 
@@ -111,7 +111,7 @@ export const getQueryByEmail = async (req:any, res: Response) => {
 /* ================= ADMIN ROUTES ================= */
 
 // Get all queries (admin)
-export const getAllQueries = async (req:any, res: Response) => {
+export const getAllQueries = async (req: any, res: Response) => {
     if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
 
     try {
@@ -127,7 +127,7 @@ export const getAllQueries = async (req:any, res: Response) => {
 };
 
 // Get a single query by queryId (admin)
-export const getQueryById = async (req:any, res: Response) => {
+export const getQueryById = async (req: any, res: Response) => {
     if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
 
     try {
@@ -144,7 +144,7 @@ export const getQueryById = async (req:any, res: Response) => {
 };
 
 // Update query status (admin)
-export const updateQueryStatus = async (req:any, res: Response) => {
+export const updateQueryStatus = async (req: any, res: Response) => {
     if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
 
     try {
@@ -172,7 +172,7 @@ export const updateQueryStatus = async (req:any, res: Response) => {
 };
 
 // Permanently delete a query (admin)
-export const deleteQuery = async (req:any, res: Response) => {
+export const deleteQuery = async (req: any, res: Response) => {
     if (!checkAdmin(req, res)) return res.status(403).json({ message: "Unauthorized" });
 
     try {
