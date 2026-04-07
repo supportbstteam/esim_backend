@@ -115,7 +115,7 @@ export const postImportThirdPartyPlans = async (req: any, res: Response) => {
         });
 
     try {
-        // 1️⃣ Fetch data from 3rd-party API
+        console.log("--- Fetching plans from third-party API ---");
         const apiResponse = await axios.get(`${process.env.TURISM_URL}/v2/plans`, {
             params: req.query || req.body,
             headers: {
@@ -126,29 +126,41 @@ export const postImportThirdPartyPlans = async (req: any, res: Response) => {
         const plansFromApi = apiResponse.data.data; // array of plans
 
         if (!plansFromApi || plansFromApi.length === 0) {
+            console.log("No plans returned from API");
             return res.status(404).json({ message: "No plans returned from API" });
         }
+
+        console.log(`Plans from API: ${plansFromApi.length}. Starting conditional import...`);
 
         const countryRepo = AppDataSource.getRepository(Country);
         const planRepo = AppDataSource.getRepository(Plan);
 
+        // 🟢 Optimization: Fetch all existing plan IDs and countries upfront to avoid constant DB queries
+        const allExistingPlans = await planRepo.find({ select: ["planId"] });
+        const existingPlanIds = new Set(allExistingPlans.map(p => p.planId));
+
+        const allExistingCountries = await countryRepo.find();
+        const countryMap = new Map(allExistingCountries.map(c => [c.name, c]));
+
+        let newPlansCount = 0;
+        let newCountriesCount = 0;
+        let skippedCount = 0;
 
         for (const apiPlan of plansFromApi) {
             // 2️⃣ Handle country
             const countryData = apiPlan.country;
+            if (!countryData || !countryData.name) continue;
 
-            // console.log("------ country name ----", countryData)
-            if (!countryData) continue;
-
-            // Check if country exists by name
-            let country = await countryRepo.findOne({ where: { name: countryData.name } });
+            // Check if country exists in our map
+            let country = countryMap.get(countryData.name);
 
             if (!country) {
+                console.log(`Adding New Country: ${countryData.name}`);
                 // New country → insert
                 country = countryRepo.create({
                     name: countryData.name,
-                    isoCode: countryData.code || "", // e.g., "TR"
-                    iso3Code: countryData.iso3 || "", // e.g., "TUR"
+                    isoCode: countryData.code || "",
+                    iso3Code: countryData.iso3 || "",
                     phoneCode: countryData.phoneCode || "0",
                     currency: countryData.currency || "USD",
                     isActive: true,
@@ -156,49 +168,49 @@ export const postImportThirdPartyPlans = async (req: any, res: Response) => {
                 });
 
                 await countryRepo.save(country);
+                countryMap.set(country.name, country); // Update map
+                newCountriesCount++;
             }
 
             // 3️⃣ Handle plan
-            let plan = await planRepo.findOne({ where: { planId: apiPlan.id } });
-
-            if (!plan) {
-                // New plan → insert
-                plan = planRepo.create({
-                    planId: apiPlan.id,
-                    title: apiPlan.title,
-                    name: apiPlan.name,
-                    data: apiPlan.data,
-                    call: apiPlan.call,
-                    sms: apiPlan.sms,
-                    isUnlimited: apiPlan.is_unlimited,
-                    validityDays: apiPlan.validity_days,
-                    price: apiPlan.price,
-                    currency: apiPlan.currency,
-                    country: country,
-                    isDeleted: false,
-                });
-
-                await planRepo.save(plan);
-            } else {
-                // Existing plan → update fields
-                plan.title = apiPlan.title;
-                plan.name = apiPlan.name;
-                plan.data = apiPlan.data;
-                plan.call = apiPlan.call;
-                plan.sms = apiPlan.sms;
-                plan.isUnlimited = apiPlan.is_unlimited;
-                plan.validityDays = apiPlan.validity_days;
-                plan.price = apiPlan.price;
-                plan.currency = apiPlan.currency;
-                plan.country = country;
-
-                await planRepo.save(plan);
+            // Check if planId already exists in our Set
+            if (existingPlanIds.has(apiPlan.id)) {
+                // Plan already exists → SKIP (and ignore price updates)
+                skippedCount++;
+                continue;
             }
+
+            // New plan → insert
+            const newPlan = planRepo.create({
+                planId: apiPlan.id,
+                title: apiPlan.title,
+                name: apiPlan.name,
+                data: apiPlan.data,
+                call: apiPlan.call,
+                sms: apiPlan.sms,
+                isUnlimited: apiPlan.is_unlimited,
+                validityDays: apiPlan.validity_days,
+                price: apiPlan.price,
+                currency: apiPlan.currency,
+                country: country,
+                isDeleted: false,
+            });
+
+            await planRepo.save(newPlan);
+            existingPlanIds.add(newPlan.planId); // Update set
+            newPlansCount++;
+            console.log(`Added New Plan: ${newPlan.name} (${newPlan.planId}) for ${country.name}`);
         }
+
+        console.log(`Import finished. New Countries: ${newCountriesCount}, New Plans: ${newPlansCount}, Skipped: ${skippedCount}`);
 
         return res.status(200).json({
             success: true,
-            message: "Plans imported/updated successfully",
+            message: `Import complete. ${newPlansCount} new plans added, ${skippedCount} existing plans skipped.`,
+            newPlansCount,
+            newCountriesCount,
+            skippedCount,
+            plans: [] // Return empty array to avoid frontend Redux error
         });
     } catch (err: any) {
         console.error(err);
