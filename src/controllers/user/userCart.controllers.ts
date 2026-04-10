@@ -335,6 +335,7 @@ export const addToCart = async (req: any, res: Response) => {
           data: i.plan.data,
           validityDays: i.plan.validityDays,
           isUnlimited: i.plan.isUnlimited,
+          title: i.plan.title,
           country: {
             id: i.plan.country.id,
             name: i.plan.country.name,
