@@ -420,7 +420,7 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
         },
       });
     } catch (notifErr) {
-      console.error("⚠️ Notification failed:", notifErr.message);
+      console.error("⚠️ Notification failed:");
     }
 
     // 🔹 Step 7: Send confirmation email
