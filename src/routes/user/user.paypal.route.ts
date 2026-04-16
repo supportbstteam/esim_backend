@@ -8,7 +8,7 @@ router.post("/create-order", auth, createPaypalOrder);
 router.post("/capture-order", capturePaypalOrder);
 
 router.get("/paypal/processing", (req, res) => {
-    res.send(`
+  res.send(`
     <html>
       <body style="text-align:center;padding:40px">
         <h3>Processing payment…</h3>
@@ -19,7 +19,7 @@ router.get("/paypal/processing", (req, res) => {
 });
 
 router.get("/paypal/cancel", (req, res) => {
-    res.send(`
+  res.send(`
     <html>
       <body style="text-align:center;padding:40px">
         <h3>Payment cancelled</h3>

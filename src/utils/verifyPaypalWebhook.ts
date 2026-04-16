@@ -1,5 +1,4 @@
-import paypal from "@paypal/checkout-server-sdk";
-import { paypalClient } from "../lib/paypal";
+import axios from "axios";
 
 interface VerifyArgs {
   transmissionId: string;
@@ -8,7 +7,7 @@ interface VerifyArgs {
   authAlgo: string;
   transmissionSig: string;
   webhookId: string;
-  body: Buffer;
+  body: any;
 }
 
 export async function verifyPaypalWebhook({
@@ -20,23 +19,64 @@ export async function verifyPaypalWebhook({
   webhookId,
   body,
 }: VerifyArgs): Promise<boolean> {
-  // 👇 PayPal SDK typings are incomplete — cast safely
-  const VerifyWebhookSignatureRequest =
-    (paypal as any).notifications.VerifyWebhookSignatureRequest;
+  try {
+    const clientId = process.env.PAYPAL_CLIENT_ID;
+    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+    const mode = process.env.PAYPAL_MODE || "sandbox";
+    const apiUrl = mode === "live"
+      ? "https://api.paypal.com"
+      : "https://api.sandbox.paypal.com";
 
-  const request = new VerifyWebhookSignatureRequest();
+    // 1️⃣ Get Access Token
+    const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+    const tokenResponse = await axios.post(
+      `${apiUrl}/v1/oauth2/token`,
+      "grant_type=client_credentials",
+      {
+        headers: {
+          Authorization: `Basic ${auth}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
 
-  request.requestBody({
-    transmission_id: transmissionId,
-    transmission_time: transmissionTime,
-    cert_url: certUrl,
-    auth_algo: authAlgo,
-    transmission_sig: transmissionSig,
-    webhook_id: webhookId,
-    webhook_event: JSON.parse(body.toString()),
-  });
+    const accessToken = tokenResponse.data.access_token;
 
-  const response = await paypalClient.execute(request);
+    // 2️⃣ Verify Webhook Signature
+    let webhookEvent;
+    if (Buffer.isBuffer(body)) {
+      webhookEvent = JSON.parse(body.toString());
+    } else if (typeof body === 'string') {
+      webhookEvent = JSON.parse(body);
+    } else {
+      webhookEvent = body;
+    }
 
-  return response.result.verification_status === "SUCCESS";
+    const verificationResponse = await axios.post(
+      `${apiUrl}/v1/notifications/verify-webhook-signature`,
+      {
+        transmission_id: transmissionId,
+        transmission_time: transmissionTime,
+        cert_url: certUrl,
+        auth_algo: authAlgo,
+        transmission_sig: transmissionSig,
+        webhook_id: webhookId,
+        webhook_event: webhookEvent,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("💳 PayPal Webhook Verification Result:", verificationResponse.data.verification_status);
+
+    return verificationResponse.data.verification_status === "SUCCESS";
+  } catch (err: any) {
+    console.error("❌ PayPal verification helper error:", err.response?.data || err.message);
+    // If verification fails due to error, we should probably return false but NOT crash the server
+    return false;
+  }
 }
