@@ -15,6 +15,8 @@ import { sendOrderEmail } from "../../utils/email";
 import axios from "axios";
 import { createOrderAfterPayment } from "../../utils/createOrderAfterPayment";
 import { processMobileTopUp } from "../../utils/TopupBusinessLogic";
+import paypal from "@paypal/checkout-server-sdk";
+import { paypalClient } from "../../lib/paypal";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
     apiVersion: "2025-09-30.clover" as any,
@@ -100,7 +102,7 @@ export const initiateTransaction = async (req: any, res: Response) => {
 /**
  * Handle Stripe webhook
  */
-export const handleStripeWebhook = async (req:any, res: Response) => {
+export const handleStripeWebhook = async (req: any, res: Response) => {
     const sig = req.headers["stripe-signature"];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
@@ -270,7 +272,7 @@ export const handleCODTransaction = async (req: any, res: Response) => {
  * Update transaction status
  * Can be called from frontend after successful Stripe payment
  */
-export const handleTransactionStatus = async (req:any, res: Response) => {
+export const handleTransactionStatus = async (req: any, res: Response) => {
     const { id } = req.params;
 
     try {
@@ -464,8 +466,60 @@ export const createOrderByMobile = async (req: any, res: Response) => {
         }
 
 
-        transaction.status = "SUCCESS"
-        transaction.isPaypalOrderConfirmed = true
+        if (transaction.status === TransactionStatus.SUCCESS) {
+            console.log("✅ Transaction already marked as SUCCESS:", transactionId);
+        } else if (transaction.paymentGateway === "PAYPAL") {
+            console.log("🔍 Verifying PayPal transaction:", transaction.transactionId);
+            try {
+                // 1️⃣ Fetch order status from PayPal
+                const getRequest = new paypal.orders.OrdersGetRequest(transaction.transactionId);
+                const orderDetails = await paypalClient.execute(getRequest);
+                const paypalStatus = orderDetails.result.status;
+
+                console.log("ℹ️ PayPal order status:", paypalStatus);
+
+                if (paypalStatus === "APPROVED") {
+                    // 2️⃣ Capture the payment if approved but not yet captured
+                    console.log("💰 Capturing PayPal order:", transaction.transactionId);
+                    const captureRequest: any = new paypal.orders.OrdersCaptureRequest(transaction.transactionId);
+                    captureRequest.requestBody({ payment_source: {} });
+                    const captureResponse = await paypalClient.execute(captureRequest);
+
+                    if (captureResponse.result.status !== "COMPLETED") {
+                        return res.status(400).json({
+                            success: false,
+                            message: `Failed to capture PayPal payment. Current status: ${captureResponse.result.status}`,
+                        });
+                    }
+                    transaction.status = TransactionStatus.SUCCESS;
+                } else if (paypalStatus === "COMPLETED") {
+                    transaction.status = TransactionStatus.SUCCESS;
+                } else {
+                    return res.status(400).json({
+                        success: false,
+                        message: `PayPal payment not ready. Current status: ${paypalStatus}`,
+                    });
+                }
+            } catch (payError: any) {
+                console.error("❌ PayPal verification error:", payError);
+                return res.status(500).json({
+                    success: false,
+                    message: "Failed to verify PayPal payment status",
+                    error: payError.message,
+                });
+            }
+        } else {
+            // For other gateways (like Stripe), we might rely on webhooks, 
+            // but for polling it should already be SUCCESS if handled correctly.
+            if (transaction.status !== TransactionStatus.SUCCESS) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Transaction is not successful yet",
+                });
+            }
+        }
+
+        transaction.isPaypalOrderConfirmed = true;
         await transactionRepo.save(transaction);
 
         // 2️⃣ Route to correct flow

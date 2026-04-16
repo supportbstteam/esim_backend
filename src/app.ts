@@ -84,7 +84,7 @@ app.post(
   handleStripeWebhook
 );
 
-app.post("/paypal/webhook", bodyParser.raw({ type: "application/json" }), paypalWebhook);
+app.post("/api/paypal/webhook", bodyParser.raw({ type: "application/json" }), paypalWebhook);
 
 app.post(
   "/api/user/transactions/mobile/stripe/webhook",
@@ -109,11 +109,11 @@ app.use(express.urlencoded({ extended: true }));
 ===================================================== */
 app.get("/", (_req, res) => {
   // console.log("Hello world",_req.headers["user-agent"]);
-  res.send("Hello from Node + TypeORM + MySQL!", );
+  res.send("Hello from Node + TypeORM + MySQL!",);
 });
 
 app.get("/api", (_req, res) => {
-  res.send("Hello from Node + TypeORM + MySQL! with our Esim products", );
+  res.send("Hello from Node + TypeORM + MySQL! with our Esim products",);
 });
 
 // app.post("/notifications/test", testNotificationController);
@@ -123,7 +123,7 @@ app.get("/api", (_req, res) => {
 ===================================================== */
 // uncomment for the live server
 // const uploadsDir = path.join(os.homedir(), "Desktop", "uploadsimg");
-const uploadsDir = path.join(os.homedir(), "var", "www", "html","esimaero.com", "uploadsimg");
+const uploadsDir = path.join(os.homedir(), "var", "www", "html", "esimaero.com", "uploadsimg");
 
 // uncomment for the live server
 app.use("/api/uploadsimg", express.static(uploadsDir));
