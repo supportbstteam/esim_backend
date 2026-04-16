@@ -262,12 +262,28 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
   let latestCart: Cart | null = null;
 
   try {
-    // 🔹 Step 1: Validate user + transaction
-    const user = await userRepo.findOneBy({ id: userId });
-    if (!user) throw new Error("User not found");
+    // 🔹 Step 1: Validate transaction
     if (!transaction) throw new Error("Transaction not found");
     if (transaction.status !== "SUCCESS") throw new Error(`Invalid transaction status: ${transaction.status}`);
 
+    // 🔹 Step 2: Check if order already exists (Return early if so)
+    const existingOrder = await orderRepo.findOne({
+      where: {
+        transaction: { id: transaction.id }
+      },
+      select: ['id', 'status', 'activated', 'orderCode', 'totalAmount']
+    });
+
+    if (existingOrder) {
+      console.log(`⚠️ Order already exists for transaction ${transaction.id}: ${existingOrder.id}`);
+      return { isExists: true, order: existingOrder, summary: null };
+    }
+
+    // 🔹 Step 3: Validate user
+    const user = await userRepo.findOneBy({ id: userId });
+    if (!user) throw new Error("User not found");
+
+    // 🔹 Step 4: Validate cart
     latestCart = transaction.cart ?? null;
     if (!latestCart || latestCart.isDeleted || latestCart.isCheckedOut || latestCart.isError) {
       throw new Error("No valid cart found for this transaction");
@@ -276,20 +292,7 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
     const validCartItems = latestCart.items.filter((i) => !i.isDeleted && i.plan);
     if (!validCartItems.length) throw new Error("No valid cart items found");
 
-    // 🔹 ✅ FIXED: Check duplicate order by transaction ID only
-    const existingOrder = await orderRepo.findOne({
-      where: {
-        transaction: { id: transaction.id }
-      },
-      select: ['id']
-    });
-
-    if (existingOrder) {
-      console.log(`⚠️ Order already exists: ${existingOrder.id}`);
-      return { isExists: true, summary: null };
-    }
-
-    // 🔹 Step 2: Create new order
+    // 🔹 Step 5: Create new order
     mainOrder = orderRepo.create({
       user: transaction.user,
       transaction,
@@ -310,7 +313,7 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
     const headers = { Authorization: `Bearer ${token}` };
 
     const createdEsims: Esim[] = [];
-    const totalEsimsInCart = validCartItems.reduce((acc, item) => acc + item.quantity, 0);
+    const totalEsimsInCart = validCartItems.reduce((acc: number, item: any) => acc + (item.quantity || 0), 0);
 
     // 🔹 Step 4: Process eSIMs
     for (const item of validCartItems) {
