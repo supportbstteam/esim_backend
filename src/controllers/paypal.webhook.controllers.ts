@@ -3,7 +3,7 @@ import { AppDataSource } from "../data-source";
 import { Transaction, TransactionStatus } from "../entity/Transactions.entity";
 import { verifyPaypalWebhook } from "../utils/verifyPaypalWebhook";
 
-export const paypalWebhook = async (req:any, res: Response) => {
+export const paypalWebhook = async (req: any, res: Response) => {
     try {
         const isValid = await verifyPaypalWebhook({
             transmissionId: req.headers["paypal-transmission-id"] as string,
@@ -42,28 +42,31 @@ export const paypalWebhook = async (req:any, res: Response) => {
 
         console.log("🔑 PayPal ID:", paypalOrderId);
 
-        const transactionRepo = AppDataSource.getRepository(Transaction);
+        await AppDataSource.transaction(async (transactionalEntityManager) => {
+            const transaction = await transactionalEntityManager.findOne(Transaction, {
+                where: { transactionId: paypalOrderId },
+                lock: { mode: "pessimistic_write" },
+            });
 
-        const transaction = await transactionRepo.findOne({
-            where: { transactionId: paypalOrderId },
-            lock: { mode: "pessimistic_write" },
+            if (!transaction) {
+                console.warn("⚠️ Transaction not found:", paypalOrderId);
+                return;
+            }
+
+            if (transaction.source !== "MOBILE") {
+                return;
+            }
+
+            // Only update if not already success
+            if (transaction.status !== TransactionStatus.SUCCESS) {
+                transaction.status = TransactionStatus.SUCCESS;
+                transaction.gatewayResponse = event;
+                await transactionalEntityManager.save(transaction);
+                console.log("✅ Transaction updated to SUCCESS via Webhook:", paypalOrderId);
+            } else {
+                console.log("ℹ️ Transaction already SUCCESS, skipping update:", paypalOrderId);
+            }
         });
-
-        if (!transaction) {
-            console.warn("⚠️ Transaction not found:", paypalOrderId);
-            return res.sendStatus(200);
-        }
-
-        if (transaction.source !== "MOBILE") {
-            return res.sendStatus(200);
-        }
-
-        transaction.status = TransactionStatus.SUCCESS;
-        transaction.gatewayResponse = event;
-
-        await transactionRepo.save(transaction);
-
-        console.log("✅ Transaction updated to SUCCESS:", paypalOrderId);
 
         return res.sendStatus(200);
     } catch (err) {

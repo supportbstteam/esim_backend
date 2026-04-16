@@ -7,7 +7,7 @@ const router = Router();
 router.post("/create-order", auth, createPaypalOrder);
 router.post("/capture-order", capturePaypalOrder);
 
-router.get("/paypal/processing", (req, res) => {
+router.get("/processing", (req, res) => {
   res.send(`
     <html>
       <body style="text-align:center;padding:40px">
@@ -18,7 +18,7 @@ router.get("/paypal/processing", (req, res) => {
   `);
 });
 
-router.get("/paypal/cancel", (req, res) => {
+router.get("/cancel", (req, res) => {
   res.send(`
     <html>
       <body style="text-align:center;padding:40px">
