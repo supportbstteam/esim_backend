@@ -26,7 +26,7 @@ const generateToken = (user: User) => {
 export const postCreateUser = async (req: any, res: Response) => {
   let { firstName, lastName, email, password } = req.body;
 
-  if (!firstName || !lastName || !email || !password) {
+  if (!firstName || !email || !password) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
@@ -44,7 +44,7 @@ export const postCreateUser = async (req: any, res: Response) => {
       const otpExpires = Date.now() + 10 * 60 * 1000;
 
       existingUser.firstName = firstName;
-      existingUser.lastName = lastName;
+      existingUser.lastName = lastName || "";;
       existingUser.password = hashedPassword;
       existingUser.otp = otp;
       existingUser.otpExpires = otpExpires;
@@ -94,7 +94,7 @@ export const postCreateUser = async (req: any, res: Response) => {
     await AppDataSource.manager.transaction(async (trx) => {
       newUser = trx.create(User, {
         firstName,
-        lastName,
+        lastName: lastName || "",
         email,
         password: hashedPassword,
         otp,
@@ -136,13 +136,13 @@ export const postUserLogin = async (req: any, res: Response) => {
         .json({ message: "Email and password are required" });
     }
 
-    console.log("PAYPAL_MODE",process.env.PAYPAL_MODE);
+    // console.log("PAYPAL_MODE",process.env.PAYPAL_MODE);
 
     const userRepo = AppDataSource.getRepository(User);
     const user = await userRepo.findOneBy({ email });
 
     if (!user) {
-      return res.status(404).json({ message: "Invalid credentials" });
+      return res.status(404).json({ message: "No account found with this email" });
     }
 
     // Check if account is deleted
@@ -169,7 +169,7 @@ export const postUserLogin = async (req: any, res: Response) => {
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Incorrect password" });
     }
 
     // Successful login
