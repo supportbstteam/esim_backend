@@ -42,7 +42,7 @@ function createAxiosInstance(getToken: () => string | undefined, refreshTokenFn?
   });
 
   // Attach bearer header on each request
-  instance.interceptors.request.use((cfg:any) => {
+  instance.interceptors.request.use((cfg: any) => {
     const token = getToken();
     if (token) cfg.headers = { ...(cfg.headers || {}), Authorization: `Bearer ${token}` };
     return cfg;
@@ -66,7 +66,7 @@ function createAxiosInstance(getToken: () => string | undefined, refreshTokenFn?
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return instance(originalRequest);
           }
-        } catch (refreshErr:any) {
+        } catch (refreshErr: any) {
           // Continue to throw original 401 if refresh fails
           console.error("Token refresh failed:", refreshErr?.message || refreshErr);
         }
@@ -94,7 +94,7 @@ async function refreshThirdPartyToken(): Promise<string | undefined> {
   // Call your provider auth endpoint, persist the token (in memory, redis, or env substitute),
   // return the token for the axios interceptor to retry once.
   // Example (pseudocode):
-  
+
   // const r = await axios.post(process.env.TURISM_AUTH_URL, { clientId, secret });
   // inMemoryThirdPartyToken = r.data.token;
   // return inMemoryThirdPartyToken;
@@ -109,6 +109,24 @@ const axiosInstance = axios.create({
 });
 
 export async function reserveAndPurchaseSim(planId: number) {
+  if (process.env.ESIM_TEST_MODE === "true") {
+    console.log(`[TEST MODE] Mocking eSIM purchase for planId: ${planId}`);
+    return {
+      id: `mock-sim-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      iccid: `${Math.floor(1000000000000000000 + Math.random() * 9000000000000000000)}`,
+      qr_code_url: "https://www.esimaero.com/sample-qr-code",
+      network_status: "NOT_ACTIVE",
+      status_text: "Reserved (Test Mode)",
+      name: `Test Plan ${planId}`,
+      currency: "USD",
+      price: "10.00",
+      validity_days: 30,
+      data: 5120, // 5GB
+      call: 0,
+      sms: 0,
+    };
+  }
+
   try {
     // 💨 hard timeout + fast fail
     const reserve = await axiosInstance.get(
@@ -116,7 +134,7 @@ export async function reserveAndPurchaseSim(planId: number) {
       {
         headers: { Authorization: `Bearer ${inMemoryThirdPartyToken}` },
       }
-    ); 
+    );
 
     const reserveId = reserve.data?.data?.id;
     if (!reserveId) throw new Error("Reserve failed: No reserveId");
@@ -318,7 +336,7 @@ export const postOrder = async (req: any, res: Response) => {
       transaction
     };
 
-    const statusTag:any = mainOrder.status;
+    const statusTag: any = mainOrder.status;
 
     try {
       await sendOrderEmail(

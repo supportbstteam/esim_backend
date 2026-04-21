@@ -10,9 +10,6 @@ import { EsimTopUp } from "../../entity/EsimTopUp.entity";
 import { Order, ORDER_STATUS, OrderType } from "../../entity/order.entity";
 import { CartItem } from "../../entity/CartItem.entity";
 import { v4 as uuid } from "uuid";
-import { sendOrderEmail } from "../../utils/email";
-
-import axios from "axios";
 import { createOrderAfterPayment } from "../../utils/createOrderAfterPayment";
 import { processMobileTopUp } from "../../utils/TopupBusinessLogic";
 import paypal from "@paypal/checkout-server-sdk";

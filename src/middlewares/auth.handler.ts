@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 // Add paths to skip auth if needed
 const allowedPaths = ["/login", "/register"];
 
-export const auth = (req:any, res: Response, next: NextFunction) => {
+export const auth = (req: any, res: Response, next: NextFunction) => {
   // ✅ Allow CORS preflight
   if (req.method === "OPTIONS") return next();
 
@@ -13,7 +13,12 @@ export const auth = (req:any, res: Response, next: NextFunction) => {
   if (allowedPaths.includes(req.path)) return next();
 
   const authHeader = req.headers["authorization"];
-  const token = authHeader?.split(" ")[1];
+  let token = authHeader?.split(" ")[1];
+
+  // If no auth header, check query params (useful for direct file downloads)
+  if (!token && req.query.token) {
+    token = req.query.token as string;
+  }
 
   if (!token) {
     return res.status(401).json({ message: "Unauthorized" });

@@ -39,6 +39,7 @@ import {
   initiateMobileTopUpTransaction,
 } from "../../controllers/stripe/MobileTopUpStripe.controllers";
 import { postOrder } from "../../controllers/user/userPostSim.controller";
+import { generateInvoice } from "../../controllers/user/invoice.controller";
 import { registerDevice } from "../../controllers/device.controller";
 import {
   registerPushToken,
@@ -68,7 +69,7 @@ router.post("/login", postUserLogin);
 router.get("/details", auth, getUserDetails);
 
 // uncomment for the live server
-router.put("/update",auth, desktopUpload.single("image"), updateProfile);
+router.put("/update", auth, desktopUpload.single("image"), updateProfile);
 
 // for the vercel
 router.put("/update", auth, updateProfile);
@@ -143,6 +144,7 @@ router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
 // router.post("/order", auth, generateFakeOrder);
 router.get("/order-list", auth, getOrderListByUser);
 router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
+router.get("/order/invoice/:orderId", auth, generateInvoice);
 router.post("/claim", auth, claimRefund);
 
 // --------------------------------------------

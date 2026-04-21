@@ -49,30 +49,64 @@ export const baseTemplate = (title: string, content: string) => `
  * @param to - recipient email
  * @param otp - one-time password (6-digit)
  */
-export const sendOtpEmail = async (to: string, otp: string) => {
+/**
+ * 🔑 Send OTP Email for Verification
+ * @param to - recipient email
+ * @param otp - one-time password (6-digit)
+ * @param firstName - user's first name for personalization
+ */
+export const sendOtpEmail = async (to: string, otp: string, firstName: string = "there") => {
   try {
     const subject = "🔑 Your E-SIM Aero Verification Code";
 
-    const text = `Your OTP for E-SIM Aero is: ${otp}. It expires in 10 minutes. If you did not request this, please ignore this email.`;
+    // Plain text version (for email clients that don't support HTML)
+    const text = `Hi ${firstName},\n\nUse the One-Time Password (OTP) below to verify your account on E-SIM Aero:\n\n${otp}\n\n⏱ This code will expire in 10 minutes.\n\nFor your security, please do not share this code with anyone.\n\nIf you did not request this OTP, please ignore this email or contact our support team: https://www.esimaero.com/contact-us\n\nThanks,\nE-SIM Aero Team`;
 
+    // HTML version with styling
     const html = baseTemplate(
       "Email Verification Code",
       `
-        <p>Hi there,</p>
-        <p>Use the following One-Time Password (OTP) to verify your account on <strong>E-SIM Aero</strong>. It will expire in <b>10 minutes</b>.</p>
-        <div style="text-align: center; margin: 20px 0;">
-          <div style="display: inline-block; background: #f4f8ff; border: 1px dashed #0070f3; border-radius: 8px; padding: 15px 25px; font-size: 24px; letter-spacing: 6px; color: #0070f3; font-weight: bold;">
+        <p>Hi <strong>${firstName}</strong>,</p>
+        
+        <p>Use the One-Time Password (OTP) below to verify your account on <strong>E-SIM Aero</strong>:</p>
+        
+        <div style="text-align: center; margin: 25px 0;">
+          <div style="display: inline-block; background: linear-gradient(135deg, #0070f3, #00b4d8); color: #fff; border-radius: 10px; padding: 20px 35px; font-size: 28px; letter-spacing: 8px; font-weight: bold; box-shadow: 0 4px 14px rgba(0, 112, 243, 0.3);">
             ${otp}
           </div>
         </div>
-        <p>If you didn’t request this OTP, please ignore this email or contact our support team immediately.</p>
-        <p style="margin-top: 25px;">Thanks,<br><strong>The E-SIM Aero Team</strong></p>
+        
+        <p style="color: #666; font-size: 14px;">⏱ This code will expire in <strong>10 minutes</strong>.</p>
+        
+        <p style="margin-top: 20px; color: #555;">For your security, please do not share this code with anyone.</p>
+        
+        <p style="margin-top: 15px; color: #555;">
+          If you did not request this OTP, please ignore this email or 
+          <a href="https://www.esimaero.com/contact-us" 
+             style="color: #0070f3; text-decoration: none; font-weight: 600;">
+            contact our support team
+          </a> immediately.
+        </p>
+        
+        <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+          Thanks,<br>
+          <strong>E-SIM Aero Team</strong>
+        </p>
+        
+        <!-- Contact Us Button (Optional Visual Enhancement) -->
+        <div style="text-align: center; margin-top: 25px;">
+          <a href="https://www.esimaero.com/contact-us" 
+             style="display: inline-block; background: #f8f9fa; color: #0070f3; padding: 10px 24px; 
+                    border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 600;
+                    border: 1px solid #0070f3;">
+            💬 Contact Support
+          </a>
+        </div>
       `
     );
-    const mail: any = await adminMailNotfication();
-    // console.log("----- mail to the admin -----", mail);
+
     const info = await transporter.sendMail({
-      from: mail,
+      from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
       to,
       subject,
       text,
@@ -82,6 +116,7 @@ export const sendOtpEmail = async (to: string, otp: string) => {
     // console.log(`✅ OTP email sent to ${to} (messageId: ${info.messageId})`);
   } catch (error: any) {
     console.error("❌ Failed to send OTP email:", error.message);
+    throw error;
   }
 };
 
@@ -141,33 +176,104 @@ export const sendAdminOrderNotification = async (order: any) => {
 };
 
 // ---------- 2️⃣(b) Welcome Email to New User ----------
+/**
+ * 👋 Send Welcome Email to New User
+ * @param userEmail - recipient email
+ * @param user - user object containing firstName, etc.
+ */
 export const sendUserWelcomeEmail = async (userEmail: string, user: any) => {
+  const displayName = user?.firstName?.trim() || "there";
+
   const html = baseTemplate(
     "Welcome to E-SIM Aero 🎉",
     `
-      <p>Hi <strong>${user.firstName}</strong>,</p>
-      <p>Welcome to <strong>E-SIM Aero</strong>! We're excited to have you on board.</p>
+      <p>Hi <strong>${displayName}</strong>,</p>
+      
+      <p>Welcome to <strong>E-SIM Aero</strong>! We're excited to have you on board 🎉</p>
+      
       <p>You can now explore and purchase eSIM plans that fit your travel and connectivity needs.</p>
-      <ul style="margin-top:10px;">
-        <li>🌍 Global eSIM coverage</li>
-        <li>⚡ Instant activation</li>
-        <li>💳 Secure payments</li>
-      </ul>
-      <p style="margin-top:20px;">If you have any questions, our support team is always here to help.</p>
-      <p>Cheers,<br><strong>The E-SIM Aero Team</strong></p>
+      
+      <!-- Features Section -->
+      <div style="background: #f8f9fa; border-left: 4px solid #0070f3; padding: 15px 20px; margin: 25px 0; border-radius: 0 8px 8px 0;">
+        <p style="margin: 0 0 12px 0; font-weight: 600; color: #333;">🚀 What you can do:</p>
+        <ul style="margin: 0; padding-left: 20px; color: #555; line-height: 1.8;">
+          <li>🌍 Enjoy global eSIM coverage</li>
+          <li>⚡ Activate instantly, anytime</li>
+          <li>💳 Make secure and hassle-free payments</li>
+        </ul>
+      </div>
+      
+      <!-- Get Started CTA -->
+      <div style="text-align: center; margin: 30px 0;">
+        <p style="margin-bottom: 15px; font-weight: 600; color: #333;">👉 Get Started:</p>
+        <a href="https://www.esimaero.com/country" 
+           style="display: inline-block; background: linear-gradient(135deg, #0070f3, #00b4d8); 
+                  color: #fff; padding: 14px 32px; border-radius: 8px; text-decoration: none; 
+                  font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(0, 112, 243, 0.3);">
+          Browse eSIM Plans
+        </a>
+        <p style="margin-top: 12px; font-size: 13px; color: #666;">
+          Browse plans and choose the one that suits you best.
+        </p>
+      </div>
+      
+      <!-- Support Section -->
+      <p style="margin-top: 25px; color: #555;">
+        If you have any questions, our support team is always here to help.
+      </p>
+      
+      <!-- Signature -->
+      <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+        Thanks,<br>
+        <strong>E-SIM Aero Team</strong>
+      </p>
+      
+      <!-- Contact Support Button at Bottom -->
+      <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
+        <a href="https://www.esimaero.com/contact-us" 
+           style="display: inline-flex; align-items: center; gap: 6px; 
+                  color: #0070f3; text-decoration: none; font-size: 14px; font-weight: 600;">
+          <span>💬</span> Contact Support
+        </a>
+        <p style="margin: 8px 0 0 0; font-size: 12px; color: #888;">
+          Need help? Visit our <a href="https://www.esimaero.com/contact-us" style="color: #0070f3; text-decoration: none;">Contact Us</a> page
+        </p>
+      </div>
     `
   );
-  const mail: any = await adminMailNotfication();
+
+  // Plain text version (for email clients that don't support HTML)
+  const text = `Hi ${displayName},
+
+Welcome to E-SIM Aero! We're excited to have you on board 🎉
+
+You can now explore and purchase eSIM plans that fit your travel and connectivity needs.
+
+🚀 What you can do:
+  🌍 Enjoy global eSIM coverage
+  ⚡ Activate instantly, anytime
+  💳 Make secure and hassle-free payments
+
+👉 Get Started:
+Browse plans and choose the one that suits you best.
+→ https://www.esimaero.com/plans
+
+If you have any questions, our support team is always here to help.
+→ Contact Us: https://www.esimaero.com/contact-us
+
+Thanks,
+E-SIM Aero Team`;
+
   await transporter.sendMail({
-    from: mail, // from admin
+    from: `"E-SIM Aero" <${process.env.SMTP_USER}>`, // ✅ Consistent sender format
     to: userEmail,
     subject: "👋 Welcome to E-SIM Aero",
+    text, // plain-text fallback
     html,
   });
 
   // console.log(`✅ Welcome email sent to user: ${userEmail}`);
 };
-
 // ---------- 2️⃣(c) Notify Admin When User Verifies OTP ----------
 export const sendAdminUserVerifiedNotification = async (adminEmail: string, user: any) => {
   const html = baseTemplate(
@@ -413,47 +519,67 @@ export const sendOrderEmail = async (
     : "<p>No eSIM details available.</p>";
 
   // Single unified email content for BOTH user & admin
+  const countryNames = [...new Set(order.esims?.map((e: any) => e.country?.name || "Global"))].join(", ");
+  const planNames = order.esims?.map((e: any) => e.productName || "eSIM Plan").join(", ");
+  const dataAmounts = order.esims?.map((e: any) => `${e.dataAmount || 0} MB`).join(", ");
+  const validities = order.esims?.map((e: any) => `${e.validityDays || 0} Days`).join(", ");
+  const paymentMethod = order.transaction?.paymentMethod || "Stripe";
+
   const unifiedContent = `
-    <h2>📦 Order Update</h2>
+      <p>Hi <strong>${userName}</strong>,</p>
 
-    <p><strong>Status:</strong> ${status}</p>
-    <p><strong>Order Code:</strong> #${orderCode}</p>
-    <p><strong>Total Amount:</strong> $${totalAmount}</p>
-    <p><strong>Activation Status:</strong> ${activationStatus}</p>
+      <p>Thank you for your order! 🎉<br/>
+      Your eSIM purchase has been successfully placed.</p>
 
-    <hr />
+      <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:20px 0;">
+        <h3 style="margin-top:0;">📦 Order Details:</h3>
+        <table style="width:100%; border-collapse: collapse;">
+          <tr><td style="padding:4px 0;"><strong>Order ID:</strong></td><td>#${orderCode}</td></tr>
+          <tr><td style="padding:4px 0;"><strong>Country:</strong></td><td>${countryNames || "N/A"}</td></tr>
+          <tr><td style="padding:4px 0;"><strong>Plan:</strong></td><td>${planNames || "N/A"}</td></tr>
+          <tr><td style="padding:4px 0;"><strong>Data:</strong></td><td>${dataAmounts || "N/A"}</td></tr>
+          <tr><td style="padding:4px 0;"><strong>Validity:</strong></td><td>${validities || "N/A"}</td></tr>
+        </table>
+      </div>
 
-    <h3>👤 User Details</h3>
-    <p><strong>Name:</strong> ${userName}</p>
-    <p><strong>Email:</strong> ${userEmail}</p>
-    ${order?.userPhone ? `<p><strong>Phone:</strong> ${order.userPhone}</p>` : ""}
+      <div style="background:#e9ecef; padding:15px; border-radius:8px; margin:20px 0;">
+        <h3 style="margin-top:0;">💳 Payment Summary:</h3>
+        <table style="width:100%; border-collapse: collapse;">
+          <tr><td style="padding:4px 0;"><strong>Amount Paid:</strong></td><td>$${totalAmount}</td></tr>
+          <tr><td style="padding:4px 0;"><strong>Payment Method:</strong></td><td>${paymentMethod}</td></tr>
+        </table>
+      </div>
 
-    <hr />
+      <p>👉 Your eSIM details and QR code will be shared once payment confirmed.</p>
 
-    <h3>📄 eSIM Details</h3>
-    ${esimListHTML}
-
-    ${status !== "COMPLETED"
+      ${status !== "COMPLETED"
       ? `
-    <hr />
-
-    <h3>⚠️ Errors / Failed Items</h3>
-    <pre style="background:#f8f8f8;padding:10px;border-radius:6px;border:1px solid #ddd;white-space:pre-wrap;">
-${order.errorMessage || "No detailed error provided."}
-    </pre>`
+      <div style="background:#fff3cd; padding:15px; border-radius:8px; border-left:4px solid #ffc107; margin:20px 0;">
+        <h3 style="margin-top:0;">⚠️ Status: ${status}</h3>
+        <p>Some items might have failed to process. Details below:</p>
+        <pre style="white-space:pre-wrap; font-size:12px;">${order.errorMessage || "No detailed error provided."}</pre>
+      </div>`
       : ""
     }
 
-    <hr />
+      <p>If you have any questions, feel free to contact our support team.</p>
 
-    <h3>🛠 Internal Information</h3>
-    <p><strong>Order ID:</strong> ${order.id}</p>
-    <p><strong>Transaction ID:</strong> ${order?.transaction?.transactionId || "N/A"}</p>
+      <p style="margin-top:25px;">Thanks,<br/><strong>E-SIM Aero Team</strong></p>
 
-    <p style="margin-top: 20px; font-size: 13px; color: #777;">
-      Sent on ${moment().format("DD/MM/YYYY [at] hh:mm A")}
-    </p>
-  `;
+
+
+         <!-- Contact Support Button at Bottom -->
+      <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
+        <a href="https://www.esimaero.com/contact-us" 
+           style="display: inline-flex; align-items: center; gap: 6px; 
+                  color: #0070f3; text-decoration: none; font-size: 14px; font-weight: 600;">
+          <span>💬</span> Contact Support
+        </a>
+        <p style="margin: 8px 0 0 0; font-size: 12px; color: #888;">
+          Need help? Visit our <a href="https://www.esimaero.com/contact-us" style="color: #0070f3; text-decoration: none;">Contact Us</a> page
+        </p>
+      </div>
+    `;
 
   try {
     const adminEmail: string = await adminMailNotfication(); // Get admin email
@@ -464,7 +590,7 @@ ${order.errorMessage || "No detailed error provided."}
     await transporter.sendMail({
       from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
       to: userEmail,
-      subject,
+      subject: `Your Order #${orderCode} is Confirmed – E-SIM Aero`,
       html,
       replyTo: adminEmail,
     });
@@ -475,7 +601,7 @@ ${order.errorMessage || "No detailed error provided."}
     await transporter.sendMail({
       from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
       to: adminEmail,
-      subject,
+      subject: `[ADMIN] Order #${orderCode} - ${status}`,
       html, // EXACT SAME EMAIL
     });
 

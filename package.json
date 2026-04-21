@@ -15,6 +15,7 @@
   "dependencies": {
     "@paypal/checkout-server-sdk": "^1.0.3",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/pdfkit": "^0.17.6",
     "@types/stripe": "^8.0.416",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.2",
@@ -31,6 +32,7 @@
     "mysql2": "^3.15.0",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.6",
+    "pdfkit": "^0.18.0",
     "react-hot-toast": "^2.6.0",
     "reflect-metadata": "^0.2.2",
     "stripe": "^19.2.0",

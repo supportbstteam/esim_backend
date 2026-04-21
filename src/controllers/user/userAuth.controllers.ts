@@ -25,7 +25,9 @@ const generateToken = (user: User) => {
 // 📝 SIGNUP
 export const postCreateUser = async (req: any, res: Response) => {
   let { firstName, lastName, email, password } = req.body;
+  // const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
+  // await sendOtpEmail(email, otp,firstName);
   if (!firstName || !email || !password) {
     return res.status(400).json({ message: "All fields are required." });
   }
@@ -53,7 +55,7 @@ export const postCreateUser = async (req: any, res: Response) => {
       existingUser.isBlocked = true;
 
       await userRepo.save(existingUser);
-      await sendOtpEmail(email, otp);
+      await sendOtpEmail(email, otp,firstName);
 
       return res.status(201).json({
         message: "User re-registered. OTP sent to email.",
@@ -77,7 +79,7 @@ export const postCreateUser = async (req: any, res: Response) => {
       existingUser.otpExpires = otpExpires;
 
       await userRepo.save(existingUser);
-      await sendOtpEmail(email, otp);
+      await sendOtpEmail(email, otp,firstName);
 
       return res.status(200).json({
         message: "OTP resent to your email.",
@@ -108,7 +110,7 @@ export const postCreateUser = async (req: any, res: Response) => {
     });
 
     // 📧 Send verification OTP
-    await sendOtpEmail(email, otp);
+    await sendOtpEmail(email, otp,firstName);
 
     return res.status(201).json({
       message: "User registered successfully. OTP sent to email.",
