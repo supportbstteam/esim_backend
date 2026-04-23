@@ -141,7 +141,7 @@ export const sendOrderConfirmationEmail = async (userEmail: string, order: any) 
   const mail: any = await adminMailNotfication();
 
   await transporter.sendMail({
-    from: mail,
+    from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
     to: userEmail,
     subject: `🛒 Order Confirmation - ${order.id}`,
     html,
@@ -166,7 +166,7 @@ export const sendAdminOrderNotification = async (order: any) => {
   );
   const mail: any = await adminMailNotfication();
   await transporter.sendMail({
-    from: mail,
+    from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
     to: mail,
     subject: `🧾 New Order - ${order?.orderCode}`,
     html,
@@ -292,7 +292,7 @@ export const sendAdminUserVerifiedNotification = async (adminEmail: string, user
   );
   const mail: any = await adminMailNotfication();
   await transporter.sendMail({
-    from: mail,
+    from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
     to: adminEmail,
     subject: `✅ User Verified: ${user.firstName} ${user.lastName}`,
     html,
@@ -312,7 +312,7 @@ export const sendPasswordUpdateEmail = async (userEmail: string, userName: strin
   );
   const mail: any = await adminMailNotfication();
   await transporter.sendMail({
-    from: mail,
+    from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
     to: userEmail,
     subject: "🔐 Password Updated Successfully",
     html,
@@ -348,7 +348,7 @@ export const sendRefundEmails = async (userEmail: string, adminEmail: string, re
   );
   const mail: any = await adminMailNotfication();
   await transporter.sendMail({
-    from: mail,
+    from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
     to: userEmail,
     subject: `💰 Refund Request Received - ${refund.id}`,
     html: userHtml,
@@ -371,12 +371,12 @@ export const sendRefundEmails = async (userEmail: string, adminEmail: string, re
  */
 export const sendPasswordChangeEmail = async (to: string, name?: string) => {
   try {
-    const subject = "🔒 Your E-SIM Aero Password Was Updated";
+    const subject = "🔒 Your E-SIM Aero Password Has Been Reset Successfully";
 
     const text = `Hi ${name || "User"},\n\nYour password on E-SIM Aero was successfully changed. If this wasn't you, please reset your password immediately or contact our support team.\n\nStay secure,\nThe E-SIM Aero Team`;
 
     const html = baseTemplate(
-      "Your Password Was Updated",
+      "Your Password Has Been Reset Successfully",
       `
         <p>Hi ${name || "there"},</p>
         <p>This is a confirmation that your <strong>E-SIM Aero</strong> password has been successfully changed.</p>
@@ -390,7 +390,7 @@ export const sendPasswordChangeEmail = async (to: string, name?: string) => {
 
     const mail: any = await adminMailNotfication();
     await transporter.sendMail({
-      from: mail,
+      from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
       to,
       subject,
       text,
@@ -426,7 +426,7 @@ export const sendUserBlockedEmail = async (to: string, name?: string, reason?: s
     );
     const mail: any = await adminMailNotfication();
     await transporter.sendMail({
-      from: mail,
+      from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
       to,
       subject,
       text,
@@ -462,7 +462,7 @@ export const sendAccountDeletedEmail = async (to: string, name?: string) => {
     );
     const mail: any = await adminMailNotfication();
     await transporter.sendMail({
-      from: mail,
+     from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
       to,
       subject,
       text,
@@ -634,7 +634,7 @@ export const sendForgotPasswordOtpEmail = async (to: string, otp: string) => {
     );
     const mail: any = await adminMailNotfication();
     await transporter.sendMail({
-      from: mail,
+        from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,

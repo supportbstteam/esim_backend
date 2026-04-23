@@ -17,7 +17,7 @@ export const generateInvoice = async (req: Request, res: Response) => {
         if (!order) {
             return res.status(404).json({ message: "Order not found" });
         }
-
+        console.log("order deatils chekc", order)
         // Fetch contact data from database
         const contactData = await AppDataSource.query(`
             SELECT type, value, position 
@@ -117,7 +117,7 @@ export const generateInvoice = async (req: Request, res: Response) => {
                 position = 50;
             }
 
-            const description = `${esim.country?.name || "Global"} ${esim.dataAmount}MB - ${esim.validityDays} Days`;
+            const description = `${esim.country?.name || "Global"} ${esim.productName}`;
             const unitPrice = Number(esim.price || 0).toFixed(2);
             const total = Number(esim.price || 0).toFixed(2);
             const iccid = esim.iccid || "TBD";

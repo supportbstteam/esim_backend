@@ -120,6 +120,7 @@ export async function reserveAndPurchaseSim(planId: number) {
       name: `Test Plan ${planId}`,
       currency: "USD",
       price: "10.00",
+      
       validity_days: 30,
       data: 5120, // 5GB
       call: 0,
@@ -262,6 +263,11 @@ export const postOrder = async (req: any, res: Response) => {
         try {
           const plan = task.plan;
 
+          const sellingPrice = parseFloat(plan.price); // tumhara managed price
+          const realPrice = esimData.price
+          ? parseFloat(esimData.price)
+          : null;
+
           const esimEntity = esimRepo.create({
             externalId: esimData.id?.toString() || null,
             iccid: esimData.iccid || null,
@@ -270,7 +276,8 @@ export const postOrder = async (req: any, res: Response) => {
             statusText: esimData.status_text || null,
             productName: esimData.name || plan.name,
             currency: esimData.currency || null,
-            price: parseFloat(esimData.price) || parseFloat(plan.price),
+            price: sellingPrice,      
+            actualPrice: realPrice, 
             validityDays: esimData.validity_days || plan.validityDays,
             dataAmount: esimData.data || 0,
             callAmount: esimData.call || 0,

@@ -98,6 +98,11 @@ export class Esim {
   @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
   price?: number | null;
 
+
+  @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
+actualPrice?: number | null;
+
+
   @Column({ type: "int", nullable: true })
   validityDays?: number | null;
 

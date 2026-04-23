@@ -334,7 +334,10 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
             { headers }
           );
           const esimData = purchaseResponse.data?.data;
-
+          const sellingPrice = parseFloat(plan.price); // tumhara managed price
+          const realPrice = esimData.price
+          ? parseFloat(esimData.price)
+          : null;
           const esim = esimRepo.create({
             externalId: esimData.id?.toString(),
             iccid: esimData.iccid || null,
@@ -343,7 +346,8 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
             statusText: esimData.status_text || null,
             productName: esimData.name || plan.name,
             currency: esimData.currency || null,
-            price: parseFloat(esimData.price) || parseFloat(plan.price),
+            price: sellingPrice,      
+            actualPrice: realPrice, 
             validityDays: esimData.validity_days || plan.validityDays,
             dataAmount: esimData.data || 0,
             callAmount: esimData.call || 0,
