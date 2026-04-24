@@ -67,7 +67,7 @@ export const generateInvoice = async (req: Request, res: Response) => {
             .fontSize(10)
             .font("Helvetica-Bold")
             .text(`INVOICE #: INV-${order.orderCode}`, 400, infoTop, { align: "right" })
-            .text(`DATE: ${moment(order.createdAt).format("YYYY-MM-DD")}`, 400, infoTop + 15, { align: "right" })
+            .text(`DATE: ${moment(order.createdAt).format("MMM DD, YYYY")}`, 400, infoTop + 15, { align: "right" })
             .text(`ORDER ID: ${order.orderCode}`, 400, infoTop + 30, { align: "right" });
 
         // Billed To Section
@@ -163,7 +163,7 @@ export const generateInvoice = async (req: Request, res: Response) => {
             .font("Helvetica-Bold")
             .text("Payment Date:", col1, totalsPosition + 56)
             .font("Helvetica")
-            .text(moment(order.createdAt).format("YYYY-MM-DD HH:mm"), col1, totalsPosition + 69);
+            .text(moment(order.createdAt).format("MMM DD YYYY, hh:mm A"), col1, totalsPosition + 69);
 
         // Right side: Totals
         const rightLabelX = 350;
