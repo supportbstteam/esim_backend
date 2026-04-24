@@ -7,6 +7,27 @@ export const reserveSim = async ({
   planId: number;
   token: string;
 }) => {
+
+  if (process.env.ESIM_TEST_MODE === "true") {
+    console.log(`[TEST MODE] Mocking eSIM purchase for planId: ${planId}`);
+    return {
+      id: `mock-sim-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      iccid: `${Math.floor(1000000000000000000 + Math.random() * 9000000000000000000)}`,
+      qr_code_url: "https://www.esimaero.com/sample-qr-code",
+      network_status: "NOT_ACTIVE",
+      status_text: "Reserved (Test Mode)",
+      name: `Test Plan ${planId}`,
+      currency: "USD",
+      price: "10.00",
+      
+      validity_days: 30,
+      data: 5120, // 5GB
+      call: 0,
+      sms: 0,
+    };
+  }
+
+  
   try {
     const response: any = await axios.get(
       `${process.env.TURISM_URL}/v2/sims/reserve?product_plan_id=${planId}`,
