@@ -339,7 +339,7 @@ export const createOrderAfterPayment = async (transaction: Transaction, userId: 
           ? parseFloat(esimData.price)
           : null;
 
-          console.log("esim data second actualPrice price",esimData)
+          console.log("esim data second actualPrice price",purchaseResponse)
 
           const esim = esimRepo.create({
             externalId: esimData.id?.toString(),
