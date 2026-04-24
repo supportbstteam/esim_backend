@@ -268,6 +268,7 @@ export const postOrder = async (req: any, res: Response) => {
           ? parseFloat(esimData.price)
           : null;
 
+          console.log("esim data first actualPrice price",esimData)
           const esimEntity = esimRepo.create({
             externalId: esimData.id?.toString() || null,
             iccid: esimData.iccid || null,
