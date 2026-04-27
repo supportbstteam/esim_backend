@@ -144,7 +144,7 @@ router.post("/order", auth, thirdPartyAuthMiddleware, postOrder);
 // router.post("/order", auth, generateFakeOrder);
 router.get("/order-list", auth, getOrderListByUser);
 router.get("/order-details/:orderId", auth, getOrderDetailsByUser);
-router.get("/order/invoice/:orderId", auth, generateInvoice);
+router.get("/order/invoice/:orderId", generateInvoice);
 router.post("/claim", auth, claimRefund);
 
 // --------------------------------------------

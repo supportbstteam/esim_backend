@@ -114,15 +114,15 @@ export async function reserveAndPurchaseSim(planId: number) {
     return {
       id: `mock-sim-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       iccid: `${Math.floor(1000000000000000000 + Math.random() * 9000000000000000000)}`,
-      qr_code_url: "https://www.esimaero.com/sample-qr-code",
+      qr_code_url: "LPA:1$consumer.e-sim.global$TEST20251212123422D0032EE2",
       network_status: "NOT_ACTIVE",
       status_text: "Reserved (Test Mode)",
       name: `Test Plan ${planId}`,
       currency: "USD",
-      price: "10.00",
+      price: "15.00",
       
       validity_days: 30,
-      data: 5120, // 5GB
+      data: 5.00, // 5GB
       call: 0,
       sms: 0,
     };

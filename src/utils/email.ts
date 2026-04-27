@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import { AppDataSource } from "../data-source";
 import { Admin } from "../entity/Admin.entity";
 import moment from "moment";
+import QRCode from "qrcode";
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -478,135 +479,381 @@ export const sendAccountDeletedEmail = async (to: string, name?: string) => {
 /**
  * 🧾 Send order success or failure email (to user + admin)
  */
+// export const sendOrderEmail = async (
+//   userEmail: string,
+//   userName: string,
+//   order: any,
+//   status: "COMPLETED" | "FAILED" | "PARTIAL"
+// ) => {
+
+//   console.log("---- order email function called ----");
+//   const orderCode = order?.orderCode || "N/A";
+//   const totalAmount = Number(order?.totalAmount || 0).toFixed(2);
+//   const activationStatus = order?.activated ? "✅ Active" : "⏳ Pending";
+
+//   // Subject
+//   const subjectMap = {
+//     COMPLETED: `✅ Order Update - #${orderCode}`,
+//     FAILED: `❌ Order Failed - #${orderCode}`,
+//     PARTIAL: `⚠️ Partial Order - #${orderCode}`,
+//   };
+//   const subject = subjectMap[status];
+
+//   // eSIM list
+//   const esimListHTML = order.esims?.length
+//     ? `
+//       <ul>
+//         ${order.esims
+//       .map(
+//         (e: any, idx: number) => `
+//               <li style="margin-bottom: 10px;">
+//                 <strong>${idx + 1}. ${e.productName || "Unnamed Plan"}</strong><br/>
+//                 ICCID: ${e.iccid || "N/A"}<br/>
+//                 Validity: ${e.validityDays || 0} days<br/>
+//                 Price: ${e.currency || "$"} ${e.price || "0.00"}<br/>
+//               </li>
+//             `
+//       )
+//       .join("")}
+//       </ul>
+//     `
+//     : "<p>No eSIM details available.</p>";
+
+//   // Single unified email content for BOTH user & admin
+//   const countryNames = [...new Set(order.esims?.map((e: any) => e.country?.name || "Global"))].join(", ");
+//   const planNames = order.esims?.map((e: any) => e.productName || "eSIM Plan").join(", ");
+//   const dataAmounts = order.esims?.map((e: any) => `${e.dataAmount || 0} MB`).join(", ");
+//   const validities = order.esims?.map((e: any) => `${e.validityDays || 0} Days`).join(", ");
+//   const paymentMethod = order.transaction?.paymentMethod || "Stripe";
+
+//   const unifiedContent = `
+//       <p>Hi <strong>${userName}</strong>,</p>
+
+//       <p>Thank you for your order! 🎉<br/>
+//       Your eSIM purchase has been successfully placed.</p>
+
+//       <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:20px 0;">
+//         <h3 style="margin-top:0;">📦 Order Details:</h3>
+//         <table style="width:100%; border-collapse: collapse;">
+//           <tr><td style="padding:4px 0;"><strong>Order ID:</strong></td><td>#${orderCode}</td></tr>
+//           <tr><td style="padding:4px 0;"><strong>Country:</strong></td><td>${countryNames || "N/A"}</td></tr>
+//           <tr><td style="padding:4px 0;"><strong>Plan:</strong></td><td>${planNames || "N/A"}</td></tr>
+//           <tr><td style="padding:4px 0;"><strong>Data:</strong></td><td>${dataAmounts || "N/A"}</td></tr>
+//           <tr><td style="padding:4px 0;"><strong>Validity:</strong></td><td>${validities || "N/A"}</td></tr>
+//         </table>
+//       </div>
+
+//       <div style="background:#e9ecef; padding:15px; border-radius:8px; margin:20px 0;">
+//         <h3 style="margin-top:0;">💳 Payment Summary:</h3>
+//         <table style="width:100%; border-collapse: collapse;">
+//           <tr><td style="padding:4px 0;"><strong>Amount Paid:</strong></td><td>$${totalAmount}</td></tr>
+//           <tr><td style="padding:4px 0;"><strong>Payment Method:</strong></td><td>${paymentMethod}</td></tr>
+//         </table>
+//       </div>
+
+//       <p>👉 Your eSIM details and QR code will be shared once payment confirmed.</p>
+
+//       ${status !== "COMPLETED"
+//       ? `
+//       <div style="background:#fff3cd; padding:15px; border-radius:8px; border-left:4px solid #ffc107; margin:20px 0;">
+//         <h3 style="margin-top:0;">⚠️ Status: ${status}</h3>
+//         <p>Some items might have failed to process. Details below:</p>
+//         <pre style="white-space:pre-wrap; font-size:12px;">${order.errorMessage || "No detailed error provided."}</pre>
+//       </div>`
+//       : ""
+//     }
+
+//       <p>If you have any questions, feel free to contact our support team.</p>
+
+//       <p style="margin-top:25px;">Thanks,<br/><strong>E-SIM Aero Team</strong></p>
+
+
+
+//          <!-- Contact Support Button at Bottom -->
+//       <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
+//         <a href="https://www.esimaero.com/contact-us" 
+//            style="display: inline-flex; align-items: center; gap: 6px; 
+//                   color: #0070f3; text-decoration: none; font-size: 14px; font-weight: 600;">
+//           <span>💬</span> Contact Support
+//         </a>
+//         <p style="margin: 8px 0 0 0; font-size: 12px; color: #888;">
+//           Need help? Visit our <a href="https://www.esimaero.com/contact-us" style="color: #0070f3; text-decoration: none;">Contact Us</a> page
+//         </p>
+//       </div>
+//     `;
+
+//   try {
+//     const adminEmail: string = await adminMailNotfication(); // Get admin email
+
+//     const html = baseTemplate(subject, unifiedContent);
+
+//     // Send to USER
+//     await transporter.sendMail({
+//       from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
+//       to: userEmail,
+//       subject: `Your Order #${orderCode} is Confirmed – E-SIM Aero`,
+//       html,
+//       replyTo: adminEmail,
+//     });
+
+//     console.log("---- order admin email function called ----");
+
+//     // Send same content to ADMIN
+//     await transporter.sendMail({
+//       from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
+//       to: adminEmail,
+//       subject: `[ADMIN] Order #${orderCode} - ${status}`,
+//       html, // EXACT SAME EMAIL
+//     });
+
+//   } catch (error: any) {
+//     console.error("❌ Failed to send order email:", error.message);
+//   }
+// };
+
+/**
+ * 🧾 Send Order Confirmation Email (User + Admin)
+ * Updated with Invoice Download, QR Code & Activation Steps
+ */
+
+
 export const sendOrderEmail = async (
   userEmail: string,
   userName: string,
   order: any,
   status: "COMPLETED" | "FAILED" | "PARTIAL"
 ) => {
-
   console.log("---- order email function called ----");
-  const orderCode = order?.orderCode || "N/A";
+  
+  const orderId = order?.id || order?.orderCode || "N/A";
+    const orderCode = order?.orderCode || "N/A";
+
   const totalAmount = Number(order?.totalAmount || 0).toFixed(2);
   const activationStatus = order?.activated ? "✅ Active" : "⏳ Pending";
-
-  // Subject
+  
+  // 📄 Generate Invoice Download URL
+  const invoiceUrl = `https://api.esimaero.com/api/user/order/invoice/${orderId}`;
+  // 🎯 Subject based on status
   const subjectMap = {
-    COMPLETED: `✅ Order Update - #${orderCode}`,
+    COMPLETED: `✅ Order Confirmed - #${orderCode}`,
     FAILED: `❌ Order Failed - #${orderCode}`,
     PARTIAL: `⚠️ Partial Order - #${orderCode}`,
   };
   const subject = subjectMap[status];
 
-  // eSIM list
-  const esimListHTML = order.esims?.length
-    ? `
-      <ul>
-        ${order.esims
-      .map(
-        (e: any, idx: number) => `
-              <li style="margin-bottom: 10px;">
-                <strong>${idx + 1}. ${e.productName || "Unnamed Plan"}</strong><br/>
-                ICCID: ${e.iccid || "N/A"}<br/>
-                Validity: ${e.validityDays || 0} days<br/>
-                Price: ${e.currency || "$"} ${e.price || "0.00"}<br/>
-              </li>
-            `
-      )
-      .join("")}
-      </ul>
-    `
-    : "<p>No eSIM details available.</p>";
+  // 📦 Extract eSIM details (for first/main eSIM in order)
+  const firstEsim = order?.esims?.[0] || {};
+  const countryName = firstEsim?.country?.name || "Global";
+  const planName = firstEsim?.productName || order?.planName || "eSIM Plan";
 
-  // Single unified email content for BOTH user & admin
-  const countryNames = [...new Set(order.esims?.map((e: any) => e.country?.name || "Global"))].join(", ");
-  const planNames = order.esims?.map((e: any) => e.productName || "eSIM Plan").join(", ");
-  const dataAmounts = order.esims?.map((e: any) => `${e.dataAmount || 0} MB`).join(", ");
-  const validities = order.esims?.map((e: any) => `${e.validityDays || 0} Days`).join(", ");
-  const paymentMethod = order.transaction?.paymentMethod || "Stripe";
+  const dataAmount = firstEsim?.dataAmount 
+  ? `${firstEsim.dataAmount} GB` 
+  : (order?.data ? `${order.data} GB` : "N/A");
 
-  const unifiedContent = `
-      <p>Hi <strong>${userName}</strong>,</p>
 
-      <p>Thank you for your order! 🎉<br/>
-      Your eSIM purchase has been successfully placed.</p>
 
-      <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:20px 0;">
-        <h3 style="margin-top:0;">📦 Order Details:</h3>
-        <table style="width:100%; border-collapse: collapse;">
-          <tr><td style="padding:4px 0;"><strong>Order ID:</strong></td><td>#${orderCode}</td></tr>
-          <tr><td style="padding:4px 0;"><strong>Country:</strong></td><td>${countryNames || "N/A"}</td></tr>
-          <tr><td style="padding:4px 0;"><strong>Plan:</strong></td><td>${planNames || "N/A"}</td></tr>
-          <tr><td style="padding:4px 0;"><strong>Data:</strong></td><td>${dataAmounts || "N/A"}</td></tr>
-          <tr><td style="padding:4px 0;"><strong>Validity:</strong></td><td>${validities || "N/A"}</td></tr>
-        </table>
-      </div>
+  const validityDays = firstEsim?.validityDays || order?.validityDays || "30";
+  const paymentMethod = order?.transaction?.paymentMethod || "Stripe/Credit Card";
+  const iccid = firstEsim?.iccid || "Will be available after activation";
+// QR Code generation section
+ // ✅ QR CODE GENERATION - WITH DEBUGGING
+  // ✅ QR CODE GENERATION FOR CID
+  const qrValue = firstEsim?.qrCodeUrl
+    let qrCodeBuffer: Buffer | null = null;
+  const qrCid = 'qrcode@esimaero'; // Unique CID for this image
 
-      <div style="background:#e9ecef; padding:15px; border-radius:8px; margin:20px 0;">
-        <h3 style="margin-top:0;">💳 Payment Summary:</h3>
-        <table style="width:100%; border-collapse: collapse;">
-          <tr><td style="padding:4px 0;"><strong>Amount Paid:</strong></td><td>$${totalAmount}</td></tr>
-          <tr><td style="padding:4px 0;"><strong>Payment Method:</strong></td><td>${paymentMethod}</td></tr>
-        </table>
-      </div>
-
-      <p>👉 Your eSIM details and QR code will be shared once payment confirmed.</p>
-
-      ${status !== "COMPLETED"
-      ? `
-      <div style="background:#fff3cd; padding:15px; border-radius:8px; border-left:4px solid #ffc107; margin:20px 0;">
-        <h3 style="margin-top:0;">⚠️ Status: ${status}</h3>
-        <p>Some items might have failed to process. Details below:</p>
-        <pre style="white-space:pre-wrap; font-size:12px;">${order.errorMessage || "No detailed error provided."}</pre>
-      </div>`
-      : ""
+  if (qrValue) {
+    try {
+      console.log("🔄 Generating QR code buffer...");
+      qrCodeBuffer = await QRCode.toBuffer(qrValue, {
+        width: 300,
+        margin: 2,
+        errorCorrectionLevel: 'M'
+      });
+      console.log("✅ QR Buffer generated, size:", qrCodeBuffer.length);
+    } catch (qrError: any) {
+      console.error("❌ QR generation failed:", qrError.message);
+      qrCodeBuffer = null;
     }
+  }
+  console.log("🔄 Generating QR qrValue..",qrValue);
 
-      <p>If you have any questions, feel free to contact our support team.</p>
+  // 📋 Order Details Table
+  const orderDetailsHTML = `
+    <table style="width:100%; border-collapse: collapse; margin: 15px 0;">
+      <tr><td style="padding:6px 0; color:#555;"><strong>Order ID:</strong></td><td style="padding:6px 0;">#${orderCode}</td></tr>
+      <tr><td style="padding:6px 0; color:#555;"><strong>Country:</strong></td><td style="padding:6px 0;">${countryName}</td></tr>
+      <tr><td style="padding:6px 0; color:#555;"><strong>Plan:</strong></td><td style="padding:6px 0;">${planName}</td></tr>
+      <tr><td style="padding:6px 0; color:#555;"><strong>Data:</strong></td><td style="padding:6px 0;">${dataAmount}</td></tr>
+      <tr><td style="padding:6px 0; color:#555;"><strong>Validity:</strong></td><td style="padding:6px 0;">${validityDays} Days</td></tr>
+    </table>
+  `;
 
-      <p style="margin-top:25px;">Thanks,<br/><strong>E-SIM Aero Team</strong></p>
+  // 💳 Payment Summary + Invoice Download
+  const paymentHTML = `
+    <table style="width:100%; border-collapse: collapse; margin: 15px 0;">
+      <tr><td style="padding:6px 0; color:#555;"><strong>Amount Paid:</strong></td><td style="padding:6px 0;">$${totalAmount}</td></tr>
+      <tr><td style="padding:6px 0; color:#555;"><strong>Payment Method:</strong></td><td style="padding:6px 0;">${paymentMethod}</td></tr>
+      <tr>
+        <td style="padding:12px 0 6px 0; color:#555;"><strong>Download Invoice:</strong></td>
+        <td style="padding:12px 0 6px 0;">
+          <a href="${invoiceUrl}" 
+             style="display:inline-block; background:#0070f3; color:#fff; padding:8px 16px; 
+                    border-radius:6px; text-decoration:none; font-size:14px; font-weight:600;">
+            📄 Download Invoice
+          </a>
+        </td>
+      </tr>
+    </table>
+  `;
 
-
-
-         <!-- Contact Support Button at Bottom -->
-      <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;">
-        <a href="https://www.esimaero.com/contact-us" 
-           style="display: inline-flex; align-items: center; gap: 6px; 
-                  color: #0070f3; text-decoration: none; font-size: 14px; font-weight: 600;">
-          <span>💬</span> Contact Support
-        </a>
-        <p style="margin: 8px 0 0 0; font-size: 12px; color: #888;">
-          Need help? Visit our <a href="https://www.esimaero.com/contact-us" style="color: #0070f3; text-decoration: none;">Contact Us</a> page
-        </p>
+  // 📲 eSIM Activation Section (Only for COMPLETED/PARTIAL status)
+  const activationSection = (status === "COMPLETED" || status === "PARTIAL") ? `
+    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:20px 0; border-left:4px solid #0070f3;">
+      <h3 style="margin:0 0 10px 0; color:#333;">📲 Activate Your eSIM</h3>
+      
+      <p style="margin:10px 0; color:#555;"><strong>Step 1: Scan the QR Code</strong><br/>
+      Go to your phone's <em>Settings > Cellular/Mobile Data > Add eSIM</em> and scan this code:</p>
+      
+      ${qrCodeBuffer ? `
+      <div style="text-align:center; margin:20px 0; padding:15px; background:#fff; border-radius:8px;">
+        <img src="cid:${qrCid}" 
+             alt="eSIM QR Code" 
+             style="width:300px; height:auto; border:2px solid #0070f3; border-radius:8px;"/>
+        <p style="margin:10px 0 0 0; color:#666; font-size:13px;">Scan this QR code to activate your eSIM</p>
       </div>
-    `;
+    ` : `
+      <div style="text-align:center; margin:20px 0; padding:20px; background:#fff3cd; border:2px dashed #ffc107; border-radius:8px;">
+        <p style="color:#856404; margin:0; font-weight:bold;">⚠️ QR Code Not Available</p>
+        <p style="color:#856404; margin:10px 0 0 0; font-size:13px;">Please login to your dashboard to view the QR code</p>
+        <a href="https://api.esimaero.com/order/${orderId}" 
+           style="display:inline-block; margin-top:10px; padding:10px 20px; background:#0070f3; color:#fff; text-decoration:none; border-radius:6px; font-weight:600;">
+          View in Dashboard
+        </a>
+      </div>
+    `}
+      
+      <p style="margin:10px 0; color:#555;"><strong>Step 2: Manual Installation</strong><br/>
+      If you can't scan the code, use these details:</p>
+      
+      <div style="background:#fff; padding:10px; border-radius:6px; font-family:monospace; font-size:13px;">
+        <strong>ICCID:</strong> ${iccid}
+      
+      </div>
+    </div>
+  ` : '';
+
+  // ⚠️ Important Notes
+  const importantNotes = `
+    <div style="background:#fff3cd; padding:15px; border-radius:8px; margin:20px 0; border-left:4px solid #ffc107;">
+      <h4 style="margin:0 0 10px 0; color:#856404;">⚠️ Important Notes</h4>
+      <ul style="margin:0; padding-left:20px; color:#856404; font-size:14px;">
+        <li>Make sure your device supports eSIM</li>
+        <li>Use a stable internet connection during activation</li>
+        <li>Do not share your QR code with others</li>
+      </ul>
+    </div>
+  `;
+
+  // ❌ Error Section for FAILED/PARTIAL
+  const errorSection = (status !== "COMPLETED") ? `
+    <div style="background:#f8d7da; padding:15px; border-radius:8px; margin:20px 0; border-left:4px solid #dc3545;">
+      <h4 style="margin:0 0 10px 0; color:#721c24;">⚠️ Status: ${status}</h4>
+      <p style="margin:0; color:#721c24; font-size:14px;">
+        ${order.errorMessage || "Some eSIMs failed to process. Please contact support for assistance."}
+      </p>
+    </div>
+  ` : '';
+
+  // 📧 Main Email Content
+  const emailContent = `
+    <p>Hi <strong>${userName}</strong>,</p>
+    
+    <p>Thank you for your order! 🎉<br/>
+    Your eSIM purchase has been successfully placed and ready to activate.</p>
+    
+    <!-- Order Details -->
+    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:20px 0;">
+      <h3 style="margin:0 0 10px 0; color:#333;">📦 Order Details</h3>
+      ${orderDetailsHTML}
+    </div>
+    
+    <!-- Payment Summary -->
+    <div style="background:#e9ecef; padding:15px; border-radius:8px; margin:20px 0;">
+      <h3 style="margin:0 0 10px 0; color:#333;">💳 Payment Summary</h3>
+      ${paymentHTML}
+    </div>
+    
+    <!-- Activation Section -->
+    ${activationSection}
+    
+    <!-- Important Notes -->
+    ${importantNotes}
+    
+    <!-- Error Section (if any) -->
+    ${errorSection}
+    
+    <p style="margin-top:25px; color:#555;">
+      If you face any issues, contact our support team.
+    </p>
+    
+    <p style="margin-top:15px;">Thanks,<br/><strong>E-SIM Aero Team</strong></p>
+    
+    <!-- Contact Support Button -->
+    <div style="text-align:center; margin-top:25px; padding-top:20px; border-top:1px dashed #ddd;">
+      <a href="https://www.esimaero.com/contact-us" 
+         style="display:inline-flex; align-items:center; gap:6px; 
+                color:#0070f3; text-decoration:none; font-size:14px; font-weight:600;">
+        💬 Contact Support
+      </a>
+      <p style="margin:8px 0 0 0; font-size:12px; color:#888;">
+        Need help? Visit our <a href="https://www.esimaero.com/contact-us" 
+        style="color:#0070f3; text-decoration:none;">Contact Us</a> page
+      </p>
+    </div>
+  `;
 
   try {
-    const adminEmail: string = await adminMailNotfication(); // Get admin email
-
-    const html = baseTemplate(subject, unifiedContent);
-
-    // Send to USER
+    const adminEmail = await adminMailNotfication();
+    const html = baseTemplate(subject, emailContent);
+   // 📧 Email attachments setup for CID
+   const attachments: any[] = [];
+   if (qrCodeBuffer) {
+     attachments.push({
+       filename: 'qrcode.png',
+       content: qrCodeBuffer,
+       cid: qrCid,
+     });
+   }
+    // 📤 Send to USER
     await transporter.sendMail({
       from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
       to: userEmail,
-      subject: `Your Order #${orderCode} is Confirmed – E-SIM Aero`,
+      subject: subject,
       html,
-      replyTo: adminEmail,
+      replyTo: adminEmail || "support@esimaero.com",
+      attachments, // ✅ Attach QR code with CID
+
     });
 
-    console.log("---- order admin email function called ----");
+    console.log(`✅ Order email sent to user: ${userEmail}`);
 
-    // Send same content to ADMIN
-    await transporter.sendMail({
-      from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
-      to: adminEmail,
-      subject: `[ADMIN] Order #${orderCode} - ${status}`,
-      html, // EXACT SAME EMAIL
-    });
+    // 📤 Send to ADMIN (same content)
+    if (adminEmail) {
+      await transporter.sendMail({
+        from: `"E-SIM Aero" <${process.env.SMTP_USER}>`,
+        to: adminEmail,
+        subject: `[ADMIN] ${subject}`,
+        html,
+        attachments, // ✅ Attach QR code with CID
+
+      });
+      console.log(`✅ Order email sent to admin: ${adminEmail}`);
+    }
 
   } catch (error: any) {
     console.error("❌ Failed to send order email:", error.message);
+    throw error; // Re-throw to handle in parent function if needed
   }
 };
 
