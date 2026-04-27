@@ -25,8 +25,8 @@ export const generateInvoice = async (req: Request, res: Response) => {
         `);
 
         // Organize contact data
-        const companyAddress = contactData.find((c: any) => c.type === 'Address' && c.position === 'company')?.value || '';
-        const companyEmail = contactData.find((c: any) => c.type === 'Email' && c.position === 'company')?.value || '';
+        const companyAddress = contactData.find((c: any) => c.type === 'Address' && c.position.toLowerCase() === 'company')?.value || '';
+        const companyEmail = contactData.find((c: any) => c.type === 'Email' && c.position.toLowerCase() === 'company')?.value || '';
         const supportPhone = contactData.find((c: any) => c.type === 'Chat' && c.position === '24/7 help support')?.value || '';
         const companyNumber = contactData.find((c: any) => c.type === 'Other' && c.position === 'Company number')?.value || '';
 
