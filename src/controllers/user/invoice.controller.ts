@@ -36,7 +36,7 @@ export const generateInvoice = async (req: Request, res: Response) => {
         res.setHeader("Content-disposition", `inline; filename="${filename}"`);
         res.setHeader("Content-type", "application/pdf");
         doc.pipe(res);
-
+console.log("contactData",contactData)
         // ==================== HEADER SECTION ====================
         doc
             .fillColor("#000000")
