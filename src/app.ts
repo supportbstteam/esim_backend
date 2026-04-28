@@ -20,6 +20,7 @@ import { handleMobileTopUpStripeWebhook } from "./controllers/stripe/MobileTopUp
 import { handleStripeWebhook } from "./controllers/stripe/CartStrip.controller";
 import { paypalWebhook } from "./controllers/paypal.webhook.controllers";
 import { reserveSim } from "./lib/globalFunction";
+import { startScheduler } from "./cron/scheduler.cron";
 
 const app = express();
 
@@ -139,5 +140,7 @@ app.use("/api/notification-content", notificationContentRoute);
    9️⃣ ERROR HANDLER (LAST)
 ===================================================== */
 app.use(errorHandler);
+
+startScheduler(); // 🚀 cron start hoga
 
 export default app;
